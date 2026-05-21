@@ -10,6 +10,9 @@ public class BootstrapResponse {
     private int cursosSeeded;
     private int disciplinasSeeded;
     private int turmasSeeded;
+    private int locaisSeeded;
+    private int projetosSeeded;
+    private int avaliacoesSeeded;
 
     public BootstrapResponse(boolean adminCreated,
                              UserResponse adminUser,
@@ -17,7 +20,10 @@ public class BootstrapResponse {
                              int semestresSeeded,
                              int cursosSeeded,
                              int disciplinasSeeded,
-                             int turmasSeeded) {
+                             int turmasSeeded,
+                             int locaisSeeded,
+                             int projetosSeeded,
+                             int avaliacoesSeeded) {
         this.adminCreated = adminCreated;
         this.adminUser = adminUser;
         this.usersSeeded = usersSeeded;
@@ -25,6 +31,9 @@ public class BootstrapResponse {
         this.cursosSeeded = cursosSeeded;
         this.disciplinasSeeded = disciplinasSeeded;
         this.turmasSeeded = turmasSeeded;
+        this.locaisSeeded = locaisSeeded;
+        this.projetosSeeded = projetosSeeded;
+        this.avaliacoesSeeded = avaliacoesSeeded;
     }
 
     public boolean isAdminCreated() {
@@ -53,5 +62,17 @@ public class BootstrapResponse {
 
     public int getTurmasSeeded() {
         return turmasSeeded;
+    }
+
+    public int getLocaisSeeded() {
+        return locaisSeeded;
+    }
+
+    public int getProjetosSeeded() {
+        return projetosSeeded;
+    }
+
+    public int getAvaliacoesSeeded() {
+        return avaliacoesSeeded;
     }
 }

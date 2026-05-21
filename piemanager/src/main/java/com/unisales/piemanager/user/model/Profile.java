@@ -4,5 +4,6 @@ public enum Profile {
     ADMIN,
     COORDENADOR,
     PROFESSOR,
-    ALUNO
+    ALUNO,
+    AVALIADOR_EXTERNO
 }
