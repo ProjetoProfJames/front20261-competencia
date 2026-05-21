@@ -1,4 +1,4 @@
-package com.unisales.piemanager.user.service;
+package com.unisales.piemanager.user;
 
 import com.unisales.piemanager.common.exception.BusinessException;
 import com.unisales.piemanager.common.exception.ResourceNotFoundException;
@@ -6,7 +6,7 @@ import com.unisales.piemanager.user.dto.UserCreateRequest;
 import com.unisales.piemanager.user.dto.UserResponse;
 import com.unisales.piemanager.user.dto.UserUpdateRequest;
 import com.unisales.piemanager.user.model.User;
-import com.unisales.piemanager.user.repository.UserRepository;
+
 import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -1,10 +1,10 @@
-package com.unisales.piemanager.user.controller;
+package com.unisales.piemanager.user;
 
 import com.unisales.piemanager.common.api.ApiResponse;
 import com.unisales.piemanager.user.dto.UserCreateRequest;
 import com.unisales.piemanager.user.dto.UserResponse;
 import com.unisales.piemanager.user.dto.UserUpdateRequest;
-import com.unisales.piemanager.user.service.UserService;
+
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;

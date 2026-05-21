@@ -20,7 +20,7 @@ public class BootstrapController {
     @PostMapping("/bootstrap")
     public ApiResponse<BootstrapResponse> bootstrap() {
         BootstrapResponse result = bootstrapService.initialize();
-        String message = result.isCreated() ? "Initial admin created" : "Initial admin already exists";
+        String message = result.isAdminCreated() ? "Initial data created" : "Initial data already exists";
         return ApiResponse.success(message, result);
     }
 }

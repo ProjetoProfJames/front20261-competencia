@@ -3,19 +3,55 @@ package com.unisales.piemanager.bootstrap.dto;
 import com.unisales.piemanager.user.dto.UserResponse;
 
 public class BootstrapResponse {
-    private boolean created;
-    private UserResponse user;
+    private boolean adminCreated;
+    private UserResponse adminUser;
+    private int usersSeeded;
+    private int semestresSeeded;
+    private int cursosSeeded;
+    private int disciplinasSeeded;
+    private int turmasSeeded;
 
-    public BootstrapResponse(boolean created, UserResponse user) {
-        this.created = created;
-        this.user = user;
+    public BootstrapResponse(boolean adminCreated,
+                             UserResponse adminUser,
+                             int usersSeeded,
+                             int semestresSeeded,
+                             int cursosSeeded,
+                             int disciplinasSeeded,
+                             int turmasSeeded) {
+        this.adminCreated = adminCreated;
+        this.adminUser = adminUser;
+        this.usersSeeded = usersSeeded;
+        this.semestresSeeded = semestresSeeded;
+        this.cursosSeeded = cursosSeeded;
+        this.disciplinasSeeded = disciplinasSeeded;
+        this.turmasSeeded = turmasSeeded;
     }
 
-    public boolean isCreated() {
-        return created;
+    public boolean isAdminCreated() {
+        return adminCreated;
     }
 
-    public UserResponse getUser() {
-        return user;
+    public UserResponse getAdminUser() {
+        return adminUser;
+    }
+
+    public int getUsersSeeded() {
+        return usersSeeded;
+    }
+
+    public int getSemestresSeeded() {
+        return semestresSeeded;
+    }
+
+    public int getCursosSeeded() {
+        return cursosSeeded;
+    }
+
+    public int getDisciplinasSeeded() {
+        return disciplinasSeeded;
+    }
+
+    public int getTurmasSeeded() {
+        return turmasSeeded;
     }
 }

@@ -1,4 +1,4 @@
-package com.unisales.piemanager.user.repository;
+package com.unisales.piemanager.user;
 
 import com.unisales.piemanager.user.model.User;
 import java.util.Optional;

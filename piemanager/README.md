@@ -1,6 +1,10 @@
 # PIE Manager API
 
-API REST desenvolvida com Spring Boot para gerenciamento de usuarios, seguindo o padrao MVC, com autenticacao JWT, persistencia em SQLite, documentacao Swagger e resposta padronizada.
+O sistema é uma plataforma acadêmica completa para gerenciamento de projetos e apresentações universitárias, com autenticação de usuários e controle de acesso por perfil. A aplicação possui tela de login com validação de credenciais, persistência de sessão em localStorage e menu dinâmico conforme o tipo de usuário (aluno, professor, coordenador ou avaliador externo). O sistema também garante segurança básica ao impedir acesso às telas sem autenticação e disponibiliza funcionalidades de logout e navegação restrita por permissões.
+
+A plataforma contempla diversos módulos administrativos com operações de cadastro, edição, listagem e exclusão para cursos, períodos letivos, turmas, alunos, professores, coordenadores, avaliadores externos, grupos de projeto, projetos, estandes e horários de apresentação. Todos os módulos possuem validações específicas de negócio, como unicidade de dados, relacionamentos obrigatórios, restrições de exclusão quando houver vínculos ativos e mecanismos de busca e confirmação antes de remover registros. As informações são persistidas no localStorage, mantendo os dados disponíveis localmente no navegador.
+
+Além da gestão acadêmica, o sistema organiza todo o fluxo de projetos estudantis, permitindo formar grupos entre 2 e 6 alunos, associar orientadores, cadastrar projetos únicos por grupo, registrar avaliações com notas e comentários, além de controlar estandes e horários de apresentação sem conflitos. O objetivo central é oferecer uma solução integrada para administração de feiras, bancas e projetos acadêmicos, garantindo integridade dos dados, regras acadêmicas consistentes e uma experiência organizada para todos os perfis de usuários envolvidos.
 
 ## Padroes estabelecidos no projeto
 
@@ -36,8 +40,6 @@ No Linux/macOS:
 ```
 
 A API iniciara, por padrao, na porta `8080`.
-
-
 
 ## 3. Acessar Swagger
 Abra no navegador:
