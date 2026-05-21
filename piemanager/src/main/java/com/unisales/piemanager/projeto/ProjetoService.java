@@ -213,6 +213,54 @@ public class ProjetoService {
         return toResponse(projetoRepository.save(projeto));
     }
 
+    @Transactional
+    public ProjetoResponse addIntegrante(Long projetoId, Long alunoId, String actorEmail) {
+        Projeto projeto = getEntityById(projetoId);
+        User aluno = getUserById(alunoId, "User not found");
+
+        if (aluno.getProfile() != Profile.ALUNO) {
+            throw new BusinessException("Only ALUNO can be integrante of projeto");
+        }
+
+        if (!turmaRepository.existsByIdAndAlunosId(projeto.getTurma().getId(), aluno.getId())) {
+            throw new BusinessException("Aluno must belong to projeto turma");
+        }
+
+        if (projetoRepository.existsAlunoEmProjetoDaTurmaSemestreExcluindoProjeto(
+                projeto.getTurma().getId(), projeto.getSemestre().getId(), aluno.getId(), projeto.getId())) {
+            throw new BusinessException("Aluno already belongs to another projeto in turma and semestre");
+        }
+
+        boolean alreadyIntegrante = projeto.getIntegrantes().stream().anyMatch(u -> u.getId().equals(aluno.getId()));
+        if (alreadyIntegrante) {
+            throw new BusinessException("Aluno already belongs to this projeto");
+        }
+
+        projeto.getIntegrantes().add(aluno);
+        validateIntegranteCount(projeto.getIntegrantes());
+        projeto.setUpdatedBy(defaultActor(actorEmail));
+        return toResponse(projetoRepository.save(projeto));
+    }
+
+    @Transactional
+    public ProjetoResponse removeIntegrante(Long projetoId, Long alunoId, String actorEmail) {
+        Projeto projeto = getEntityById(projetoId);
+        User aluno = getUserById(alunoId, "User not found");
+
+        if (aluno.getProfile() != Profile.ALUNO) {
+            throw new BusinessException("Only ALUNO can be removed from projeto");
+        }
+
+        boolean removed = projeto.getIntegrantes().removeIf(u -> u.getId().equals(aluno.getId()));
+        if (!removed) {
+            throw new BusinessException("Aluno is not integrante of projeto");
+        }
+
+        validateIntegranteCount(projeto.getIntegrantes());
+        projeto.setUpdatedBy(defaultActor(actorEmail));
+        return toResponse(projetoRepository.save(projeto));
+    }
+
     @Transactional(readOnly = true)
     public Projeto getEntityById(Long id) {
         return projetoRepository.findById(id)
@@ -227,6 +275,11 @@ public class ProjetoService {
     @Transactional(readOnly = true)
     public boolean isAlunoIntegrante(Long projetoId, String email) {
         return projetoRepository.existsByIdAndIntegrantesEmailIgnoreCase(projetoId, normalizeEmail(email));
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isProfessorOrientador(Long projetoId, String email) {
+        return projetoRepository.existsByIdAndProfessorOrientadorEmailIgnoreCase(projetoId, normalizeEmail(email));
     }
 
     @Transactional(readOnly = true)

@@ -73,4 +73,6 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Long> {
     boolean existsByIdAndTurmaProfessoresEmailIgnoreCase(Long projetoId, String email);
 
     boolean existsByIdAndIntegrantesEmailIgnoreCase(Long projetoId, String email);
+
+    boolean existsByIdAndProfessorOrientadorEmailIgnoreCase(Long projetoId, String email);
 }

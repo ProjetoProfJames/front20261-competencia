@@ -3,6 +3,8 @@ package com.unisales.piemanager.avaliacao;
 import com.unisales.piemanager.avaliacao.dto.AvaliacaoCreateRequest;
 import com.unisales.piemanager.avaliacao.dto.AvaliacaoResponse;
 import com.unisales.piemanager.avaliacao.dto.AvaliacaoUpdateRequest;
+import com.unisales.piemanager.avaliacao.dto.ProjetoAvaliacaoCreateRequest;
+import com.unisales.piemanager.avaliacao.dto.ProjetoAvaliacaoUpdateRequest;
 import com.unisales.piemanager.avaliacao.model.Avaliacao;
 import com.unisales.piemanager.common.exception.BusinessException;
 import com.unisales.piemanager.common.exception.ResourceNotFoundException;
@@ -35,6 +37,31 @@ public class AvaliacaoService {
     public AvaliacaoResponse create(AvaliacaoCreateRequest request, String actorEmail) {
         Projeto projeto = projetoService.getEntityById(request.getProjetoId());
         User avaliador = getUserById(request.getAvaliadorId(), "Avaliador not found");
+
+        validateAvaliadorProfile(avaliador);
+        validateNota(request.getNota());
+
+        if (avaliacaoRepository.existsByProjetoIdAndAvaliadorId(projeto.getId(), avaliador.getId())) {
+            throw new BusinessException("Avaliador already evaluated this projeto");
+        }
+
+        Avaliacao avaliacao = new Avaliacao();
+        avaliacao.setProjeto(projeto);
+        avaliacao.setAvaliador(avaliador);
+        avaliacao.setNota(request.getNota());
+        avaliacao.setComentario(request.getComentario().trim());
+        avaliacao.setCreatedBy(defaultActor(actorEmail));
+        avaliacao.setUpdatedBy(defaultActor(actorEmail));
+
+        return toResponse(avaliacaoRepository.save(avaliacao));
+    }
+
+    @Transactional
+    public AvaliacaoResponse createByProjeto(Long projetoId,
+                                             ProjetoAvaliacaoCreateRequest request,
+                                             String actorEmail) {
+        Projeto projeto = projetoService.getEntityById(projetoId);
+        User avaliador = getUserByEmail(actorEmail, "Avaliador not found");
 
         validateAvaliadorProfile(avaliador);
         validateNota(request.getNota());
@@ -101,8 +128,32 @@ public class AvaliacaoService {
     }
 
     @Transactional
+    public AvaliacaoResponse updateByProjeto(Long projetoId,
+                                             Long avaliacaoId,
+                                             ProjetoAvaliacaoUpdateRequest request,
+                                             String actorEmail) {
+        Avaliacao avaliacao = getEntityByIdAndProjetoId(avaliacaoId, projetoId);
+
+        validateNota(request.getNota());
+        avaliacao.setNota(request.getNota());
+
+        if (request.getComentario() != null && !request.getComentario().isBlank()) {
+            avaliacao.setComentario(request.getComentario().trim());
+        }
+
+        avaliacao.setUpdatedBy(defaultActor(actorEmail));
+        return toResponse(avaliacaoRepository.save(avaliacao));
+    }
+
+    @Transactional
     public void delete(Long id) {
         Avaliacao avaliacao = getEntityById(id);
+        avaliacaoRepository.delete(avaliacao);
+    }
+
+    @Transactional
+    public void deleteByProjeto(Long projetoId, Long avaliacaoId) {
+        Avaliacao avaliacao = getEntityByIdAndProjetoId(avaliacaoId, projetoId);
         avaliacaoRepository.delete(avaliacao);
     }
 
@@ -112,8 +163,20 @@ public class AvaliacaoService {
     }
 
     @Transactional(readOnly = true)
+    public boolean isOwnerAvaliadorByProjeto(Long projetoId, Long avaliacaoId, String email) {
+        return avaliacaoRepository.existsByIdAndProjetoIdAndAvaliadorEmailIgnoreCase(
+                avaliacaoId, projetoId, normalizeEmail(email));
+    }
+
+    @Transactional(readOnly = true)
     public Avaliacao getEntityById(Long id) {
         return avaliacaoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Avaliacao not found"));
+    }
+
+    @Transactional(readOnly = true)
+    public Avaliacao getEntityByIdAndProjetoId(Long avaliacaoId, Long projetoId) {
+        return avaliacaoRepository.findByIdAndProjetoId(avaliacaoId, projetoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Avaliacao not found"));
     }
 
@@ -150,6 +213,11 @@ public class AvaliacaoService {
 
     private User getUserById(Long id, String notFoundMessage) {
         return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(notFoundMessage));
+    }
+
+    private User getUserByEmail(String email, String notFoundMessage) {
+        return userRepository.findByEmail(normalizeEmail(email))
+                .orElseThrow(() -> new ResourceNotFoundException(notFoundMessage));
     }
 
     private AvaliacaoResponse.IdNome toIdNome(Long id, String nome) {

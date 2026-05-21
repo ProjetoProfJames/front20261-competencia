@@ -1,6 +1,7 @@
 package com.unisales.piemanager.turma;
 
 import com.unisales.piemanager.common.api.ApiResponse;
+import com.unisales.piemanager.turma.dto.TurmaAlunoRequest;
 import com.unisales.piemanager.turma.dto.TurmaCreateRequest;
 import com.unisales.piemanager.turma.dto.TurmaResponse;
 import com.unisales.piemanager.turma.dto.TurmaUpdateRequest;
@@ -66,5 +67,23 @@ public class TurmaController {
     public ApiResponse<TurmaResponse> matricular(@PathVariable Long id, Authentication authentication) {
         String email = authentication != null ? authentication.getName() : "";
         return ApiResponse.success("Matricula created", turmaService.matricularAluno(id, email));
+    }
+
+    @PostMapping("/{id}/alunos")
+    @PreAuthorize("hasAnyRole('PROFESSOR','COORDENADOR','ADMIN')")
+    public ApiResponse<TurmaResponse> addAluno(@PathVariable Long id,
+                                               @Valid @RequestBody TurmaAlunoRequest request,
+                                               Authentication authentication) {
+        String actor = authentication != null ? authentication.getName() : "system";
+        return ApiResponse.success("Aluno added to turma", turmaService.addAluno(id, request.getAlunoId(), actor));
+    }
+
+    @DeleteMapping("/{id}/alunos/{alunoId}")
+    @PreAuthorize("hasAnyRole('PROFESSOR','COORDENADOR','ADMIN')")
+    public ApiResponse<TurmaResponse> removeAluno(@PathVariable Long id,
+                                                  @PathVariable Long alunoId,
+                                                  Authentication authentication) {
+        String actor = authentication != null ? authentication.getName() : "system";
+        return ApiResponse.success("Aluno removed from turma", turmaService.removeAluno(id, alunoId, actor));
     }
 }

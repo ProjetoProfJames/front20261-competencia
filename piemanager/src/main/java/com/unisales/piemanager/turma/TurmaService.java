@@ -146,6 +146,47 @@ public class TurmaService {
         return toResponse(turmaRepository.save(turma));
     }
 
+    @Transactional
+    public TurmaResponse addAluno(Long turmaId, Long alunoId, String actor) {
+        Turma turma = getEntityById(turmaId);
+
+        User aluno = userRepository.findById(alunoId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (aluno.getProfile() != Profile.ALUNO) {
+            throw new BusinessException("Only ALUNO profile can be added to turma");
+        }
+
+        boolean alreadyEnrolled = turma.getAlunos().stream().anyMatch(u -> u.getId().equals(aluno.getId()));
+        if (alreadyEnrolled) {
+            throw new BusinessException("Aluno already enrolled in turma");
+        }
+
+        turma.getAlunos().add(aluno);
+        turma.setUpdatedBy(defaultActor(actor));
+        return toResponse(turmaRepository.save(turma));
+    }
+
+    @Transactional
+    public TurmaResponse removeAluno(Long turmaId, Long alunoId, String actor) {
+        Turma turma = getEntityById(turmaId);
+
+        User aluno = userRepository.findById(alunoId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (aluno.getProfile() != Profile.ALUNO) {
+            throw new BusinessException("Only ALUNO profile can be removed from turma");
+        }
+
+        boolean removed = turma.getAlunos().removeIf(u -> u.getId().equals(aluno.getId()));
+        if (!removed) {
+            throw new BusinessException("Aluno is not enrolled in turma");
+        }
+
+        turma.setUpdatedBy(defaultActor(actor));
+        return toResponse(turmaRepository.save(turma));
+    }
+
     @Transactional(readOnly = true)
     public Turma getEntityById(Long id) {
         return turmaRepository.findById(id)
