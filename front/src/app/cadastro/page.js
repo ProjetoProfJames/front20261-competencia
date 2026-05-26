@@ -1,41 +1,78 @@
 'use client';
 import { useState } from "react";
-import  Button  from "@/components/Button";
+import { useRouter } from "next/navigation";
+import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
+import { fetchApi } from "@/services/api"
 
 export default function CadastroPage() {
-  const [user, setUser] = useState({ email: "", password: "" });
+  const router = useRouter();
+  const [user, setUser] = useState({ username: "", email: "", password: "", profile: "ADMIN" });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser((prevUser) => ({ ...prevUser, [name]: value }));
   };
 
-  const authenticate = () => {
-    // Lógica de autenticação aquija ajuste
-    console.log("Autenticando usuário:", user);
-  };
+    const handleRegister = async () => {
+        setError("");
+        setIsLoading(true);
 
-    const loadBootstrap = () => {
-        fetch("http://localhost:8080/api/public/bootstrap")
-            .then((response) => response.json())
-            .then((data) => console.log("Bootstrap carregado:", data))
-            .catch((error) => console.error("Erro ao carregar Bootstrap:", error));
+        try {
+        await fetchApi("/users", {
+            method: "POST",
+            body: user,
+        });
+
+        const loginData = await fetchApi("/auth/login", {
+        method: "POST",
+        body: { email: user.email, password: user.password },
+        });
+        
+        localStorage.setItem("token", loginData.token);
+
+        alert("Cadastro realizado com sucesso!");
+        router.push("/menu");
+        } catch (err) {
+        setError(err.message);
+        } finally {
+        setIsLoading(false);
+        }
     };
 
   return (
     <main className="main">
       <section className="card">
         <header>
-            <h1>Cadastre-se</h1>
+          <h1>Cadastre-se</h1>
         </header>
 
+        {error && <p className="error-message">{error}</p>}
+
+        <FormInput label="Nome de Usuário" type="text" name="username" value={user.username} onChange={handleChange} />
         <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-        <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
+        <FormInput label="Senha" type="password" name="password" value={user.password} onChange={handleChange} />
         
-        <Button type="submit" onClick={authenticate}>Login</Button>
-        <Link type="button" onClick={() => console.log("Redirecionar para cadastro")}>Cadastrar</Link>
-        <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
+        <div className="input-group">
+          <label>Perfil</label>
+          <select name="profile" value={user.profile} onChange={handleChange} className="form-select">
+            <option value="ALUNO">Aluno</option>
+            <option value="PROFESSOR">Professor</option>
+            <option value="COORDENADOR">Coordenador</option>
+            <option value="AVALIADOR_EXTERNO">Avaliador Externo</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </div>
+        
+        <div className="actions">
+          <Button type="button" onClick={handleRegister}>
+            {isLoading ? "Cadastrando..." : "Confirmar Cadastro"}
+          </Button>
+          
+          <Button href="/">Voltar para o Login</Button>
+        </div>
       </section>
     </main>
   );

@@ -1,17 +1,17 @@
 import Link from "next/link";
 
-export default function Button({ type, onClick, href, children }) {
+export default function Button({ type, onClick, href, children, ...props }) {
 
-  if (href) {
+if (href) {
     return (
-      <Link href={href} className="btn-custom">
+      <Link href={href} className="btn-custom" onClick={onClick} {...props}>
         {children}
       </Link>
     );
   }
 
   return (
-    <button type={type} onClick={onClick} className="btn-custom">
+    <button type={type} onClick={onClick} className="btn-custom" {...props}>
       {children}
     </button>
   );
