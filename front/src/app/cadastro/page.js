@@ -3,7 +3,7 @@ import { useState } from "react";
 import  Button  from "@/components/Button";
 import FormInput from "@/components/FormInput";
 
-export default function LoginPage() {
+export default function CadastroPage() {
   const [user, setUser] = useState({ email: "", password: "" });
 
   const handleChange = (e) => {
@@ -12,7 +12,7 @@ export default function LoginPage() {
   };
 
   const authenticate = () => {
-    // Lógica de autenticação aqui
+    // Lógica de autenticação aquija ajuste
     console.log("Autenticando usuário:", user);
   };
 
@@ -24,13 +24,19 @@ export default function LoginPage() {
     };
 
   return (
-    <div>
-      <h1>Login</h1>
-      <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-      <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
-      <Button type="submit" onClick={authenticate}>Login</Button>
-      <Button type="button" onClick={() => console.log("Redirecionar para cadastro")}>Cadastrar</Button>
-      <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
-    </div>
+    <main className="main">
+      <section className="card">
+        <header>
+            <h1>Cadastre-se</h1>
+        </header>
+
+        <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
+        <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
+        
+        <Button type="submit" onClick={authenticate}>Login</Button>
+        <Link type="button" onClick={() => console.log("Redirecionar para cadastro")}>Cadastrar</Link>
+        <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
+      </section>
+    </main>
   );
 }
