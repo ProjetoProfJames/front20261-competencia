@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
-import { fetchApi } from "@/services/api"
+import { api } from "@/services/api";
 
 export default function CadastroPage() {
   const router = useRouter();
@@ -21,14 +21,11 @@ export default function CadastroPage() {
         setIsLoading(true);
 
         try {
-        await fetchApi("/users", {
-            method: "POST",
-            body: user,
-        });
+        await api.post("/users", user);
 
-        const loginData = await fetchApi("/auth/login", {
-        method: "POST",
-        body: { email: user.email, password: user.password },
+        const loginData = await api.post("/auth/login", {
+          email: user.email,
+          password: user.password
         });
         
         localStorage.setItem("token", loginData.token);

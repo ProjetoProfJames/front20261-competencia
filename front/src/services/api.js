@@ -38,9 +38,23 @@ export async function fetchApi(endpoint, options = {}) {
       throw new Error(data?.message || "Erro na comunicação com o servidor.");
     }
 
-    return data;
+    return data;  
   } catch (error) {
     console.error(`Erro na requisição [${config.method}] ${endpoint}:`, error);
     throw error;
-  }
+  } 
 }
+
+  export const api = {
+    get: (endpoint, options = {}) => 
+      fetchApi(endpoint, { ...options, method: "GET" }),
+
+    post: (endpoint, body, options = {}) => 
+      fetchApi(endpoint, { ...options, method: "POST", body }),
+
+    put: (endpoint, body, options = {}) => 
+      fetchApi(endpoint, { ...options, method: "PUT", body }),
+
+    delete: (endpoint, options = {}) => 
+      fetchApi(endpoint, { ...options, method: "DELETE" }),
+  };

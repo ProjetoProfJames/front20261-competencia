@@ -2,7 +2,7 @@
 import { useState } from "react";
 import  Button  from "@/components/Button";
 import FormInput from "@/components/FormInput";
-import { fetchApi } from "@/services/api";
+import { api } from "@/services/api";
 import { useRouter } from "next/navigation";
 import "./global.css";
 
@@ -19,11 +19,11 @@ export default function LoginPage() {
 
   const authenticate = async () => {
     setError("");
-    try {
-      const data = await fetchApi("/auth/login", {
-        method: "POST",
-        body: { email: user.email, password: user.password },
-      });
+      try {
+        const data = await api.post("/auth/login", { 
+          email: user.email, 
+          password: user.password 
+        });
 
       console.log("Resposta completa da API:", data);
 
@@ -39,12 +39,14 @@ export default function LoginPage() {
     }
   };
 
-    const loadBootstrap = () => {
-        fetch("http://localhost:8080/api/public/bootstrap")
-            .then((response) => response.json())
-            .then((data) => console.log("Bootstrap carregado:", data))
-            .catch((error) => console.error("Erro ao carregar Bootstrap:", error));
-    };
+  const loadBootstrap = async () => {
+    try {
+      const data = await api.post("/public/bootstrap", null);
+      console.log("Bootstrap carregado:", data);
+    } catch (error) {
+      console.error("Erro completo capturado:", error);
+    }
+  };
 
   return (
     <main className="main">
@@ -60,7 +62,7 @@ export default function LoginPage() {
         
         <div className="actions">
           <Button onClick={authenticate}>Login</Button>
-          <Button href="/cadastro" >Cadastrar</Button>
+          {/*<Button href="/cadastro" >Cadastrar</Button>*/}
           <Button onClick={loadBootstrap}>Carregar Bootstrap</Button>
         </div>
       </section>
