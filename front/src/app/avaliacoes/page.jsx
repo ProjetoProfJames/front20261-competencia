@@ -6,6 +6,7 @@ import "../styles/avaliacoes.css"
 export default function AvaliacoesPage() {
 
   const [projetos, setProjetos] = useState([])
+  const [avaliadores, setAvaliadores] = useState([])
 
   const [form, setForm] = useState({
     projetoId: "",
@@ -14,9 +15,15 @@ export default function AvaliacoesPage() {
   })
 
   useEffect(() => {
+
     fetch("/api/projetos")
       .then(res => res.json())
       .then(data => setProjetos(data))
+
+    fetch("/api/avaliadores")
+      .then(res => res.json())
+      .then(data => setAvaliadores(data))
+
   }, [])
 
   function handleChange(e) {
@@ -33,40 +40,53 @@ export default function AvaliacoesPage() {
       return
     }
 
+    if (!form.avaliador) {
+      alert("Selecione um avaliador")
+      return
+    }
+
     if (form.nota < 0 || form.nota > 10) {
       alert("Nota deve ser entre 0 e 10")
       return
     }
 
-    await fetch("/api/avaliacoes", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        projetoId: form.projetoId,
-        avaliador: form.avaliador,
-        nota: Number(form.nota)
+    try {
+
+      await fetch("/api/avaliacoes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          projetoId: Number(form.projetoId),
+          avaliadorId: Number(form.avaliador),
+          nota: Number(form.nota)
+        })
       })
-    })
 
-    alert("Avaliação salva!")
+      alert("Avaliação salva!")
 
-    setForm({
-      projetoId: "",
-      avaliador: "",
-      nota: ""
-    })
+      setForm({
+        projetoId: "",
+        avaliador: "",
+        nota: ""
+      })
+
+    } catch(error){
+      console.error(error)
+      alert("Erro ao salvar avaliação")
+    }
   }
 
   return (
     <div className="container">
 
-      <h1 className="title">Avaliações de Projetos</h1>
+      <h1 className="title">
+        AVALIAÇÕES DE PROJETOS
+      </h1>
 
       <div className="content">
 
-        {}
         <div className="formContainer">
 
           <select
@@ -75,22 +95,43 @@ export default function AvaliacoesPage() {
             value={form.projetoId}
             onChange={handleChange}
           >
-            <option value="">Selecione o projeto</option>
+            <option value="">
+              Selecione o projeto
+            </option>
 
             {projetos.map(p => (
-              <option key={p.id} value={p.id}>
+              <option
+                key={p.id}
+                value={p.id}
+              >
                 {p.titulo}
               </option>
             ))}
+
           </select>
 
-          <input
-            className="input"
+
+          <select
+            className="select"
             name="avaliador"
-            placeholder="Nome do avaliador"
             value={form.avaliador}
             onChange={handleChange}
-          />
+          >
+            <option value="">
+              Selecione o avaliador
+            </option>
+
+            {avaliadores.map(a => (
+              <option
+                key={a.id}
+                value={a.id}
+              >
+                {a.nome}
+              </option>
+            ))}
+
+          </select>
+
 
           <input
             className="input"
@@ -101,7 +142,10 @@ export default function AvaliacoesPage() {
             onChange={handleChange}
           />
 
-          <button className="button" onClick={salvar}>
+          <button
+            className="button"
+            onClick={salvar}
+          >
             Salvar Avaliação
           </button>
 
@@ -112,27 +156,40 @@ export default function AvaliacoesPage() {
           <table className="table">
 
             <thead>
+
               <tr>
                 <th>Projeto</th>
                 <th>Grupo</th>
                 <th>Professor</th>
                 <th>Nota</th>
               </tr>
+
             </thead>
 
             <tbody>
 
               {projetos.map(p => (
+
                 <tr key={p.id}>
+
                   <td>{p.titulo}</td>
-                  <td>{p.grupo?.nome}</td>
-                  <td>{p.grupo?.professor?.nome}</td>
+
+                  <td>
+                    {p.grupo?.nome || "-"}
+                  </td>
+
+                  <td>
+                    {p.grupo?.professor?.nome || "-"}
+                  </td>
+
                   <td>
                     <span className="nota">
                       {p.nota ?? "-"}
                     </span>
                   </td>
+
                 </tr>
+
               ))}
 
             </tbody>
