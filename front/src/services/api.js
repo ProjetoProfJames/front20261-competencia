@@ -1,28 +1,30 @@
 const BASE_URL = "http://localhost:8080/api";
 
 export async function fetchApi(endpoint, options = {}) {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  let token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-    const headers = {
+  const headers = {
     "Content-Type": "application/json",
     ...options.headers,
-    };
+  };
 
-    if (token) {
+  if (token) {
     headers["Authorization"] = `Bearer ${token}`;
-    }
+  }
 
   const config = {
+    ...options,
     method: options.method || "GET",
     headers,
-    ...options,
   };
 
   if (options.body && typeof options.body === "object") {
     config.body = JSON.stringify(options.body);
   }
+
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
+    
     if (response.status === 401) {
       console.warn("Sessão expirada. Faça login novamente.");
       if (typeof window !== "undefined") {
@@ -35,7 +37,8 @@ export async function fetchApi(endpoint, options = {}) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      throw new Error(data?.message || "Erro na comunicação com o servidor.");
+      console.error(`❌ Erro HTTP ${response.status} no endpoint ${endpoint}`, data);
+      throw new Error(data?.message || `Erro ${response.status}: Comunicação com o servidor falhou.`);
     }
 
     return data;  
@@ -45,16 +48,16 @@ export async function fetchApi(endpoint, options = {}) {
   } 
 }
 
-  export const api = {
-    get: (endpoint, options = {}) => 
-      fetchApi(endpoint, { ...options, method: "GET" }),
+export const api = {
+  get: (endpoint, options = {}) => 
+    fetchApi(endpoint, { ...options, method: "GET" }),
 
-    post: (endpoint, body, options = {}) => 
-      fetchApi(endpoint, { ...options, method: "POST", body }),
+  post: (endpoint, body, options = {}) => 
+    fetchApi(endpoint, { ...options, method: "POST", body }),
 
-    put: (endpoint, body, options = {}) => 
-      fetchApi(endpoint, { ...options, method: "PUT", body }),
+  put: (endpoint, body, options = {}) => 
+    fetchApi(endpoint, { ...options, method: "PUT", body }),
 
-    delete: (endpoint, options = {}) => 
-      fetchApi(endpoint, { ...options, method: "DELETE" }),
-  };
+  delete: (endpoint, options = {}) => 
+    fetchApi(endpoint, { ...options, method: "DELETE" }),
+};

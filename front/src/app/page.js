@@ -27,7 +27,11 @@ export default function LoginPage() {
 
       console.log("Resposta completa da API:", data);
 
-      localStorage.setItem("token", data.token);
+      const token = data.data?.accessToken;
+
+      if (token) {
+        localStorage.setItem("token", token);
+      }
 
       console.log("Autenticado com sucesso!");
 
@@ -62,7 +66,6 @@ export default function LoginPage() {
         
         <div className="actions">
           <Button onClick={authenticate}>Login</Button>
-          {/*<Button href="/cadastro" >Cadastrar</Button>*/}
           <Button onClick={loadBootstrap}>Carregar Bootstrap</Button>
         </div>
       </section>
