@@ -37,7 +37,7 @@ export async function fetchApi(endpoint, options = {}) {
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
-      console.error(`❌ Erro HTTP ${response.status} no endpoint ${endpoint}`, data);
+      console.error(`Erro HTTP ${response.status} no endpoint ${endpoint}`, data);
       throw new Error(data?.message || `Erro ${response.status}: Comunicação com o servidor falhou.`);
     }
 

@@ -6,11 +6,16 @@ import PageLayout from '@/components/PageLayout';
 import RoleGuard from '@/components/RoleGuard';
 
 export default function MenuPrincipal() {
-  const [userProfile, setUserProfile] = useState('ADMIN'); 
+  const [userProfile, setUserProfile] = useState(''); 
 
   useEffect(() => {
-    //const profile = localStorage.getItem("userProfile") || 'ALUNO';
-    //setUserProfile(profile);
+    if (typeof window !== "undefined") {
+      const profileSalvo = localStorage.getItem("userProfile"); 
+      
+      if (profileSalvo) {
+        setUserProfile(profileSalvo);
+      }
+    }
   }, []);
 
   const opcoesMenu = [
@@ -23,7 +28,7 @@ export default function MenuPrincipal() {
     { nome: 'Períodos Letivos', path: '/periodos-letivos', roles: ['ADMIN'] },
     { nome: 'Turmas', path: '/turmas', roles: ['ADMIN', 'COORDENADOR'] },
     { nome: 'Grupos', path: '/grupos', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR'] },
-    { nome: 'Projetos', path: '/projetos', roles: ['ALUNO'] },
+    { nome: 'Projetos', path: '/projetos', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO'] },
     { nome: 'Avaliação de Projetos', path: '/avaliacao-projetos', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'AVALIADOR_EXTERNO'] },
   ];
 
@@ -36,31 +41,22 @@ export default function MenuPrincipal() {
   };
 
   return (
-    <PageLayout
-      title="Sistema de Gestão Competência"
-      subtitle="Selecione uma opção abaixo para navegar"
-      topRightAction={
-        <RoleGuard allowedRoles={['ADMIN']} userRole={userProfile}>
-          <Button href="/cadastro" className="btn-secondary">
-            Cadastrar Usuário
+      <PageLayout
+        title="Sistema de Gestão Competência"
+        subtitle="Selecione uma opção abaixo para navegar"
+        bottomLeftAction={
+          <Button href="/" onClick={handleLogout} className="btn-danger">
+            Sair (Logout)
           </Button>
-        </RoleGuard>
-      }
-      bottomLeftAction={
-        <Button href="/" onClick={handleLogout} className="btn-danger">
-          Sair (Logout)
-        </Button>
-      }
-    >
-      <div className="grid-menu">
-        {opcoesMenu.map((opcao, index) => (
-          <RoleGuard key={index} allowedRoles={opcao.roles} userRole={userProfile}>
-            <Button href={opcao.path}>
+        }
+      >
+        <div className="grid-menu">
+          {menuPermitido.map((opcao, index) => (
+            <Button key={index} href={opcao.path}>
               <span className="texto-botao">{opcao.nome}</span>
             </Button>
-          </RoleGuard>
-        ))}
-      </div>
-    </PageLayout>
-  );
-}
+          ))}
+        </div>
+      </PageLayout>
+    );
+  }

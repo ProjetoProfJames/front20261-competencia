@@ -27,15 +27,24 @@ export default function LoginPage() {
 
       console.log("Resposta completa da API:", data);
 
-      const token = data.data?.accessToken;
+      const token = data.data?.accessToken || data.accessToken;
+      const userData = data.data?.user || data.user;
 
-      if (token) {
-        localStorage.setItem("token", token);
-      }
+    if (token) {
+            localStorage.setItem("token", token);
+            
+            if (userData && userData.profile) {
+              localStorage.setItem("userProfile", userData.profile);
+              localStorage.setItem("userName", userData.username);
+              console.log("4. Perfil salvo com sucesso:", userData.profile);
+            } else {
+              console.warn("Atenção: userData não foi encontrado na resposta!");
+            }
 
-      console.log("Autenticado com sucesso!");
-
-      router.push("/menu");
+          router.push("/menu");
+          } else {
+            setError("Erro: Token não retornado pela API.");
+          }
 
     } catch (err) {
       console.error("Falha no login:", err.message);

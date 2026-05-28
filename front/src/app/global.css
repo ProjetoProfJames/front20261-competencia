@@ -147,7 +147,6 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   text-decoration: none;
-  color: #333;
   font-weight: 600;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   transition: transform 0.2s, box-shadow 0.2s;
@@ -175,3 +174,46 @@
 .btn-secondary {
   text-decoration: none;
 }
+
+.table-wrapper {
+  width: 100%;
+  max-width: 900px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-top: 1rem;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.custom-table th, .custom-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.custom-table th {
+  background-color: #f4f4f4;
+  font-weight: 600;
+}
+
+.table-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.top-left-welcome {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 1.9rem;
+  font-weight: 600;
+  
+}
+
