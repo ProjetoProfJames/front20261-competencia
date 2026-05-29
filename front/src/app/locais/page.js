@@ -105,7 +105,7 @@ export default function LocaisPage() {
             
             <div className="form-group">
               <FormInput 
-                label="Número/Nome" 
+                label="Nome" 
                 type="text" 
                 name="editNumero" 
                 value={editNumero} 

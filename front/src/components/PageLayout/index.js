@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import '../../app/global.css'; // Ajuste o caminho se necessário
+import '../../app/global.css';
 
 export default function PageLayout({ 
   title, 

@@ -43,7 +43,7 @@ export default function CadastroPage() {
       await api.post("/users", user);
 
       alert("Usuário cadastrado com sucesso!");
-      router.push("/menu");
+      router.back();
     } catch (err) {
       console.log("Erro capturado no componente:", err);
       
@@ -96,7 +96,7 @@ export default function CadastroPage() {
           <Button type="button" onClick={handleRegister}>
             {isLoading ? "Cadastrando..." : "Confirmar Cadastro"}
           </Button>
-          <Button href="/menu">Voltar</Button>
+          <Button type="button" onClick={() => router.back()} className="btn-danger">Voltar</Button>
         </div>
       </section>
     </main>
