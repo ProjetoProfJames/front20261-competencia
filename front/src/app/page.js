@@ -1,9 +1,8 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
-    <>
-    <div>Home</div>
-    </>
+    <div>
+      <h1>Painel de Controle</h1>
+      <p>Bem-vindo ao Sistema de Gestão de Projetos Integradores.</p>
+    </div>
   );
 }
