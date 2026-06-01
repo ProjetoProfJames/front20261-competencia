@@ -85,6 +85,13 @@ a {
 	margin-bottom: 8px;
 }
 
+.auth-card__brand {
+	display: grid;
+	justify-items: center;
+	text-align: center;
+	margin-bottom: 18px;
+}
+
 .auth-card__header img {
 	width: 54px;
 	height: 54px;
@@ -125,7 +132,8 @@ a {
 
 .auth-actions {
 	margin-top: 6px;
-	justify-content: space-between;
+	display: grid;
+	gap: 12px;
 }
 
 .auth-card__footer {

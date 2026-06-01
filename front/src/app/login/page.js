@@ -9,6 +9,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [user, setUser] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [bootstrapping, setBootstrapping] = useState(false);
   const [notice, setNotice] = useState("");
 
   const handleChange = (e) => {
@@ -54,19 +55,19 @@ export default function LoginPage() {
   };
 
   const loadBootstrap = async () => {
-    setLoading(true);
+    setBootstrapping(true);
     setNotice("");
 
     try {
-      await apiRequest("/api/public/bootstrap", {
+      const result = await apiRequest("/api/public/bootstrap", {
         method: "POST",
       });
 
-      setNotice("Bootstrap executado com sucesso");
+      setNotice(result?.adminCreated ? "Acesso de teste criado com sucesso" : "O acesso de teste já existia");
     } catch (error) {
       setNotice(error.message || "Erro ao carregar bootstrap");
     } finally {
-      setLoading(false);
+      setBootstrapping(false);
     }
   };
 
@@ -84,6 +85,9 @@ export default function LoginPage() {
           {notice ? <div className="notice-box">{notice}</div> : null}
 
           <div className="auth-actions">
+            <Button type="button" variant="secondary" onClick={loadBootstrap} disabled={loading || bootstrapping} fullWidth>
+              {bootstrapping ? "Criando acesso..." : "Criar acesso de teste"}
+            </Button>
             <Button type="submit" disabled={loading} fullWidth>
               {loading ? "Entrando..." : "Entrar"}
             </Button>
