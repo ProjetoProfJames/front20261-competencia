@@ -13,9 +13,7 @@ export default function UsersPage() {
   async function loadUsers() {
     try {
       const response = await getUsers();
-
       setUsers(response.data);
-
     } catch (error) {
       console.error(error);
     }
@@ -24,9 +22,7 @@ export default function UsersPage() {
   async function handleDelete(id) {
     try {
       await deleteUser(id);
-
       loadUsers();
-
     } catch (error) {
       console.error(error);
     }
@@ -68,9 +64,7 @@ export default function UsersPage() {
                   Editar
                 </Link>
 
-                <button
-                  onClick={() => handleDelete(user.id)}
-                >
+                <button onClick={() => handleDelete(user.id)}>
                   Excluir
                 </button>
               </td>
