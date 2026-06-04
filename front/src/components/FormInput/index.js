@@ -1,8 +1,8 @@
 export default function FormInput({ label, type, name, value, onChange }) {
   return (
-    <div>
+    <div class="form-group">
       <label>{label}</label>
-      <input type={type} name={name} value={value} onChange={onChange} />
+      <input class="input-field" type={type} name={name} value={value} onChange={onChange} />
     </div>
   );
 }

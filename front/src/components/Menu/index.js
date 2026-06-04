@@ -29,6 +29,7 @@ export default function Menu() {
         <button onClick={handleLogout} style={{ marginLeft: "1rem" }}>Logout</button>
       </div>
       <div>
+        <Link href="/" style={{ marginRight: "1rem" }}>Início</Link>
         <Link href="/usuarios" style={{ marginRight: "1rem" }}>Usuários</Link>
         <Link href="/locais">Locais de Apresentação</Link>
       </div>
