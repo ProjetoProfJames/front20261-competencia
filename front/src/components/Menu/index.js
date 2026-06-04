@@ -3,29 +3,33 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function Menu() {
-  const [user, setUser] = useState(null);
+  const [displayName, setDisplayName] = useState("");
+  const [hasToken, setHasToken] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("userData");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const token = localStorage.getItem("token");
+    const savedName = localStorage.getItem("user_display_name");
+    
+    if (token) {
+      setHasToken(true);
+      setDisplayName(savedName || "Usuário");
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("userData");
+    localStorage.removeItem("user_display_name");
     window.location.href = "/login";
   };
 
-  if (!user) {
+  if (!hasToken) {
     return null;
   }
 
   return (
     <nav style={{ display: "flex", justifyContent: "space-between", padding: "1rem", borderBottom: "1px solid #ccc" }}>
       <div>
-        <span>Olá, {user.email}</span>
+        <span>Olá, {displayName}</span>
         <button onClick={handleLogout} style={{ marginLeft: "1rem" }}>Logout</button>
       </div>
       <div>

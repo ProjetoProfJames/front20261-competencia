@@ -7,16 +7,23 @@ export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState([]);
   const [form, setForm] = useState({ id: null, nome: "", email: "", senha: "", tipo: "ALUNO" });
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const fetchUsuarios = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/usuarios", {
+      const response = await fetch("/api/users", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
-        const data = await response.json();
-        setUsuarios(data);
+        const resBody = await response.json();
+        if (resBody && resBody.data && Array.isArray(resBody.data)) {
+          setUsuarios(resBody.data);
+        } else if (Array.isArray(resBody)) {
+          setUsuarios(resBody);
+        } else {
+          setUsuarios([]);
+        }
       }
     } catch (err) {
       setError("Erro ao buscar usuários do servidor.");
@@ -40,6 +47,7 @@ export default function UsuariosPage() {
   const handleSalvar = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
 
     if (!form.nome || !form.email || (!form.id && !form.senha)) {
       setError("Por favor, preencha todos os campos obrigatórios.");
@@ -48,8 +56,23 @@ export default function UsuariosPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = form.id ? `/api/usuarios/${form.id}` : "/api/usuarios";
+      const url = form.id ? `/api/users/${form.id}` : "/api/users";
       const method = form.id ? "PUT" : "POST";
+
+      const payload = form.id 
+        ? {
+            name: form.nome,
+            username: form.nome,
+            email: form.email,
+            profile: form.tipo
+          }
+        : {
+            name: form.nome,
+            username: form.nome,
+            email: form.email,
+            password: form.senha,
+            profile: form.tipo
+          };
 
       const response = await fetch(url, {
         method: method,
@@ -57,17 +80,14 @@ export default function UsuariosPage() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
-          nome: form.nome,
-          email: form.email,
-          senha: form.senha || undefined,
-          tipo: form.tipo
-        })
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
+        setSuccessMessage("Registro salvo com sucesso!");
         setForm({ id: null, nome: "", email: "", senha: "", tipo: "ALUNO" });
         fetchUsuarios();
+        setTimeout(() => setSuccessMessage(""), 4000);
       } else {
         setError("Erro ao salvar o registro no servidor.");
       }
@@ -77,18 +97,42 @@ export default function UsuariosPage() {
   };
 
   const handleEditar = (usuario) => {
-    setForm({ id: usuario.id, nome: usuario.nome, email: usuario.email, senha: "", tipo: usuario.tipo });
+    setForm({ 
+      id: usuario.id, 
+      nome: usuario.username || usuario.name || "", 
+      email: usuario.email || "", 
+      senha: "", 
+      tipo: usuario.profile || usuario.tipo || "ALUNO" 
+    });
   };
 
-  const handleExcluir = async (id) => {
+  const handleExcluir = async (usuario) => {
+    setError("");
+    setSuccessMessage("");
+
+    const emailAlvo = usuario.email || "";
+
+    if (emailAlvo === "admin@unisales.br") {
+      setError("Segurança do Sistema: Não é permitido excluir o usuário Administrador master.");
+      return;
+    }
+
+    const nomeExibicao = usuario.username || emailAlvo;
+    const confirmacao = window.confirm(`Deseja realmente excluir o usuário ${nomeExibicao}?`);
+    if (!confirmacao) return;
+
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/usuarios/${id}`, {
+      const response = await fetch(`/api/users/${usuario.id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
+        setSuccessMessage("Registro excluído com sucesso!");
         fetchUsuarios();
+        setTimeout(() => setSuccessMessage(""), 4000);
+      } else {
+        setError("Erro ao excluir o registro no servidor.");
       }
     } catch (err) {
       setError("Erro ao excluir registro.");
@@ -96,11 +140,13 @@ export default function UsuariosPage() {
   };
 
   return (
-    <div className="container">
+    <div className="container container-flex-layout">
       <h1>Gerenciamento de Usuários</h1>
-      <form onSubmit={handleSalvar} className="card" style={{ maxWidth: "100%", margin: "1rem 0" }}>
+      
+      <form onSubmit={handleSalvar} className="card form-full-width">
         <h2>{form.id ? "Editar Usuário" : "Novo Usuário"}</h2>
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="alert-message error-box">{error}</div>}
+        {successMessage && <div className="alert-message success-box">{successMessage}</div>}
         <FormInput label="Nome" type="text" name="nome" value={form.nome} onChange={handleChange} />
         <FormInput label="Email" type="email" name="email" value={form.email} onChange={handleChange} />
         {!form.id && <FormInput label="Senha" type="password" name="senha" value={form.senha} onChange={handleChange} />}
@@ -115,31 +161,41 @@ export default function UsuariosPage() {
         </div>
         <Button type="submit">{form.id ? "Atualizar" : "Salvar"}</Button>
       </form>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "2rem", background: "#fff", border: "1px solid #e2e8f0" }}>
-        <thead>
-          <tr style={{ background: "#f1f5f9", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
-            <th style={{ padding: "0.75rem" }}>ID</th>
-            <th style={{ padding: "0.75rem" }}>Nome</th>
-            <th style={{ padding: "0.75rem" }}>Email</th>
-            <th style={{ padding: "0.75rem" }}>Tipo</th>
-            <th style={{ padding: "0.75rem" }}>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {usuarios.map((u) => (
-            <tr key={u.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
-              <td style={{ padding: "0.75rem" }}>{u.id}</td>
-              <td style={{ padding: "0.75rem" }}>{u.nome}</td>
-              <td style={{ padding: "0.75rem" }}>{u.email}</td>
-              <td style={{ padding: "0.75rem" }}>{u.tipo}</td>
-              <td style={{ padding: "0.75rem" }}>
-                <button onClick={() => handleEditar(u)} style={{ marginRight: "0.5rem", background: "none", border: "none", color: "#0284c7", cursor: "pointer", fontWeight: "500" }}>Editar</button>
-                <button onClick={() => handleExcluir(u.id)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontWeight: "500" }}>Excluir</button>
-              </td>
+
+      <div className="table-scroll-container">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nome</th>
+              <th>Email</th>
+              <th>Tipo</th>
+              <th>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {usuarios.map((u) => {
+              const emailTabela = u.email || "";
+              const nomeTabela = u.username || "Não informado";
+
+              return (
+                <tr key={u.id}>
+                  <td>{u.id}</td>
+                  <td>{nomeTabela}</td>
+                  <td>{emailTabela}</td>
+                  <td>{u.profile || u.tipo}</td>
+                  <td>
+                    <div className="actions-cell">
+                      <button onClick={() => handleEditar(u)} className="btn-action edit">Editar</button>
+                      <button onClick={() => handleExcluir(u)} className="btn-action delete">Excluir</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

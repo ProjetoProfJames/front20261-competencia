@@ -15,8 +15,14 @@ export default function LocaisPage() {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
-        const data = await response.json();
-        setLocais(data);
+        const resBody = await response.json();
+        if (resBody && resBody.data && Array.isArray(resBody.data)) {
+          setLocais(resBody.data);
+        } else if (Array.isArray(resBody)) {
+          setLocais(resBody);
+        } else {
+          setLocais([]);
+        }
       }
     } catch (err) {
       setError("Erro ao buscar locais do servidor.");

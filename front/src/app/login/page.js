@@ -4,50 +4,64 @@ import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 
 export default function LoginPage() {
-  const [user, setUser] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ nome: "", email: "", senha: "" });
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const authenticate = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     setError("");
+
+    if (!form.nome || !form.email || !form.senha) {
+      setError("Por favor, preencha todos os campos.");
+      return;
+    }
+
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email, password: user.password }),
+        body: JSON.stringify({
+          name: form.nome,
+          email: form.email,
+          password: form.senha
+        })
       });
 
-      if (!response.ok) {
-        throw new Error("Usuário ou senha inválidos");
-      }
-
       const resBody = await response.json();
-      
-      if (resBody && resBody.success && resBody.data) {
-        const authData = resBody.data;
-        localStorage.setItem("token", authData.accessToken);
-        localStorage.setItem("userData", JSON.stringify(authData.user));
-        
-        window.location.href = "/";
+
+      if (response.ok) {
+        const token = resBody.accessToken || resBody.data?.accessToken;
+        const username = resBody.user?.username || resBody.data?.user?.username || form.nome;
+
+        localStorage.setItem("token", token);
+        localStorage.setItem("user_display_name", username);
+        window.location.href = "/"; 
       } else {
-        throw new Error("Falha na estrutura de resposta da autenticação.");
+        setError(resBody.message || "Credenciais inválidas ou nome incorreto.");
       }
     } catch (err) {
-      setError("Não foi possível conectar ao servidor de autenticação.");
+      setError("Falha na comunicação com o servidor.");
     }
   };
 
   return (
-    <div className="card">
-      <h1>Login</h1>
-      {error && <div className="error-message">{error}</div>}
-      <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-      <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
-      <Button type="button" onClick={authenticate}>Login</Button>
+    <div className="container" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+      <form onSubmit={handleLogin} className="card" style={{ margin: "0", width: "100%" }}>
+        <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Login</h1>
+        
+        {error && <div className="error-message">{error}</div>}
+        
+        <FormInput label="Nome" type="text" name="nome" value={form.nome} onChange={handleChange} />
+        <FormInput label="Email" type="email" name="email" value={form.email} onChange={handleChange} />
+        <FormInput label="Password" type="password" name="senha" value={form.senha} onChange={handleChange} />
+        
+        <Button type="submit">Login</Button>
+      </form>
     </div>
   );
 }

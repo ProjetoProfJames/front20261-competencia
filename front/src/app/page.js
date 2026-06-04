@@ -18,8 +18,11 @@ export default function HomePage() {
   }
 
   return (
-    <div>
-      <h1>Bem-vindo ao PIE Manager</h1>
+    <div className="container">
+      <div className="card" style={{ maxWidth: "100%", margin: "2rem 0" }}>
+        <h1>Bem-vindo ao PIE Manager</h1>
+        <p>Utilize o menu superior para navegar pelas opções do sistema.</p>
+      </div>
     </div>
   );
 }
