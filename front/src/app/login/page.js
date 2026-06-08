@@ -6,6 +6,8 @@ import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 import { login, criarUsuario } from "@/utils/api";
 
+import { login } from "@/utils/api";
+
 export default function LoginPage() {
   const [user, setUser] = useState({ username: "", email: "", password: "", profile: "" });
   const [error, setError] = useState("");
