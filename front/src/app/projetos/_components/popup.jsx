@@ -2,6 +2,7 @@
 
 import FormInput from "@/components/FormInput";
 import { useState } from "react";
+import styles from "../projetos.module.css";
 
 export default function Popup(props) {
 
@@ -87,14 +88,14 @@ export default function Popup(props) {
 
     return (
         <>
-            <div>
+            <div className={styles.popup}>
                 {renderizarInput()}
                 {resultadoFiltro.length > 0 && (
-                    <ul>
+                    <ul className={styles.popupList}>
                         {resultadoFiltro.map((item) => (
                             <li
                                 key={item.id}
-                                style={{ cursor: "pointer", padding: "5px" }}
+                                className={styles.popupItem}
                                 onClick={() => {
                                     if (props.onSelect) {
                                         props.onSelect(item.id);
@@ -108,7 +109,7 @@ export default function Popup(props) {
                     </ul>
                 )}
                 {busca && resultadoFiltro.length === 0 && (
-                    <p>Nenhum dado encontrado!</p>
+                    <p className={styles.message}>Nenhum dado encontrado!</p>
                 )}
             </div>
         </>

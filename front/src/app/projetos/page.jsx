@@ -2,75 +2,148 @@
 
 import { useState, useEffect } from "react";
 import Table from "./_components/table";
-import Form from "./form";
-import { api } from "./api";
+import Form from "./_components/form";
+import { api } from "@/services/api";
+import styles from "./projetos.module.css";
 
-export default function ProjetosPage() {
-    const [listaProjetos, setListaProjetos] = useState([]);
-    const [carregando, setCarregando] = useState(true);
-    const [erro, setErro] = useState(null);
+export default function ProjectPage() {
 
-    async function buscarProjetos() {
+    const [projectList, setProjectList] = useState([] || {});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const log = (message, exception) => {
+        console.log(message, exception);
+        setError(message);
+    }
+
+    async function fetchProjects() {
+
         try {
-            setCarregando(true);
+
+            setLoading(true);
+            setError(null); 
+
             const queryParams = {
                 turmaId: 0,
                 semestreId: 0,
                 localId: 0
             };
-            const resposta = await api.get('/projetos', queryParams);
 
-            if (resposta && resposta.data) {
-                setListaProjetos(resposta.data);
-            } else {
-                setListaProjetos([]);
-            }
+            const response = await api.get('/api/projetos', queryParams);
+
+            if (response && response.data) setProjectList([response.data]);
+            else setProjectList([]);
+
         } catch (err) {
-            console.error("Erro ao carregar dados:", err);
-            setErro("Não foi possível carregar os dados do servidor.");
+            log("Não foi possível carregar os dados: ", err);
         } finally {
-            setCarregando(false);
+            setLoading(false);
         }
     }
 
-    useEffect(() => {
-        buscarProjetos();
-    }, []);
+    async function fetchProjectById(id) {
 
-    const handleCriarProjeto = async (novoProjeto) => {
         try {
+
+            setLoading(true);
+            setError(null); 
+
+            const response = await api.get(`/api/projetos/${id}`);
+
+            if (response && response.data) setProjectList([response.data]);
+            else setProjectList([]);
+
+        } catch (err) {
+            log("Não foi possível carregar os dados: ", err);
+        } finally {
+            setLoading(false);
+        }
+
+    }
+
+    useEffect(() => fetchProjects(), []);
+
+    const handleCreateProject = async (newProject) => {
+
+        try {
+
             const payload = {
-                ...novoProjeto,
-                horarioInicio: novoProjeto.horarioInicio ? new Date(novoProjeto.horarioInicio).toISOString() : null,
-                horarioFim: novoProjeto.horarioFim ? new Date(novoProjeto.horarioFim).toISOString() : null
+                ...newProject,
+                horarioInicio: newProject.horarioInicio ? new Date(newProject.horarioInicio).toISOString() : null,
+                horarioFim: newProject.horarioFim ? new Date(newProject.horarioFim).toISOString() : null
             };
 
-            const resposta = await api.post('/projetos', payload);
+            const response = await api.post('/api/projetos', payload);
 
-            console.log(`Resposta do servidor () => ${resposta}`);
+            console.log(`Resposta do servidor () => ${response}`);
             alert("Projeto cadastrado com sucesso!");
-            buscarProjetos();
+            fetchProjects();
             
         } catch (err) {
-            console.error("Erro ao cadastrar projeto:", err);
-            alert("Não foi possível cadastrar o projeto.");
+            log("Não foi possível cadastrar o projeto: ", err);
+        } finally {
+            setLoading(false);
         }
+
+    };
+
+    const handleUpdateProject = async (id, project) => {
+
+        try {
+
+            const payload = {
+                ...project,
+                horarioInicio: project.horarioInicio ? new Date(project.horarioInicio).toISOString() : null,
+                horarioFim: project.horarioFim ? new Date(project.horarioFim).toISOString() : null
+            };
+
+            const response = await api.put(`/api/projetos/${id}`, payload);
+            console.log(`Resposta do servidor () => ${response}`);
+            alert("Projeto atualizado com sucesso!");
+            fetchProjects();
+            
+        } catch (err) {
+            log("Não foi possível atualizar o projeto: ", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteProject = async (id) => {
+
+        try {
+
+            const response = await api.delete(`/api/projetos/${id}`);
+            console.log(`Resposta do servidor () => ${response}`);
+            alert("Projeto deletado com sucesso!");
+            fetchProjects();
+
+        } catch (err) {
+            log("Não foi possível deletar o projeto: ", err);
+        } finally {
+            setLoading(false);
+        }
+
     };
 
     return (
         <>
-            <div style={{ padding: '20px' }}>
-                <h1>Projetos Page</h1>
+            <div className={styles.container}>
+                <h1 className={styles.title}>Projetos</h1>
                 
-                <section>
-                    <Form aoSalvar={handleCriarProjeto} />
+                <section className={styles.section}>
+                    <Form typeForm="project" onSave={handleCreateProject} />
                 </section>
 
-                <section style={{ marginTop: '20px' }}>
+                <section className={styles.section}>
                     <Table 
-                        dados={listaProjetos} 
-                        carregando={carregando} 
-                        erro={erro} 
+                        typeTable={"project"}
+                        data={projectList} 
+                        loading={loading} 
+                        error={error} 
+                        onUpdate={handleUpdateProject}
+                        onDelete={handleDeleteProject}
                     />
                 </section>
             </div>
