@@ -1,0 +1,53 @@
+.container{
+    width: 100%;
+    max-width: 1200px;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: var(--spacing-md, 1rem);
+    padding-left: var(--spacing-md, 1rem);
+}
+
+.containerFluid{
+    width: 100%;
+    padding-right: var(--spacing-md, 1rem);
+    padding-left: var(--spacing-md, 1rem);
+}
+
+
+
+.col{
+    flex: 1 0 0%;
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+}
+
+.col4 { flex: 0 0 auto; width: 33.3333%; }
+.col6 { flex: 0 0 auto; width: 50%; }
+.col12 { flex: 0 0 auto; width: 100%; }
+
+
+
+.row{
+    display: flex;
+    flex-wrap: wrap;
+
+    margin-right: calc(var(--spacing-md)*-1);
+    margin-left: calc(val(--spacing-md)*-1);
+}
+
+.alignStart{
+    align-items: start;
+}
+.alignCenter{
+    align-items: center;
+}
+.alignEnd{
+    align-items: end;
+}
+
+.justifyBetwen{
+    justify-content: space-between;
+}
+.justifyEvenly{
+    justify-content: space-evenly;
+}
