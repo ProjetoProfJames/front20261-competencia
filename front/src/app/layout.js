@@ -47,7 +47,10 @@ export default function RootLayout({ children }) {
                 <ul className="nav-links">
                   <li><Link href="/">Início</Link></li>
                   <li><Link href="/usuarios">Usuários</Link></li>
-                  <li><Link href="/locais">Locais</Link></li> {/* <-- Adicionado aqui! */}
+                  <li><Link href="/locais">Locais</Link></li>
+                  <li><Link href="/cursos">Cursos</Link></li>
+                  <li><Link href="/semestres">Semestres</Link></li>
+                  <li><Link href="/turmas">Turmas</Link></li>
                 </ul>
               </nav>
             </header>
