@@ -1,36 +1,92 @@
 'use client';
 
-export default function Table({ dados, carregando, erro }) {
+import styles from "../projetos.module.css";
+
+export default function Table({ typeTable = "project", data, loading, error, onUpdate, onDelete }) {
     
-    if (carregando) {
-        return <p style={{ padding: '10px' }}>Carregando dados da API...</p>;
+    if (loading) {
+        return <p className={styles.message}>Carregando dados da API...</p>;
+    }
+
+    if (error) {
+        return <p className={`${styles.message} ${styles.error}`}>{error}</p>;
     }
     
-    if (erro) {
-        return <p style={{ padding: '10px', color: 'red' }}>{erro}</p>;
-    }
-    
-    if (!dados || dados.length === 0) {
-        return <p style={{ padding: '10px' }}>Nenhum registro encontrado.</p>;
+    if (!data || data.length === 0) {
+        return <p className={styles.message}>Nenhum registro encontrado.</p>;
     }
 
     return (
-        <table>
+        <table className={styles.table}>
             <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Id Turma</th>
-                    <th>Id Semestre</th>
-                    <th>Id Local</th>
-                </tr>
+                {typeTable === "project" && (
+                    <tr>
+                        <th>Nome</th>
+                        <th>Id Turma</th>
+                        <th>Id Semestre</th>
+                        <th>Id Local</th>
+                        {(onUpdate || onDelete) && <th>Ações</th>}
+                    </tr>
+                )}
+                
+                {typeTable === "assessment" && (
+                    <tr>
+                        <th>Nota</th>
+                        <th>Comentário</th>
+                        {(onUpdate || onDelete) && <th>Ações</th>}
+                    </tr>
+                )}
+
+                {typeTable === "member" && (
+                    <tr>
+                        <th>ID do Aluno</th>
+                        <th>Nome</th>
+                        {(onUpdate || onDelete) && <th>Ações</th>}
+                    </tr>
+                )}
             </thead>
             <tbody>
-                {dados.map((item) => (
+                {data.map((item) => (
                     <tr key={item.id}>
-                        <td>{item.nome}</td>
-                        <td>{item.turma?.id ?? 'N/A'}</td>
-                        <td>{item.semestre?.id ?? 'N/A'}</td>
-                        <td>{item.local?.id ?? 'N/A'}</td>
+                        {typeTable === "project" && (
+                            <>
+                                <td>{item.nome}</td>
+                                <td>{item.turma?.id ?? 'N/A'}</td>
+                                <td>{item.semestre?.id ?? 'N/A'}</td>
+                                <td>{item.local?.id ?? 'N/A'}</td>
+                            </>
+                        )}
+                        
+                        {typeTable === "assessment" && (
+                            <>
+                                <td>{item.nota}</td>
+                                <td>{item.comentario || 'Sem comentário'}</td>
+                            </>
+                        )}
+
+                        {typeTable === "member" && (
+                            <>
+                                <td>{item.alunoId || item.id}</td>
+                                <td>{item.nome || `Aluno #${item.alunoId || item.id}`}</td>
+                            </>
+                        )}
+                        
+                        {(onUpdate || onDelete) && (
+                            <td>
+                                <div className={styles.tableActions}>
+                                {onUpdate && (
+                                    <button className={styles.button} onClick={() => onUpdate(item.id, item)}>
+                                        Editar
+                                    </button>
+                                )}
+                                {onDelete && (
+                                    <button className={`${styles.button} ${styles.dangerButton}`} onClick={() => onDelete(item.id)}>
+                                        Excluir
+                                    </button>
+                                )}
+                                </div>
+                            </td>
+                        )}
                     </tr>
                 ))}
             </tbody>

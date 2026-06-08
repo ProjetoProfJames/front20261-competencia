@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import FormInput from "@/components/FormInput";
-import Popup from "./_components/popup";
+import Popup from "./popup";
+import styles from "../projetos.module.css";
 
-export default function Form(props) {
-    const [projetos, setProjetos] = useState({
+export default function Form({ typeForm, onSave }) {
+    
+    const [project, setProject] = useState({
         nome: "",
         descricao: "",
         turmaId: 0,
@@ -17,28 +19,49 @@ export default function Form(props) {
         horarioFim: ""
     });
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setProjetos((prev) => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const [assessment, setAssessment] = useState({
+        nota: 0,
+        comentario: ""
+    });
 
-    const handleSelectField = (campo, idSelecionado) => {
-        setProjetos((prev) => {
-            if (campo === 'integranteIds') {
-                const exists = prev.integranteIds.includes(idSelecionado);
+    const [member, setMember] = useState({
+        alunoId: 0
+    });
+
+    const handleFieldChange = (entity) => (e) => {
+        const { name, value } = e.target;
+        
+        const processedValue = (name === "nota" || name === "alunoId") ? Number(value) : value;
+
+        switch (entity) {
+            case "project":
+                setProject((prev) => ({ ...prev, [name]: processedValue }));
+                break;
+            case "assessment":
+                setAssessment((prev) => ({ ...prev, [name]: processedValue }));
+                break;
+            case "member":
+                setMember((prev) => ({ ...prev, [name]: processedValue }));
+                break;
+            default: 
+                break;
+        }
+    };  
+
+    const handleSelectField = (field, selectedId) => {
+        setProject((prev) => {
+            if (field === 'integranteIds') {
+                const exists = prev.integranteIds.includes(selectedId);
                 return {
                     ...prev,
                     integranteIds: exists
-                        ? prev.integranteIds.filter(id => id !== idSelecionado)
-                        : [...prev.integranteIds, idSelecionado]
+                        ? prev.integranteIds.filter(id => id !== selectedId)
+                        : [...prev.integranteIds, selectedId]
                 };
             } else {
                 return {
                     ...prev,
-                    [campo]: idSelecionado
+                    [field]: selectedId
                 };
             }
         });
@@ -46,82 +69,134 @@ export default function Form(props) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (props.aoSalvar) {
-            props.aoSalvar(projetos);
+
+        switch (typeForm) {
+            case "project": 
+                onSave && onSave(project);
+                break;
+            case "assessment":
+                onSave && onSave(assessment);
+                break;
+            case "member":
+                onSave && onSave(member);
+                break;
+            default: 
+                break;
         }
     };
 
     return (
         <>
-            <form onSubmit={handleSubmit}>
-                <FormInput
-                    label="Nome:"
-                    type="text"
-                    name="nome"
-                    value={projetos.nome}
-                    onChange={handleChange}
-                />
-                
-                <FormInput
-                    label="Descrição:"
-                    type="text"
-                    name="descricao"
-                    value={projetos.descricao}
-                    onChange={handleChange}
-                />
-                
-                <div>
-                    <p>Semestre ID: {projetos.semestreId}</p>
-                    <Popup 
-                        campo="semestreId" 
-                        onSelect={(id) => handleSelectField("semestreId", id)} 
+            {typeForm === "project" && (
+                <form className={styles.form} onSubmit={handleSubmit}>
+                    <FormInput
+                        label="Nome:"
+                        type="text"
+                        name="nome"
+                        value={project.nome}
+                        onChange={handleFieldChange("project")}
                     />
-                </div>
-                
-                <div>
-                    <p>Professor Orientador ID: {projetos.professorOrientadorId}</p>
-                    <Popup 
-                        campo="professorOrientadorId" 
-                        onSelect={(id) => handleSelectField("professorOrientadorId", id)} 
+                    
+                    <FormInput
+                        label="Descrição:"
+                        type="text"
+                        name="descricao"
+                        value={project.descricao}
+                        onChange={handleFieldChange("project")}
                     />
-                </div>
+                    
+                    <div className={styles.selectorGroup}>
+                        <p>Semestre ID: {project.semestreId}</p>
+                        <Popup 
+                            campo="semestreId" 
+                            onSelect={(id) => handleSelectField("semestreId", id)} 
+                        />
+                    </div>
+                    
+                    <div className={styles.selectorGroup}>
+                        <p>Professor Orientador ID: {project.professorOrientadorId}</p>
+                        <Popup 
+                            campo="professorOrientadorId" 
+                            onSelect={(id) => handleSelectField("professorOrientadorId", id)} 
+                        />
+                    </div>
 
-                <div>
-                    <p>Integrantes ID: {projetos.integranteIds.join(", ")}</p>
-                    <Popup 
-                        campo="integranteIds" 
-                        onSelect={(id) => handleSelectField("integranteIds", id)} 
+                    <div className={styles.selectorGroup}>
+                        <p>Integrantes ID: {project.integranteIds.join(", ")}</p>
+                        <Popup 
+                            campo="integranteIds" 
+                            onSelect={(id) => handleSelectField("integranteIds", id)} 
+                        />
+                    </div>
+
+                    <div className={styles.selectorGroup}>
+                        <p>Local ID: {project.localId}</p>
+                        <Popup 
+                            campo="localId" 
+                            onSelect={(id) => handleSelectField("localId", id)} 
+                        />
+                    </div>
+
+                    <FormInput
+                        label="Horário Inicio:"
+                        type="datetime-local"
+                        name="horarioInicio"
+                        value={project.horarioInicio}
+                        onChange={handleFieldChange("project")}
                     />
-                </div>
 
-                <div>
-                    <p>Local ID: {projetos.localId}</p>
-                    <Popup 
-                        campo="localId" 
-                        onSelect={(id) => handleSelectField("localId", id)} 
+                    <FormInput
+                        label="Horário Fim:"
+                        type="datetime-local"
+                        name="horarioFim"
+                        value={project.horarioFim}
+                        onChange={handleFieldChange("project")}
                     />
-                </div>
 
-                <FormInput
-                    label="Horário Inicio:"
-                    type="datetime-local"
-                    name="horarioInicio"
-                    value={projetos.horarioInicio}
-                    onChange={handleChange}
-                />
+                    <button className={styles.button} type="submit">
+                        Cadastrar Projeto
+                    </button>
+                </form>
+            )}
 
-                <FormInput
-                    label="Horário Fim:"
-                    type="datetime-local"
-                    name="horarioFim"
-                    value={projetos.horarioFim}
-                    onChange={handleChange}
-                />
+            {typeForm === "assessment" && (
+                <form className={styles.form} onSubmit={handleSubmit}>
+                    <FormInput
+                        label="Nota: "
+                        type="number"
+                        name="nota"
+                        value={assessment.nota}
+                        onChange={handleFieldChange("assessment")}
+                    />
+                    <FormInput
+                        label="Comentário: "
+                        type="text"
+                        name="comentario"
+                        value={assessment.comentario}
+                        onChange={handleFieldChange("assessment")}
+                    />
 
-                <button type="submit" style={{ marginTop: '15px', padding: '10px 20px', cursor: 'pointer' }}>
-                    Cadastrar Projeto
-                </button>
-            </form>
+                    <button className={styles.button} type="submit">
+                        Cadastrar Avaliação
+                    </button>
+                </form>
+            )}
+
+            {typeForm === "member" && (
+                <form className={styles.form} onSubmit={handleSubmit}>
+                    <FormInput
+                        label="ID do Aluno: "
+                        type="number"
+                        name="alunoId"
+                        value={member.alunoId}
+                        onChange={handleFieldChange("member")}
+                    />
+
+                    <button className={styles.button} type="submit">
+                        Adicionar Integrante
+                    </button>
+                </form>
+            )}
         </>
     );
 }
