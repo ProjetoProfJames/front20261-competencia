@@ -83,6 +83,33 @@ export async function del(uri) {
     }
 }
 
+export async function register(name, email, password) {
+    return await post('/auth/register', { name, email, password });
+}
+
+export async function login(email, password) {
+    const res = await post('/auth/login', { email, password });
+    if (res) {
+        if (res.accessToken) {
+            localStorage.setItem('JWT', res.accessToken);
+        }
+        if (res.user && res.user.username) {
+            localStorage.setItem('user', res.user.username);
+        }
+    }
+
+    return res;
+}
+
+export async function logout(router) {
+    localStorage.removeItem('JWT');
+    localStorage.removeItem('user');
+    if (router) {
+        router.push('/login');
+    }
+}
+
+
 export async function listarCursos() {
     return await get('/cursos');
 }
