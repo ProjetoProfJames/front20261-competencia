@@ -7,6 +7,10 @@ export function getUsers() {
 export function createUser(data) {
   return apiRequest('/users', {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
     body: JSON.stringify(data),
   });
 }
@@ -14,6 +18,10 @@ export function createUser(data) {
 export function updateUser(id, data) {
   return apiRequest(`/users/${id}`, {
     method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
     body: JSON.stringify(data),
   });
 }

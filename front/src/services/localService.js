@@ -11,6 +11,10 @@ export function getLocal(id) {
 export function createLocal(data) {
   return apiRequest('/locais', {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
     body: JSON.stringify(data),
   });
 }
@@ -18,6 +22,10 @@ export function createLocal(data) {
 export function updateLocal(id, data) {
   return apiRequest(`/locais/${id}`, {
     method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
     body: JSON.stringify(data),
   });
 }

@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-
 import Menu from '@/components/Menu';
-
 import { getUsers, deleteUser } from '@/services/userService';
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
+  const [loggedUser, setLoggedUser] = useState(null);
 
   async function loadUsers() {
     try {
@@ -20,6 +19,7 @@ export default function UsersPage() {
   }
 
   async function handleDelete(id) {
+    if (!confirm('Deseja excluir este usuário?')) return;
     try {
       await deleteUser(id);
       loadUsers();
@@ -29,49 +29,65 @@ export default function UsersPage() {
   }
 
   useEffect(() => {
-    loadUsers();
+    const stored = localStorage.getItem('user');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      setLoggedUser(parsed);
+      loadUsers();
+    }
   }, []);
 
+  const isAdmin = loggedUser?.profile === 'ADMIN';
+
   return (
-    <div>
+    <div className='page-wrapper'>
       <Menu />
+      <div className='page-content'>
+        <div className='page-header'>
+          <h1>Usuários</h1>
+          {isAdmin && (
+            <Link href='/users/create' className='link-btn'>
+              + Novo Usuário
+            </Link>
+          )}
+        </div>
 
-      <h1>Usuários</h1>
-
-      <Link href='/users/create'>
-        Novo Usuário
-      </Link>
-
-      <table border='1'>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Perfil</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.map((user) => (
-            <tr key={user.id}>
-              <td>{user.username}</td>
-              <td>{user.email}</td>
-              <td>{user.profile}</td>
-
-              <td>
-                <Link href={`/users/${user.id}`}>
-                  Editar
-                </Link>
-
-                <button onClick={() => handleDelete(user.id)}>
-                  Excluir
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <div className='table-wrapper'>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Perfil</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.username}</td>
+                  <td>{user.email}</td>
+                  <td>{user.profile}</td>
+                  <td>
+                    <div className='td-actions'>
+                      {(isAdmin || loggedUser?.id == user.id) && (
+                        <Link href={`/users/${user.id}`} className='btn-edit'>
+                          Editar
+                        </Link>
+                      )}
+                      {isAdmin && (
+                        <button className='btn btn-danger' onClick={() => handleDelete(user.id)}>
+                          Excluir
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
