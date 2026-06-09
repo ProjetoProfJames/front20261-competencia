@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-
 import Menu from '@/components/Menu';
-
 import { updateUser, getUsers } from '@/services/userService';
 
 export default function EditUserPage() {
@@ -45,9 +43,7 @@ export default function EditUserPage() {
   async function loadUser() {
     try {
       const response = await getUsers();
-
       const user = response.data.find((u) => u.id == id);
-
       if (user) {
         setEmail(user.email);
         setForm({
@@ -57,7 +53,6 @@ export default function EditUserPage() {
           profile: user.profile,
         });
       }
-
     } catch (error) {
       console.error(error);
     }
@@ -65,7 +60,6 @@ export default function EditUserPage() {
 
   function handleChange(e) {
     const { name, value } = e.target;
-
     setForm({ ...form, [name]: value });
   }
 
@@ -73,9 +67,25 @@ export default function EditUserPage() {
     try {
       const isAdmin = loggedUser?.profile === 'ADMIN';
 
+      if (form.password && form.password.length < 6) {
+        alert('A senha deve ter no mínimo 6 caracteres.');
+        return;
+      }
+
+      if (form.password && form.password.length > 120) {
+        alert('A senha deve ter no máximo 120 caracteres.');
+        return;
+      }
+
       const payload = isAdmin
-        ? form
-        : { password: form.password };
+        ? {
+            username: form.username,
+            password: form.password || undefined,
+            profile: form.profile,
+          }
+        : {
+            password: form.password,
+          };
 
       await updateUser(id, payload);
       alert('Usuário atualizado');
@@ -88,86 +98,103 @@ export default function EditUserPage() {
   const isAdmin = loggedUser?.profile === 'ADMIN';
 
   return (
-    <div>
+    <div className='page-wrapper'>
       <Menu />
+      <div className='page-content'>
+        <div className='form-card'>
+          <h1>Editar Usuário</h1>
 
-      <h1>Editar Usuário</h1>
+          {isAdmin ? (
+            <>
+              <div className='form-group'>
+                <label>Nome</label>
+                <input
+                  placeholder='Nome'
+                  name='username'
+                  value={form.username}
+                  onChange={handleChange}
+                />
+              </div>
 
-      {isAdmin ? (
-        <>
-          <input
-            placeholder='Nome'
-            name='username'
-            value={form.username}
-            onChange={handleChange}
-          />
+              <div className='form-group'>
+                <label>Email</label>
+                <input
+                  placeholder='Email'
+                  name='email'
+                  value={form.email}
+                  onChange={handleChange}
+                  disabled
+                  style={{ opacity: 0.6, cursor: 'not-allowed' }}
+                />
+              </div>
 
-          <input
-            placeholder='Email'
-            name='email'
-            value={form.email}
-            onChange={handleChange}
-          />
+              <div className='form-group'>
+                <label>Nova Senha <span style={{ color: '#999', fontSize: '12px' }}>(mínimo 6 caracteres)</span></label>
+                <input
+                  placeholder='Nova Senha'
+                  type={showPassword ? 'text' : 'password'}
+                  name='password'
+                  value={form.password}
+                  onChange={handleChange}
+                />
+                <label className='login-checkbox' style={{ marginTop: '8px' }}>
+                  <input
+                    type='checkbox'
+                    checked={showPassword}
+                    onChange={() => setShowPassword(!showPassword)}
+                  />
+                  Mostrar senha
+                </label>
+              </div>
 
-          <input
-            placeholder='Nova Senha'
-            type={showPassword ? 'text' : 'password'}
-            name='password'
-            value={form.password}
-            onChange={handleChange}
-          />
+              <div className='form-group'>
+                <label>Perfil</label>
+                <select name='profile' value={form.profile} onChange={handleChange}>
+                  <option value='ADMIN'>ADMIN</option>
+                  <option value='COORDENADOR'>COORDENADOR</option>
+                  <option value='PROFESSOR'>PROFESSOR</option>
+                  <option value='ALUNO'>ALUNO</option>
+                  <option value='AVALIADOR_EXTERNO'>AVALIADOR_EXTERNO</option>
+                </select>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className='email-display'>
+                Email: {email}
+              </div>
 
-          <label>
-            <input
-              type='checkbox'
-              checked={showPassword}
-              onChange={() => setShowPassword(!showPassword)}
-            />
-            {' '}Mostrar senha
-          </label>
+              <div className='form-group'>
+                <label>Nova Senha <span style={{ color: '#999', fontSize: '12px' }}>(mínimo 6 caracteres)</span></label>
+                <input
+                  placeholder='Nova Senha'
+                  type={showPassword ? 'text' : 'password'}
+                  name='password'
+                  value={form.password}
+                  onChange={handleChange}
+                />
+                <label className='login-checkbox' style={{ marginTop: '8px' }}>
+                  <input
+                    type='checkbox'
+                    checked={showPassword}
+                    onChange={() => setShowPassword(!showPassword)}
+                  />
+                  Mostrar senha
+                </label>
+              </div>
+            </>
+          )}
 
-          <br />
-
-          <select
-            name='profile'
-            value={form.profile}
-            onChange={handleChange}
-          >
-            <option value='ADMIN'>ADMIN</option>
-            <option value='COORDENADOR'>COORDENADOR</option>
-            <option value='PROFESSOR'>PROFESSOR</option>
-            <option value='ALUNO'>ALUNO</option>
-            <option value='AVALIADOR_EXTERNO'>AVALIADOR_EXTERNO</option>
-          </select>
-        </>
-      ) : (
-        <>
-          <p>Email: {email}</p>
-
-          <input
-            placeholder='Nova Senha'
-            type={showPassword ? 'text' : 'password'}
-            name='password'
-            value={form.password}
-            onChange={handleChange}
-          />
-
-          <label>
-            <input
-              type='checkbox'
-              checked={showPassword}
-              onChange={() => setShowPassword(!showPassword)}
-            />
-            {' '}Mostrar senha
-          </label>
-
-          <br />
-        </>
-      )}
-
-      <button onClick={handleSubmit}>
-        Salvar
-      </button>
+          <div className='form-actions'>
+            <button className='btn btn-primary' onClick={handleSubmit}>
+              Salvar
+            </button>
+            <button className='btn btn-outline' onClick={() => router.push('/users')}>
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
