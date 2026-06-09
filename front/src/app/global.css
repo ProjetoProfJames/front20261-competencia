@@ -1,0 +1,325 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: rgb(245, 247, 250);
+  font-family: var(--font-geist-sans), sans-serif;
+  color: #333;
+}
+
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background-color: rgb(245, 247, 250);
+}
+
+.login-decoration {
+  position: absolute;
+  bottom: -80px;
+  right: -80px;
+  width: 350px;
+  height: 350px;
+  background-color: rgb(221, 91, 49);
+  border-radius: 50%;
+  opacity: 0.15;
+}
+
+.login-decoration2 {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  background-color: rgb(221, 91, 49);
+  border-radius: 50%;
+  opacity: 0.2;
+}
+
+.login-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.login-card h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 4px;
+  border-bottom: 3px solid rgb(221, 91, 49);
+  display: inline-block;
+  padding-bottom: 4px;
+}
+
+.login-subtitle {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 24px;
+  margin-top: 8px;
+}
+
+.login-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.login-checkbox input[type='checkbox'] {
+  width: auto;
+  cursor: pointer;
+}
+
+.login-footer {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  margin-top: 16px;
+}
+
+.login-footer a {
+  color: rgb(221, 91, 49);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  color: rgb(196, 76, 38);
+  text-decoration: underline;
+}
+
+.page-wrapper {
+  min-height: 100vh;
+  background-color: rgb(245, 247, 250);
+}
+
+.page-content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #222;
+}
+
+.form-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  max-width: 480px;
+}
+
+.form-card h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 24px;
+  border-bottom: 3px solid rgb(221, 91, 49);
+  display: inline-block;
+  padding-bottom: 4px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 4px;
+  display: block;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid rgb(204, 204, 204);
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: rgb(245, 247, 250);
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: rgb(221, 91, 49);
+  background-color: #fff;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.table-wrapper {
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: rgb(221, 91, 49);
+  color: #fff;
+}
+
+th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(204, 204, 204);
+  font-size: 14px;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background-color: rgb(245, 247, 250);
+}
+
+.td-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn {
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s;
+}
+
+.btn-primary {
+  background-color: rgb(221, 91, 49);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: rgb(196, 76, 38);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: rgb(221, 91, 49);
+  border: 2px solid rgb(221, 91, 49);
+}
+
+.btn-outline:hover {
+  background-color: rgb(221, 91, 49);
+  color: #fff;
+}
+
+.btn-danger {
+  background-color: transparent;
+  color: #e53e3e;
+  border: 2px solid #e53e3e;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.btn-danger:hover {
+  background-color: #e53e3e;
+  color: #fff;
+}
+
+.btn-edit {
+  background-color: transparent;
+  color: rgb(221, 91, 49);
+  border: 2px solid rgb(221, 91, 49);
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-edit:hover {
+  background-color: rgb(221, 91, 49);
+  color: #fff;
+}
+
+.link-btn {
+  display: inline-block;
+  padding: 9px 18px;
+  background-color: rgb(221, 91, 49);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.link-btn:hover {
+  background-color: rgb(196, 76, 38);
+  color: #fff;
+  text-decoration: none;
+}
+
+/* ── MISC ── */
+a {
+  color: rgb(221, 91, 49);
+  text-decoration: none;
+}
+
+a:hover {
+  color: rgb(196, 76, 38);
+}
+
+.email-display {
+  font-size: 14px;
+  color: #555;
+  background-color: rgb(245, 247, 250);
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid rgb(204, 204, 204);
+  margin-bottom: 16px;
+}
