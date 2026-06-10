@@ -1,205 +1,102 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import "../styles/avaliacoes.css"
+import { useEffect, useState } from "react";
+import "../styles/avaliacoes.css";
+
+import AvaliacaoList from "@/components/avaliacoes/AvaliacaoList";
+import AvaliacaoForm from "@/components/avaliacoes/AvaliacaoForm";
+
+import {
+  listarAvaliacoes,
+  criarAvaliacao,
+  atualizarAvaliacao,
+  listarAvaliadores,
+} from "@/app/services/avaliacoesService";
+
+import { listarProjetos } from "@/app/services/gruposService";
 
 export default function AvaliacoesPage() {
+  const [modo, setModo] = useState("list");
+  const [avaliacoes, setAvaliacoes] = useState([]);
+  const [projetos, setProjetos] = useState([]);
+  const [avaliadores, setAvaliadores] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editando, setEditando] = useState(null);
 
-  const [projetos, setProjetos] = useState([])
-  const [avaliadores, setAvaliadores] = useState([])
+  async function carregar() {
+    try {
+      setLoading(true);
 
-  const [form, setForm] = useState({
-    projetoId: "",
-    avaliador: "",
-    nota: ""
-  })
+      const [resAvaliacoes, resProjetos, resAvaliadores] = await Promise.all([
+        listarAvaliacoes(),
+        listarProjetos(),
+        listarAvaliadores(),
+      ]);
 
-  useEffect(() => {
-
-    fetch("/api/projetos")
-      .then(res => res.json())
-      .then(data => setProjetos(data))
-
-    fetch("/api/avaliadores")
-      .then(res => res.json())
-      .then(data => setAvaliadores(data))
-
-  }, [])
-
-  function handleChange(e) {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    })
+      setAvaliacoes(resAvaliacoes?.data ?? []);
+      setProjetos(resProjetos?.data ?? resProjetos ?? []);
+      setAvaliadores(resAvaliadores ?? []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  async function salvar() {
+  useEffect(() => {
+    carregar();
+  }, []);
 
-    if (!form.projetoId) {
-      alert("Selecione um projeto")
-      return
-    }
+  function novo() {
+    setEditando(null);
+    setModo("form");
+  }
 
-    if (!form.avaliador) {
-      alert("Selecione um avaliador")
-      return
-    }
+  function editar(avaliacao) {
+    setEditando(avaliacao);
+    setModo("form");
+  }
 
-    if (form.nota < 0 || form.nota > 10) {
-      alert("Nota deve ser entre 0 e 10")
-      return
-    }
+  function voltar() {
+    setModo("list");
+    setEditando(null);
+  }
 
+  async function salvar(data) {
     try {
+      if (editando) {
+        await atualizarAvaliacao(editando.id, data);
+      } else {
+        await criarAvaliacao(data);
+      }
 
-      await fetch("/api/avaliacoes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          projetoId: Number(form.projetoId),
-          avaliadorId: Number(form.avaliador),
-          nota: Number(form.nota)
-        })
-      })
-
-      alert("Avaliação salva!")
-
-      setForm({
-        projetoId: "",
-        avaliador: "",
-        nota: ""
-      })
-
-    } catch(error){
-      console.error(error)
-      alert("Erro ao salvar avaliação")
+      await carregar();
+      voltar();
+    } catch (err) {
+      console.error(err);
     }
   }
 
   return (
-    <div className="container">
+    <div className="avaliacao-container">
+      {modo === "list" && (
+        <AvaliacaoList
+          avaliacoes={avaliacoes}
+          loading={loading}
+          onNovo={novo}
+          onEditar={editar}
+        />
+      )}
 
-      <h1 className="title">
-        AVALIAÇÕES DE PROJETOS
-      </h1>
-
-      <div className="content">
-
-        <div className="formContainer">
-
-          <select
-            className="select"
-            name="projetoId"
-            value={form.projetoId}
-            onChange={handleChange}
-          >
-            <option value="">
-              Selecione o projeto
-            </option>
-
-            {projetos.map(p => (
-              <option
-                key={p.id}
-                value={p.id}
-              >
-                {p.titulo}
-              </option>
-            ))}
-
-          </select>
-
-
-          <select
-            className="select"
-            name="avaliador"
-            value={form.avaliador}
-            onChange={handleChange}
-          >
-            <option value="">
-              Selecione o avaliador
-            </option>
-
-            {avaliadores.map(a => (
-              <option
-                key={a.id}
-                value={a.id}
-              >
-                {a.nome}
-              </option>
-            ))}
-
-          </select>
-
-
-          <input
-            className="input"
-            name="nota"
-            type="number"
-            placeholder="Nota (0-10)"
-            value={form.nota}
-            onChange={handleChange}
-          />
-
-          <button
-            className="button"
-            onClick={salvar}
-          >
-            Salvar Avaliação
-          </button>
-
-        </div>
-
-        <div className="tableContainer">
-
-          <table className="table">
-
-            <thead>
-
-              <tr>
-                <th>Projeto</th>
-                <th>Grupo</th>
-                <th>Professor</th>
-                <th>Nota</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {projetos.map(p => (
-
-                <tr key={p.id}>
-
-                  <td>{p.titulo}</td>
-
-                  <td>
-                    {p.grupo?.nome || "-"}
-                  </td>
-
-                  <td>
-                    {p.grupo?.professor?.nome || "-"}
-                  </td>
-
-                  <td>
-                    <span className="nota">
-                      {p.nota ?? "-"}
-                    </span>
-                  </td>
-
-                </tr>
-
-              ))}
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
-
+      {modo === "form" && (
+        <AvaliacaoForm
+          avaliacao={editando}
+          onVoltar={voltar}
+          onSalvar={salvar}
+          projetos={projetos}
+          avaliadores={avaliadores}
+        />
+      )}
     </div>
-  )
+  );
 }
