@@ -1,9 +1,14 @@
 package com.unisales.piemanager.turma.model;
 
+import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import com.unisales.piemanager.curso.model.Curso;
 import com.unisales.piemanager.disciplina.model.Disciplina;
 import com.unisales.piemanager.semestre.model.Semestre;
 import com.unisales.piemanager.user.model.User;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,9 +23,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.Instant;
-import java.util.LinkedHashSet;
-import java.util.Set;
+
 
 @Entity
 @Table(

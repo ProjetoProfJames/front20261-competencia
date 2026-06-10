@@ -1,36 +1,137 @@
 'use client';
-import { useState } from "react";
-import  Button  from "@/components/Button";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
+import { apiRequest } from "@/lib/api";
+import { getSession, setSession } from "@/lib/auth";
 
 export default function LoginPage() {
-  const [user, setUser] = useState({ email: "", password: "" });
+  const router = useRouter();
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
+  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const session = getSession();
+
+    if (session?.accessToken) {
+      router.replace("/");
+    }
+  }, [router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUser((prevUser) => ({ ...prevUser, [name]: value }));
+    setCredentials((currentCredentials) => ({ ...currentCredentials, [name]: value }));
+    setErrors((currentErrors) => ({ ...currentErrors, [name]: "" }));
   };
 
-  const authenticate = () => {
-    // Lógica de autenticação aqui
-    console.log("Autenticando usuário:", user);
+  const validate = () => {
+    const validationErrors = {};
+
+    if (!credentials.email.trim()) {
+      validationErrors.email = "Informe o email.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email.trim())) {
+      validationErrors.email = "Informe um email válido.";
+    }
+
+    if (!credentials.password) {
+      validationErrors.password = "Informe a senha.";
+    }
+
+    return validationErrors;
   };
 
-    const loadBootstrap = () => {
-        fetch("http://localhost:8080/api/public/bootstrap")
-            .then((response) => response.json())
-            .then((data) => console.log("Bootstrap carregado:", data))
-            .catch((error) => console.error("Erro ao carregar Bootstrap:", error));
-    };
+  const authenticate = async (event) => {
+    event.preventDefault();
+    const validationErrors = validate();
+    setErrors(validationErrors);
+    setStatus(null);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const data = await apiRequest("/auth/login", {
+        method: "POST",
+        body: {
+          email: credentials.email.trim(),
+          password: credentials.password,
+        },
+      });
+
+      setSession(data);
+      router.replace("/");
+    } catch (error) {
+      setStatus({ type: "error", message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadBootstrap = async () => {
+    setStatus(null);
+    setLoading(true);
+
+    try {
+      await apiRequest("/public/bootstrap", { method: "POST" });
+      setStatus({
+        type: "success",
+        message: "Dados iniciais preparados. Use admin@unisales.br com a senha admin@123.",
+      });
+    } catch (error) {
+      setStatus({ type: "error", message: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div>
-      <h1>Login</h1>
-      <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-      <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
-      <Button type="submit" onClick={authenticate}>Login</Button>
-      <Button type="button" onClick={() => console.log("Redirecionar para cadastro")}>Cadastrar</Button>
-      <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
+    <div className="login-page">
+      <div className="login-panel">
+        <h1>Entrar</h1>
+        <p>Acesse o PIE Manager com seu email institucional.</p>
+
+        {status && <div className={`status status-${status.type}`}>{status.message}</div>}
+
+        <form onSubmit={authenticate}>
+          <div className="content-grid">
+            <FormInput
+              label="Email"
+              type="email"
+              name="email"
+              value={credentials.email}
+              onChange={handleChange}
+              error={errors.email}
+              required
+              autoComplete="email"
+            />
+            <FormInput
+              label="Senha"
+              type="password"
+              name="password"
+              value={credentials.password}
+              onChange={handleChange}
+              error={errors.password}
+              required
+              autoComplete="current-password"
+            />
+          </div>
+          <div className="form-actions">
+            <Button type="submit" disabled={loading}>
+              {loading ? "Entrando..." : "Entrar"}
+            </Button>
+            <Button type="button" variant="secondary" onClick={loadBootstrap} disabled={loading}>
+              Inicializar dados
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
