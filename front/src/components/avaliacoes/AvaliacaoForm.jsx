@@ -23,10 +23,18 @@ export default function AvaliacaoForm({
 
   function handleSubmit(e) {
     e.preventDefault();
+
+    const nota = Number(formData.nota);
+
+    if (nota < 0 || nota > 10) {
+      alert("A nota deve estar entre 0 e 10");
+      return;
+    }
+
     onSalvar({
       projetoId: Number(formData.projetoId),
       avaliadorId: Number(formData.avaliadorId),
-      nota: Number(formData.nota),
+      nota,
       comentario: formData.comentario,
     });
   }
@@ -40,6 +48,7 @@ export default function AvaliacaoForm({
           name="projetoId"
           value={formData.projetoId}
           onChange={handleChange}
+          disabled={!!avaliacao}
           required
         >
           <option value="">Selecione um projeto</option>

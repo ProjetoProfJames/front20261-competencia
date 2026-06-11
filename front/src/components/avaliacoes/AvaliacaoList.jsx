@@ -4,6 +4,7 @@ export default function AvaliacaoList({
   avaliacoes = [],
   onNovo,
   onEditar,
+  onExcluir,
   loading,
 }) {
   return (
@@ -36,6 +37,9 @@ export default function AvaliacaoList({
                 <td>
                   <button onClick={() => onEditar(a)}>
                     Editar
+                  </button>
+                  <button onClick={() => onExcluir(a.id)}>
+                    Excluir
                   </button>
                 </td>
               </tr>
