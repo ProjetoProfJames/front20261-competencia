@@ -1,18 +1,37 @@
 'use client';
 
 import React, { useState } from 'react';
+import { cursosService } from '../../services/cursosService';
 
 export default function CursosForm() {
   const [nomeCurso, setNomeCurso] = useState('');
   const [codigoCurso, setCodigoCurso] = useState('');
 
-  const handleSalvar = (e) => {
+  const handleSalvar = async (e) => {
     e.preventDefault();
+    
     if (!nomeCurso || !codigoCurso) {
       alert('Erro: Por favor, preencha todos os campos!');
       return;
     }
-    alert(`Curso ${nomeCurso} salvo com sucesso!`);
+
+    try {
+      const novoCurso = {
+        nome: nomeCurso,
+        codigo: codigoCurso
+      };
+
+      await cursosService.salvar(novoCurso);
+      alert(`Curso "${nomeCurso}" salvo com sucesso no banco!`);
+      
+      
+      setNomeCurso('');
+      setCodigoCurso('');
+      
+      window.location.reload();
+    } catch (error) {
+      alert('Erro ao salvar o curso no servidor.');
+    }
   };
 
   return (
