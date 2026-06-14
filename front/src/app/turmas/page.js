@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { listarTurmas, obterTurmaPorId, criarTurma, atualizarTurma, deletarTurma } from '@/utils/api';
+import DataTable from '@/components/Table';
+import ActionButtons from '@/components/Button/ActionButtons';
+import FormButtons from '@/components/Button/FormButtons';
+import PageHeader from '@/components/PageHeader';
 
 export default function TurmasPage() {
     const [turmas, setTurmas] = useState([]);
@@ -82,38 +86,31 @@ export default function TurmasPage() {
         }
     }
 
+    const colunas = [
+        { label: 'ID', render: (turma) => turma.id },
+        { label: 'Nome', render: (turma) => turma.nome },
+        { label: 'Cursos', render: (turma) => turma.cursos?.map(c => c.nome).join(', ') || 'Nenhum' },
+        { label: 'Período (Semestre)', render: (turma) => turma.semestre?.nome || 'Não definido' },
+    ];
+
     if (modo === 'listar') {
         return (
             <div style={{ padding: '20px' }}>
-                <h2>Gestão de Turmas</h2>
-                <button onClick={() => setModo('cadastrar')} style={{ marginBottom: '20px', padding: '8px' }}>
-                    Nova Turma
-                </button>
-                <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nome</th>
-                            <th>Cursos</th>
-                            <th>Período (Semestre)</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {turmas.map(turma => (
-                            <tr key={turma.id}>
-                                <td>{turma.id}</td>
-                                <td>{turma.nome}</td>
-                                <td>{turma.cursos?.map(c => c.nome).join(', ') || 'Nenhum'}</td>
-                                <td>{turma.semestre?.nome || 'Não definido'}</td>
-                                <td>
-                                    <button onClick={() => handleEditar(turma.id)} style={{ marginRight: '10px' }}>Editar</button>
-                                    <button onClick={() => handleExcluir(turma.id)}>Excluir</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <PageHeader
+                    titulo="Gestão de Turmas"
+                    labelBotao="Nova Turma"
+                    onNovo={() => setModo('cadastrar')}
+                />
+                <DataTable
+                    colunas={colunas}
+                    dados={turmas}
+                    renderAcoes={(turma) => (
+                        <ActionButtons
+                            onEditar={() => handleEditar(turma.id)}
+                            onExcluir={() => handleExcluir(turma.id)}
+                        />
+                    )}
+                />
             </div>
         );
     }
@@ -142,10 +139,7 @@ export default function TurmasPage() {
                     IDs dos Professores (separados por vírgula):
                     <input type="text" value={professorIds} onChange={e => setProfessorIds(e.target.value)} placeholder="Ex: 4, 5" style={{ width: '100%', padding: '8px' }} />
                 </label>
-                <div>
-                    <button type="submit" style={{ marginRight: '10px', padding: '8px 15px' }}>Salvar</button>
-                    <button type="button" onClick={limparFormulario} style={{ padding: '8px 15px' }}>Cancelar</button>
-                </div>
+                <FormButtons onCancelar={limparFormulario} />
             </form>
         </div>
     );

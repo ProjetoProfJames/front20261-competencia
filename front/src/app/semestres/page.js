@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { listarSemestres, obterSemestrePorId, criarSemestre, atualizarSemestre, deletarSemestre } from '@/utils/api';
+import DataTable from '@/components/Table';
+import ActionButtons from '@/components/Button/ActionButtons';
+import FormButtons from '@/components/Button/FormButtons';
+import PageHeader from '@/components/PageHeader';
 
 export default function SemestresPage() {
     const [semestres, setSemestres] = useState([]);
@@ -70,38 +74,31 @@ export default function SemestresPage() {
         }
     }
 
+    const colunas = [
+        { label: 'ID', render: (semestre) => semestre.id },
+        { label: 'Nome', render: (semestre) => semestre.nome },
+        { label: 'Data Início', render: (semestre) => semestre.dataInicio },
+        { label: 'Data Fim', render: (semestre) => semestre.dataFim },
+    ];
+
     if (modo === 'listar') {
         return (
             <div style={{ padding: '20px' }}>
-                <h2>Gestão de Períodos Letivos (Semestres)</h2>
-                <button onClick={() => setModo('cadastrar')} style={{ marginBottom: '20px', padding: '8px' }}>
-                    Novo Período
-                </button>
-                <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nome</th>
-                            <th>Data Início</th>
-                            <th>Data Fim</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {semestres.map(semestre => (
-                            <tr key={semestre.id}>
-                                <td>{semestre.id}</td>
-                                <td>{semestre.nome}</td>
-                                <td>{semestre.dataInicio}</td>
-                                <td>{semestre.dataFim}</td>
-                                <td>
-                                    <button onClick={() => handleEditar(semestre.id)} style={{ marginRight: '10px' }}>Editar</button>
-                                    <button onClick={() => handleExcluir(semestre.id)}>Excluir</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <PageHeader
+                    titulo="Gestão de Períodos Letivos (Semestres)"
+                    labelBotao="Novo Período"
+                    onNovo={() => setModo('cadastrar')}
+                />
+                <DataTable
+                    colunas={colunas}
+                    dados={semestres}
+                    renderAcoes={(semestre) => (
+                        <ActionButtons
+                            onEditar={() => handleEditar(semestre.id)}
+                            onExcluir={() => handleExcluir(semestre.id)}
+                        />
+                    )}
+                />
             </div>
         );
     }
@@ -122,10 +119,7 @@ export default function SemestresPage() {
                     Data de Fim: *
                     <input type="date" value={dataFim} onChange={e => setDataFim(e.target.value)} style={{ width: '100%', padding: '8px' }} />
                 </label>
-                <div>
-                    <button type="submit" style={{ marginRight: '10px', padding: '8px 15px' }}>Salvar</button>
-                    <button type="button" onClick={limparFormulario} style={{ padding: '8px 15px' }}>Cancelar</button>
-                </div>
+                <FormButtons onCancelar={limparFormulario} />
             </form>
         </div>
     );
