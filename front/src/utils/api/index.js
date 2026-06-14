@@ -109,6 +109,11 @@ export async function logout(router) {
     }
 }
 
+export function getUsername() {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem('user');
+    }
+}
 
 export async function listarCursos() {
     return await get('/cursos');
