@@ -65,6 +65,33 @@ export default function Menu() {
             </Link>
           </li>
         )}
+
+        {(user?.profile === 'ADMIN' ||
+          user?.profile === 'COORDENADOR') && (
+          <li>
+            <Link href='/cursos' style={{ color: '#fff', fontWeight: '500' }}>
+              Cursos
+            </Link>
+          </li>
+        )}
+
+        {(user?.profile === 'ADMIN' ||
+          user?.profile === 'COORDENADOR') && (
+          <li>
+            <Link href='/turmas' style={{ color: '#fff', fontWeight: '500' }}>
+              Turmas
+            </Link>
+          </li>
+        )}
+
+        {(user?.profile === 'ADMIN' ||
+          user?.profile === 'COORDENADOR') && (
+          <li>
+            <Link href='/semestre' style={{ color: '#fff', fontWeight: '500' }}>
+              Período Letivo
+            </Link>
+          </li>
+        )}
       </ul>
 
       <button

@@ -122,7 +122,7 @@ export function form() {
 }*/
 
 import { useState, useEffect } from "react";
-import { validarToken } from "@/app/utils/verificacao_jwt";
+import { validarToken } from "@/services/verificacao_jwt";
 
 export function useCursos() {
     const [cursos, setCursos] = useState([]);

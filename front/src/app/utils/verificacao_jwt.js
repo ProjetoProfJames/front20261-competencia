@@ -1,4 +1,4 @@
-export const getToken = () => {
+/*export const getToken = () => {
     if (typeof window !== "undefined") {
         return localStorage.getItem("jwt_token") || "";
     }
@@ -35,4 +35,4 @@ export const validarToken = async(url, opcao = {}) => {
     }
 
     return response.json();
-};
+};*/

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react";
+import Menu from "@/components/Menu"; // Padronizado utilizando o alias '@/' igual a LocaisPage
 import "../global.css";
 
 export default function Turmas() {
@@ -26,7 +27,7 @@ export default function Turmas() {
 
     const getToken = () => {
         if (typeof window !== "undefined") {
-            return localStorage.getItem("jwt_token") || "";
+            return localStorage.getItem("token") || "";
         }
         return "";
     };
@@ -97,7 +98,7 @@ export default function Turmas() {
             return;
         }
 
-        setLoading(true);
+        setLoading(true)
         try {
             const result = await fetchWithAuth(`/api/turmas/${searchId}`, { method: "GET" });
             if (result.success && result.data) {
@@ -283,168 +284,168 @@ export default function Turmas() {
     };
 
     return (
-        <main className="container-principal" id="main-turmas">
-            <header>
-                <h1>Gestão de Turmas</h1>
-            </header>
+        <div className="page-wrapper">
+            <Menu />
+            
+            <div className="page-content">
+                <div className="page-header">
+                    <h1>Gestão de Turmas</h1>
+                </div>
 
-            <section className="search-section" id="section-pesquisar-turma">
-                <h2>Pesquisar Turma por ID</h2>
-                <form id="form-pesquisa" onSubmit={handleSearchById}>
-                    <fieldset>
-                        <legend>Busca</legend>
-                        <div className="form-group">
-                            <label htmlFor="searchId">ID da Turma:</label>
-                            <input
-                                type="number"
-                                id="searchId"
-                                name="searchId"
-                                value={searchId}
-                                onChange={(e) => setSearchId(e.target.value)}
-                                placeholder="Digite o ID da turma"
-                                min="1"
-                            />
-                        </div>
-                        <div className="botoes-pesquisa">
-                            <button type="submit" className="btn-primary" disabled={loading}>
-                                {loading ? "Pesquisando..." : "Pesquisar"}
+                <section className="search-section" id="section-pesquisar-turma">
+                    <h2>Pesquisar Turma por ID</h2>
+                    <form id="form-pesquisa" onSubmit={handleSearchById}>
+                            <div className="form-group">
+                                <label htmlFor="searchId">ID da Turma:</label>
+                                <input
+                                    type="number"
+                                    id="searchId"
+                                    name="searchId"
+                                    value={searchId}
+                                    onChange={(e) => setSearchId(e.target.value)}
+                                    placeholder="Digite o ID da turma"
+                                    min="1"
+                                />
+                            </div>
+                            <div className="botoes-pesquisa">
+                                <button type="submit" className="btn-primary" disabled={loading} style={{ marginBottom: '15px', padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px', marginRight: '15px' }}>
+                                    {loading ? "Pesquisando..." : "Pesquisar"}
+                                </button>
+                                <button type="button" className="btn-secondary" onClick={handleClearSearch} disabled={loading} style={{ marginBottom: '15px', padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: '#4a5568', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px' }}>
+                                    Limpar
+                                </button>
+                            </div>
+                    </form>
+                </section>
+
+                <section className="form-section" id="section-criar-turma">
+                    <h2>Criar / Preparar Atualização de Turma</h2>
+                    <form id="form-turma" onSubmit={handleCreateTurma}>
+
+                            <div className="form-group">
+                                <label htmlFor="nome">Nome da Turma:</label>
+                                <input
+                                    type="text"
+                                    id="nome"
+                                    name="nome"
+                                    value={formData.nome}
+                                    onChange={handleChange}
+                                    placeholder="Digite o nome da turma"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="cursoIds">Curso:</label>
+                                <select id="cursoIds" name="cursoIds" value={formData.cursoIds[0] || 0} onChange={handleChange}>
+                                    <option value="0">Selecione um Curso</option>
+                                    {opcoesCursos.map(curso => (
+                                        <option key={curso.id} value={curso.id}>{curso.nome}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="disciplinaId">Disciplina:</label>
+                                <select id="disciplinaId" name="disciplinaId" value={formData.disciplinaId} onChange={handleChange}>
+                                    <option value="0">Selecione uma Disciplina</option>
+                                    {opcoesDisciplinas.map(disciplina => (
+                                        <option key={disciplina.id} value={disciplina.id}>{disciplina.nome}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="semestreId">Semestre:</label>
+                                <select id="semestreId" name="semestreId" value={formData.semestreId} onChange={handleChange}>
+                                    <option value="0">Selecione um Semestre</option>
+                                    {opcoesSemestres.map(semestre => (
+                                        <option key={semestre.id} value={semestre.id}>{semestre.nome}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="professorIds">Professor:</label>
+                                <select id="professorIds" name="professorIds" value={formData.professorIds[0] || 0} onChange={handleChange}>
+                                    <option value="0">Selecione um Professor</option>
+                                    {opcoesProfessores.map(professor => (
+                                        <option key={professor.id} value={professor.id}>{professor.nome}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <button type="submit" className="btn-primary" id="btn-criar" disabled={loading} style={{ padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px', marginBottom: '15px' }}>
+                                {loading ? "Processando..." : "Criar Turma"}
                             </button>
-                            <button type="button" className="btn-secondary" onClick={handleClearSearch} disabled={loading}>
-                                Limpar
-                            </button>
-                        </div>
-                    </fieldset>
-                </form>
-            </section>
+                    </form>
+                </section>
 
-            <section className="form-section" id="section-criar-turma">
-                <h2>Criar / Preparar Atualização de Turma</h2>
-                <form id="form-turma" onSubmit={handleCreateTurma}>
-                    <fieldset>
-                        <legend>Dados da Turma</legend>
+                <section className="list-section" id="section-listar-turmas">
+                    <h2>Turmas Cadastradas</h2>
+                    {loading && <p>Carregando turmas...</p>}
+                    {turmas.length > 0 ? (
+                        <ul className="lista-turmas" id="ul-turmas">
+                            {turmas.map(turma => (
+                                <li key={turma.id} className="item-turma">
+                                    <h3>{turma.nome}</h3>
 
-                        <div className="form-group">
-                            <label htmlFor="nome">Nome da Turma:</label>
-                            <input
-                                type="text"
-                                id="nome"
-                                name="nome"
-                                value={formData.nome}
-                                onChange={handleChange}
-                                placeholder="Digite o nome da turma"
-                            />
-                        </div>
+                                    <p><strong>Cursos:</strong> {turma.cursos && turma.cursos.length > 0 ? turma.cursos.map(c => c.nome).join(", ") : "N/A"}</p>
+                                    <p><strong>Disciplina:</strong> {turma.disciplina?.nome || "N/A"}</p>
+                                    <p><strong>Semestre:</strong> {turma.semestre?.nome || "N/A"}</p>
+                                    <p><strong>Professores:</strong> {turma.professores && turma.professores.length > 0 ? turma.professores.map(p => p.username).join(", ") : "N/A"}</p>
 
-                        <div className="form-group">
-                            <label htmlFor="cursoIds">Curso:</label>
-                            <select id="cursoIds" name="cursoIds" value={formData.cursoIds[0] || 0} onChange={handleChange}>
-                                <option value="0">Selecione um Curso</option>
-                                {opcoesCursos.map(curso => (
-                                    <option key={curso.id} value={curso.id}>{curso.nome}</option>
-                                ))}
-                            </select>
-                        </div>
+                                    <div className="acoes-turma">
+                                        <button
+                                            className="btn-warning"
+                                            onClick={() => handleUpdateTurma(turma.id)}
+                                            disabled={loading}>
+                                            style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#dd6b20', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}
+                                            Atualizar com Dados do Form
+                                        </button>
+                                        <button
+                                            className="btn-danger"
+                                            onClick={() => handleDeleteTurma(turma.id)}
+                                            disabled={loading}>
+                                            style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#e53e3e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}
+                                            Deletar Turma
+                                        </button>
+                                    </div>
 
-                        <div className="form-group">
-                            <label htmlFor="disciplinaId">Disciplina:</label>
-                            <select id="disciplinaId" name="disciplinaId" value={formData.disciplinaId} onChange={handleChange}>
-                                <option value="0">Selecione uma Disciplina</option>
-                                {opcoesDisciplinas.map(disciplina => (
-                                    <option key={disciplina.id} value={disciplina.id}>{disciplina.nome}</option>
-                                ))}
-                            </select>
-                        </div>
+                                    <div className="gestao-alunos">
+                                        <h4>Alunos da Turma</h4>
+                                        <ul>
+                                            {turma.alunos && turma.alunos.length > 0 ? turma.alunos.map(aluno => (
+                                                <li key={`${turma.id}-${aluno.id}`}>
+                                                    {aluno.username} ({aluno.email})
+                                                    <button
+                                                        className="btn-remover-aluno"
+                                                        onClick={() => handleRemoveAluno(turma.id, aluno.id)}
+                                                        disabled={loading}>
+                                                        Remover
+                                                    </button>
+                                                </li>
+                                            )) : <li>Nenhum aluno matriculado</li>}
+                                        </ul>
 
-                        <div className="form-group">
-                            <label htmlFor="semestreId">Semestre:</label>
-                            <select id="semestreId" name="semestreId" value={formData.semestreId} onChange={handleChange}>
-                                <option value="0">Selecione um Semestre</option>
-                                {opcoesSemestres.map(semestre => (
-                                    <option key={semestre.id} value={semestre.id}>{semestre.nome}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="professorIds">Professor:</label>
-                            <select id="professorIds" name="professorIds" value={formData.professorIds[0] || 0} onChange={handleChange}>
-                                <option value="0">Selecione um Professor</option>
-                                {opcoesProfessores.map(professor => (
-                                    <option key={professor.id} value={professor.id}>{professor.nome}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <button type="submit" className="btn-primary" id="btn-criar" disabled={loading}>
-                            {loading ? "Processando..." : "Criar Turma"}
-                        </button>
-                    </fieldset>
-                </form>
-            </section>
-
-            <section className="list-section" id="section-listar-turmas">
-                <h2>Turmas Cadastradas</h2>
-                {loading && <p>Carregando turmas...</p>}
-                {turmas.length > 0 ? (
-                    <ul className="lista-turmas" id="ul-turmas">
-                        {turmas.map(turma => (
-                            <li key={turma.id} className="item-turma">
-                                <h3>{turma.nome}</h3>
-
-                                <p><strong>Cursos:</strong> {turma.cursos && turma.cursos.length > 0 ? turma.cursos.map(c => c.nome).join(", ") : "N/A"}</p>
-                                <p><strong>Disciplina:</strong> {turma.disciplina?.nome || "N/A"}</p>
-                                <p><strong>Semestre:</strong> {turma.semestre?.nome || "N/A"}</p>
-                                <p><strong>Professores:</strong> {turma.professores && turma.professores.length > 0 ? turma.professores.map(p => p.username).join(", ") : "N/A"}</p>
-
-                                <div className="acoes-turma">
-                                    <button
-                                        className="btn-warning"
-                                        onClick={() => handleUpdateTurma(turma.id)}
-                                        disabled={loading}>
-                                        Atualizar com Dados do Form
-                                    </button>
-                                    <button
-                                        className="btn-danger"
-                                        onClick={() => handleDeleteTurma(turma.id)}
-                                        disabled={loading}>
-                                        Deletar Turma
-                                    </button>
-                                </div>
-
-                                <div className="gestao-alunos">
-                                    <h4>Alunos da Turma</h4>
-                                    <ul>
-                                        {turma.alunos && turma.alunos.length > 0 ? turma.alunos.map(aluno => (
-                                            <li key={`${turma.id}-${aluno.id}`}>
-                                                {aluno.username} ({aluno.email})
-                                                <button
-                                                    className="btn-remover-aluno"
-                                                    onClick={() => handleRemoveAluno(turma.id, aluno.id)}
-                                                    disabled={loading}>
-                                                    Remover
-                                                </button>
-                                            </li>
-                                        )) : <li>Nenhum aluno matriculado</li>}
-                                    </ul>
-
-                                    <form onSubmit={(e) => handleAddAluno(e, turma.id)} className="form-add-aluno">
-                                        <input
-                                            type="number"
-                                            placeholder="ID do Aluno"
-                                            value={alunoIdForm}
-                                            onChange={(e) => setAlunoIdForm(e.target.value)}
-                                            min="1"
-                                        />
-                                        <button type="submit" className="btn-secondary" disabled={loading}>Matricular Aluno</button>
-                                    </form>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    !loading && <p>Nenhuma turma cadastrada ou erro ao buscar.</p>
-                )}
-            </section>
-        </main>
+                                        <form onSubmit={(e) => handleAddAluno(e, turma.id)} className="form-add-aluno">
+                                            <input
+                                                type="number"
+                                                placeholder="ID do Aluno"
+                                                value={alunoIdForm}
+                                                onChange={(e) => setAlunoIdForm(e.target.value)}
+                                                min="1"
+                                            />
+                                            <button type="submit" className="btn-secondary" disabled={loading}>Matricular Aluno</button>
+                                        </form>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        !loading && <p>Nenhuma turma cadastrada ou erro ao buscar.</p>
+                    )}
+                </section>
+            </div>
+        </div>
     );
 }

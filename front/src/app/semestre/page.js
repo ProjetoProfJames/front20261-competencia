@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import "../global.css";
+import Menu from '@/components/Menu';
 
 export default function Semestres() {
     const [semestres, setSemestres] = useState([]);
@@ -16,7 +17,7 @@ export default function Semestres() {
 
     const getToken = () => {
         if (typeof window !== "undefined") {
-            return localStorage.getItem("jwt_token") || "";
+            return localStorage.getItem("token") || "";
         }
         return "";
     };
@@ -135,7 +136,7 @@ export default function Semestres() {
                     body: JSON.stringify(payload)
                 });
                 if (result.success) {
-                    alert("Semestre atualizado com sucesso!");
+                    alert("Semestre updated com sucesso!");
                     setEditingId(null);
                     setFormData({ nome: "", dataInicio: "", dataFim: "" });
                     fetchSemestres();
@@ -195,16 +196,17 @@ export default function Semestres() {
     };
 
     return (
-        <main className="container-principal" id="main-semestres">
-            <header>
-                <h1>Gestão de Semestres</h1> 
-            </header>
+        <div className="page-wrapper">
+            <Menu />
 
-            <section className="search-section" id="section-pesquisar-semestre">
-                <h2>Pesquisar Semestre por ID</h2>
-                <form id="form-pesquisa" onSubmit={handleSearchById}>
-                    <fieldset>
-                        <legend>Busca</legend>
+            <div className="page-content">
+                <div className="page-header">
+                    <h1>Gestão de Semestres</h1>
+                </div>
+
+                <section className="search-section" id="section-pesquisar-semestre">
+                    <h2>Pesquisar Semestre por ID</h2>
+                    <form id="form-pesquisa" onSubmit={handleSearchById}>
                         <div className="form-group">
                             <label htmlFor="searchId">ID do Semestre:</label>
                             <input
@@ -218,23 +220,30 @@ export default function Semestres() {
                             />
                         </div>
                         <div className="botoes-pesquisa">
-                            <button type="submit" className="btn-primary" disabled={loading}>
+                            <button
+                                type="submit"
+                                className="btn-primary"
+                                disabled={loading}
+                                style={{ marginBottom: '15px', padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px', marginRight: '15px' }}
+                            >
                                 {loading ? "Pesquisando..." : "Pesquisar"}
                             </button>
-                            <button type="button" className="btn-secondary" onClick={handleClearSearch} disabled={loading}>
+                            <button
+                                type="button"
+                                className="btn-secondary"
+                                onClick={handleClearSearch}
+                                disabled={loading}
+                                style={{ marginBottom: '15px', padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: '#4a5568', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px' }}
+                            >
                                 Limpar
                             </button>
                         </div>
-                    </fieldset>
-                </form>
-            </section>
+                    </form>
+                </section>
 
-            <section className="form-section" id="section-form-semestre">
-                <h2>{editingId ? "Editar Semestre" : "Cadastrar Novo Semestre"}</h2>
-                <form id="form-semestre" onSubmit={handleSubmit}>
-                    <fieldset>
-                        <legend>Dados do Semestre</legend>
-
+                <section className="form-section" id="section-form-semestre">
+                    <h2>{editingId ? "Editar Semestre" : "Cadastrar Novo Semestre"}</h2>
+                    <form id="form-semestre" onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label htmlFor="nome">Nome do Semestre (Ex: 2026.1):</label>
                             <input
@@ -270,68 +279,82 @@ export default function Semestres() {
                         </div>
 
                         <div className="botoes-pesquisa">
-                            <button type="submit" className="btn-primary" id="btn-salvar" disabled={loading}>
+                            <button
+                                type="submit"
+                                className="btn-primary"
+                                id="btn-criar"
+                                disabled={loading}
+                                style={{ padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px', marginBottom: '15px', marginRight: editingId ? '15px' : '0px' }}
+                            >
                                 {loading ? "Processando..." : (editingId ? "Salvar Alterações" : "Cadastrar Semestre")}
                             </button>
                             {editingId && (
-                                <button type="button" className="btn-secondary" onClick={handleCancelEdit} disabled={loading}>
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    onClick={handleCancelEdit}
+                                    disabled={loading}
+                                    style={{ padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: '#4a5568', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px', marginBottom: '15px' }}
+                                >
                                     Cancelar Edição
                                 </button>
                             )}
                         </div>
-                    </fieldset>
-                </form>
-            </section>
+                    </form>
+                </section>
 
-            <section className="list-section" id="section-listar-semestres">
-                <h2>Semestres Cadastrados</h2>
-                {loading && <p>Carregando semestres...</p>}
-                {semestres.length > 0 ? (
-                    <table className="tabela-cursos" style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-                        <thead>
-                            <tr>
-                                <th style={{ border: '1px solid #ccc', padding: '10px' }}>ID</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px' }}>Nome</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px' }}>Data de Início</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px' }}>Data de Fim</th>
-                                <th style={{ border: '1px solid #ccc', padding: '10px' }}>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {semestres.map(semestre => (
-                                <tr key={semestre.id} style={{ textAlign: 'center' }}>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px' }}>{semestre.id}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px' }}>{semestre.nome}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px' }}>{formatDate(semestre.dataInicio)}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px' }}>{formatDate(semestre.dataFim)}</td>
-                                    <td style={{ border: '1px solid #ccc', padding: '10px' }}>
-                                        <div style={{ display: 'flex', gap: '5px', justifyContent: 'center' }}>
-                                            <button 
-                                                className="btn-warning" 
-                                                style={{ width: 'auto', padding: '5px 10px' }}
-                                                onClick={() => handleEditClick(semestre)} 
-                                                disabled={loading}
-                                            >
-                                                Editar
-                                            </button>
-                                            <button 
-                                                className="btn-danger" 
-                                                style={{ width: 'auto', padding: '5px 10px' }}
-                                                onClick={() => handleDeleteSemestre(semestre.id)} 
-                                                disabled={loading}
-                                            >
-                                                Excluir
-                                            </button>
-                                        </div>
-                                    </td>
+                <section className="list-section" id="section-listar-semestres">
+                    <h2>Semestres Cadastrados</h2>
+                    {loading && <p>Carregando semestres...</p>}
+                    {semestres.length > 0 ? (
+                        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '15px' }}>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Data de Início</th>
+                                    <th>Data de Fim</th>
+                                    <th>Ações</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    !loading && <p>Nenhum semestre cadastrado ou erro ao buscar.</p>
-                )}
-            </section>
-        </main>
+                            </thead>
+                            <tbody>
+                                {semestres.map(semestre => (
+                                    <tr key={semestre.id} style={{ textAlign: "center" }}>
+                                        <td>{semestre.id}</td>
+                                        <td>{semestre.nome}</td>
+                                        <td>{formatDate(semestre.dataInicio)}</td>
+                                        <td>{formatDate(semestre.dataFim)}</td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                                <button
+                                                    type="button"
+                                                    className="btn-warning"
+                                                    onClick={() => handleEditClick(semestre)}
+                                                    disabled={loading}
+                                                    style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#dd6b20', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}
+                                                >
+                                                    Editar
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn-danger"
+                                                    onClick={() => handleDeleteSemestre(semestre.id)}
+                                                    disabled={loading}
+                                                    style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#e53e3e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}
+                                                >
+                                                    Excluir
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        !loading && <p>Nenhum semestre cadastrado ou erro ao buscar.</p>
+                    )}
+                </section>
+            </div>
+        </div>
     );
 }
