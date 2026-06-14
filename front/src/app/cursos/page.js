@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useCursos } from "@/app/hooks/useCursos";
+import { getUsers } from "@/services/userService";
 import "../global.css";
 import Menu from '@/components/Menu';
 
@@ -21,16 +23,27 @@ export default function Cursos() {
         deleteCurso
     } = useCursos();
 
-    const opcoesCoordenadores = [
-        { id: 1, username: "Coord. João" },
-        { id: 2, username: "Coord. Maria" }
-    ];
+    const [opcoesCoordenadores, setOpcoesCoordenadores] = useState([]);
+    const [opcoesProfessores, setOpcoesProfessores] = useState([]);
 
-    const opcoesProfessores = [
-        { id: 1, username: "Prof. Silva" },
-        { id: 2, username: "Prof. Santos" },
-        { id: 3, username: "Prof. Oliveira" }
-    ];
+    useEffect(() => {
+        async function carregarOpcoes() {
+            try {
+                const response = await getUsers();
+                const todosUsuarios = response.data || []; 
+
+                const coordenadores = todosUsuarios.filter(user => user.profile === 'COORDENADOR');
+                const professores = todosUsuarios.filter(user => user.profile === 'PROFESSOR');
+
+                setOpcoesCoordenadores(coordenadores);
+                setOpcoesProfessores(professores);
+            } catch (error) {
+                console.error("Erro ao carregar opções de coordenadores e professores:", error);
+            }
+        }
+
+        carregarOpcoes();
+    }, []);
 
     return (
         <div className="page-wrapper">
