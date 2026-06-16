@@ -28,16 +28,16 @@ export default function Menu() {
 
   return (
     <nav style={{ padding: "15px", backgroundColor: "#f4f4f4", borderBottom: "2px solid #ccc", display: "flex", gap: "20px", alignItems: "center" }}>
-      
       <strong style={{ color: "#333" }}>Olá, {user.username}</strong>
       
       <Link href="/" style={{ color: "blue", textDecoration: "none" }}>Home</Link>
       
+      {user.profile === "ADMIN" && (
+        <Link href="/usuarios" style={{ color: "blue", textDecoration: "none" }}>Usuários</Link>
+      )}
+      
       {(user.profile === "ADMIN" || user.profile === "COORDENADOR") && (
-        <>
-          <Link href="/usuarios" style={{ color: "blue", textDecoration: "none" }}>Usuários</Link>
-          <Link href="/locais" style={{ color: "blue", textDecoration: "none" }}>Locais</Link>
-        </>
+        <Link href="/locais" style={{ color: "blue", textDecoration: "none" }}>Locais</Link>
       )}
 
       <button 

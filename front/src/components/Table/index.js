@@ -1,5 +1,5 @@
 export default function Table({ columns, data }) {
-  if (!data || data.length === 0) {
+  if (!Array.isArray(data) || data.length === 0) {
     return <p style={{ marginTop: "20px", color: "#666" }}>Nenhum registro encontrado.</p>;
   }
 
