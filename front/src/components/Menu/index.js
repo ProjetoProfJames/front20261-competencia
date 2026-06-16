@@ -78,6 +78,15 @@ export default function Menu() {
         {(user?.profile === 'ADMIN' ||
           user?.profile === 'COORDENADOR') && (
           <li>
+            <Link href='/disciplinas' style={{ color: '#fff', fontWeight: '500' }}>
+              Disciplinas
+            </Link>
+          </li>
+        )}
+
+        {(user?.profile === 'ADMIN' ||
+          user?.profile === 'COORDENADOR') && (
+          <li>
             <Link href='/turmas' style={{ color: '#fff', fontWeight: '500' }}>
               Turmas
             </Link>

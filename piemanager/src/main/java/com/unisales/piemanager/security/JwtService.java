@@ -18,15 +18,40 @@ public class JwtService {
     private final long expirationMs;
 
     public JwtService(@Value("${app.jwt.secret}") String secret,
-                      @Value("${app.jwt.expiration-ms}") long expirationMs) {
+            @Value("${app.jwt.expiration-ms}") long expirationMs) {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String subject) {
+    /*
+     * public String generateToken(String subject) {
+     * Instant now = Instant.now();
+     * return Jwts.builder()
+     * .subject(subject)
+     * .issuedAt(Date.from(now))
+     * .expiration(Date.from(now.plusMillis(expirationMs)))
+     * .signWith(key)
+     * .compact();
+     * }
+     */
+
+    /*
+     * public String generateToken(String subject) {
+     * Instant now = Instant.now();
+     * return Jwts.builder()
+     * .subject(subject)
+     * .issuedAt(Date.from(now))
+     * .expiration(Date.from(now.plusMillis(expirationMs)))
+     * .signWith(key)
+     * .compact();
+     * }
+     */
+
+    public String generateToken(String subject, String role) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(subject)
+                .claim("role", role) // ← ADICIONAR
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMs)))
                 .signWith(key)

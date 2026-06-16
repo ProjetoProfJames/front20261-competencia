@@ -1,448 +1,490 @@
-"use client"
+/*"use client";
 
-import { useState, useEffect } from "react";
-import Menu from "@/components/Menu"; // Padronizado utilizando o alias '@/' igual a LocaisPage
+import { useTurmas } from "@/app/hooks/useTurmas"; // Ajuste o caminho exato onde salvou o seu hook
+import Menu from "@/components/Menu";
 import "../global.css";
 
-export default function Turmas() {
-    const [turmas, setTurmas] = useState([]);
-
-    const [formData, setFormData] = useState({
-        nome: "",
-        cursoIds: [],
-        disciplinaId: 0,
-        semestreId: 0,
-        professorIds: []
-    });
-
-    const [alunoIdForm, setAlunoIdForm] = useState("");
-    const [loading, setLoading] = useState(false);
-
-    const [searchId, setSearchId] = useState("");
-
-    const opcoesCursos = [{ id: 1, nome: "Engenharia" }, { id: 2, nome: "Computação" }];
-    const opcoesDisciplinas = [{ id: 1, nome: "Cálculo" }, { id: 2, nome: "Programação Web" }];
-    const opcoesSemestres = [{ id: 1, nome: "2026.1" }, { id: 2, nome: "2026.2" }];
-    const opcoesProfessores = [{ id: 1, nome: "Prof. Silva" }, { id: 2, nome: "Prof. Santos" }];
-
-    const getToken = () => {
-        if (typeof window !== "undefined") {
-            return localStorage.getItem("token") || "";
-        }
-        return "";
-    };
-
-    const fetchWithAuth = async (url, options = {}) => {
-        const token = getToken();
-
-        if (!token) {
-            alert("Token JWT não encontrado. Faça login novamente!");
-            throw new Error("Token JWT não encontrado");
-        }
-
-        const response = await fetch(url, {
-            ...options,
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-                ...options.headers
-            }
-        });
-
-        const contentType = response.headers.get("content-type");
-        const isJson = contentType && contentType.includes("application/json");
-
-        if (!response.ok) {
-            const errorBody = isJson ? await response.json() : await response.text();
-            console.error(`Erro HTTP ${response.status} em ${url}:`, errorBody);
-            throw new Error(`HTTP ${response.status}: ${isJson ? JSON.stringify(errorBody) : "Resposta não-JSON"}`);
-        }
-
-        if (!isJson) {
-            throw new Error(`Resposta inesperada de ${url}: não é JSON`);
-        }
-
-        return response.json();
-    };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: name.includes("Ids") ? [Number(value)] : (name === "nome" ? value : Number(value))
-        }));
-    };
-
-    const fetchTurmas = async () => {
-        setLoading(true);
-        try {
-            const result = await fetchWithAuth("/api/turmas", { method: "GET" });
-            if (result.success) {
-                setTurmas(result.data);
-            } else {
-                console.warn("API retornou success=false:", result);
-            }
-        } catch (error) {
-            console.error("Erro ao buscar turmas:", error.message);
-            alert("Não foi possível carregar as turmas. Verifique se a API está no ar!");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSearchById = async (e) => {
-        e.preventDefault();
-
-        if (searchId === "" || Number(searchId) === 0) {
-            alert("Digite um ID válido para pesquisar!");
-            return;
-        }
-
-        setLoading(true)
-        try {
-            const result = await fetchWithAuth(`/api/turmas/${searchId}`, { method: "GET" });
-            if (result.success && result.data) {
-                setTurmas([result.data]);
-                alert(`Turma encontrada: ${result.data.nome}`);
-            } else {
-                alert("Turma não encontrada!");
-                setTurmas([]);
-            }
-        } catch (error) {
-            console.error("Erro ao pesquisar turma:", error.message);
-            alert("Erro ao pesquisar turma. Verifique o ID e tente novamente.");
-            setTurmas([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleClearSearch = () => {
-        setSearchId("");
-        fetchTurmas();
-    };
-
-    useEffect(() => {
-        fetchTurmas();
-    }, []);
-
-    const handleCreateTurma = async (e) => {
-        e.preventDefault();
-
-        if (formData.nome === "") {
-            alert("O campo Nome da Turma não pode estar vazio!");
-            return;
-        }
-        if (formData.cursoIds.length === 0 || formData.cursoIds[0] === 0) {
-            alert("Selecione pelo menos um Curso!");
-            return;
-        }
-        if (formData.disciplinaId === 0) {
-            alert("Selecione uma Disciplina!");
-            return;
-        }
-        if (formData.semestreId === 0) {
-            alert("Selecione um Semestre!");
-            return;
-        }
-        if (formData.professorIds.length === 0 || formData.professorIds[0] === 0) {
-            alert("Selecione pelo menos um Professor!");
-            return;
-        }
-
-        try {
-            const result = await fetchWithAuth("/api/turmas", {
-                method: "POST",
-                body: JSON.stringify(formData)
-            });
-
-            if (result.success) {
-                alert("Turma criada com sucesso!");
-                fetchTurmas();
-            }
-        } catch (error) {
-            console.error("Erro ao criar turma:", error.message);
-            alert("Erro ao criar turma. Verifique o console para mais detalhes.");
-        }
-    };
-
-    const handleUpdateTurma = async (id) => {
-        if (!id) {
-            alert("ID da turma inválido!");
-            return;
-        }
-
-        if (formData.nome === "") {
-            alert("Preencha o Nome da Turma no formulário antes de atualizar.");
-            return;
-        }
-        if (formData.cursoIds.length === 0 || formData.cursoIds[0] === 0) {
-            alert("Selecione pelo menos um Curso no formulário antes de atualizar.");
-            return;
-        }
-        if (formData.disciplinaId === 0) {
-            alert("Selecione uma Disciplina no formulário antes de atualizar.");
-            return;
-        }
-        if (formData.semestreId === 0) {
-            alert("Selecione um Semestre no formulário antes de atualizar.");
-            return;
-        }
-        if (formData.professorIds.length === 0 || formData.professorIds[0] === 0) {
-            alert("Selecione pelo menos um Professor no formulário antes de atualizar.");
-            return;
-        }
-
-        try {
-            const result = await fetchWithAuth(`/api/turmas/${id}`, {
-                method: "PUT",
-                body: JSON.stringify(formData)
-            });
-            if (result.success) {
-                alert("Turma atualizada com sucesso!");
-                fetchTurmas();
-            }
-        } catch (error) {
-            console.error("Erro ao atualizar turma:", error.message);
-            alert("Erro ao atualizar turma.");
-        }
-    };
-
-    const handleDeleteTurma = async (id) => {
-        if (!id) {
-            alert("ID da turma inválido!");
-            return;
-        }
-
-        if (!confirm("Tem certeza que deseja deletar esta turma?")) return;
-
-        try {
-            const result = await fetchWithAuth(`/api/turmas/${id}`, { method: "DELETE" });
-            if (result.success) {
-                alert("Turma deletada com sucesso!");
-                fetchTurmas();
-            }
-        } catch (error) {
-            console.error("Erro ao deletar turma:", error.message);
-            alert("Erro ao deletar turma.");
-        }
-    };
-
-    const handleAddAluno = async (e, turmaId) => {
-        e.preventDefault();
-
-        if (!turmaId) {
-            alert("ID da turma inválido!");
-            return;
-        }
-
-        if (alunoIdForm === "" || Number(alunoIdForm) === 0) {
-            alert("O campo de ID do Aluno não pode estar vazio!");
-            return;
-        }
-
-        const payload = { alunoId: Number(alunoIdForm) };
-
-        try {
-            const result = await fetchWithAuth(`/api/turmas/${turmaId}/alunos`, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-            if (result.success) {
-                alert("Aluno matriculado com sucesso na turma!");
-                setAlunoIdForm("");
-                fetchTurmas();
-            }
-        } catch (error) {
-            console.error("Erro ao matricular aluno:", error.message);
-            alert("Erro ao matricular aluno.");
-        }
-    };
-
-    const handleRemoveAluno = async (turmaId, alunoId) => {
-        if (!turmaId) {
-            alert("ID da turma inválido!");
-            return;
-        }
-        if (!alunoId) {
-            alert("ID do aluno inválido!");
-            return;
-        }
-
-        if (!confirm("Remover aluno da turma?")) return;
-
-        try {
-            const result = await fetchWithAuth(`/api/turmas/${turmaId}/alunos/${alunoId}`, { method: "DELETE" });
-            if (result.success) {
-                alert("Aluno removido da turma com sucesso!");
-                fetchTurmas();
-            }
-        } catch (error) {
-            console.error("Erro ao remover aluno:", error.message);
-            alert("Erro ao remover aluno.");
-        }
-    };
+export default function TurmasPage() {
+    const {
+        turmas,
+        loading,
+        formData,
+        searchId,
+        editingId,
+        alunoIdForm,
+        cursos,
+        disciplinas,
+        semestres,
+        professores,
+        setSearchId,
+        setAlunoIdForm,
+        handleChange,
+        searchById,
+        clearSearch,
+        submit,
+        editClick,
+        cancelEdit,
+        deleteTurma,
+        handleAddAluno,
+        handleRemoveAluno
+    } = useTurmas();
 
     return (
         <div className="page-wrapper">
             <Menu />
-            
+
             <div className="page-content">
                 <div className="page-header">
                     <h1>Gestão de Turmas</h1>
                 </div>
 
-                <section className="search-section" id="section-pesquisar-turma">
+               
+                <section className="search-section">
                     <h2>Pesquisar Turma por ID</h2>
-                    <form id="form-pesquisa" onSubmit={handleSearchById}>
-                            <div className="form-group">
-                                <label htmlFor="searchId">ID da Turma:</label>
-                                <input
-                                    type="number"
-                                    id="searchId"
-                                    name="searchId"
-                                    value={searchId}
-                                    onChange={(e) => setSearchId(e.target.value)}
-                                    placeholder="Digite o ID da turma"
-                                    min="1"
-                                />
-                            </div>
-                            <div className="botoes-pesquisa">
-                                <button type="submit" className="btn-primary" disabled={loading} style={{ marginBottom: '15px', padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px', marginRight: '15px' }}>
-                                    {loading ? "Pesquisando..." : "Pesquisar"}
+                    <form onSubmit={searchById} className="search-form">
+                        
+                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px', marginBottom: '35px' }}>
+
+                            <input
+                                type="number"
+                                placeholder="ID da Turma"
+                                value={searchId}
+                                onChange={(e) => setSearchId(e.target.value)}
+                                style={{ width: '100%' }} // Ocupa a largura total da linha de cima
+                            />
+
+                            
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <button
+                                    type="submit"
+                                    className="btn-primary"
+                                    disabled={loading}
+                                    style={{ padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px' }}
+                                >
+                                    Buscar
                                 </button>
-                                <button type="button" className="btn-secondary" onClick={handleClearSearch} disabled={loading} style={{ marginBottom: '15px', padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: '#4a5568', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px' }}>
+
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    onClick={clearSearch}
+                                    disabled={loading}
+                                    style={{ padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: '#4a5568', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px' }}
+                                >
                                     Limpar
                                 </button>
                             </div>
+
+                        </div>
                     </form>
                 </section>
 
-                <section className="form-section" id="section-criar-turma">
-                    <h2>Criar / Preparar Atualização de Turma</h2>
-                    <form id="form-turma" onSubmit={handleCreateTurma}>
+             
+                <section className="form-section">
+                    <h2>{editingId ? "Editar Turma" : "Cadastrar Nova Turma"}</h2>
+                    <form onSubmit={submit}>
+                        <div className="form-group">
+                            <label htmlFor="nome">Nome da Turma:</label>
+                            <input
+                                type="text"
+                                id="nome"
+                                name="nome"
+                                value={formData.nome}
+                                onChange={handleChange}
+                                placeholder="Ex: Engenharia de Software - Noturno"
+                                required
+                            />
+                        </div>
 
-                            <div className="form-group">
-                                <label htmlFor="nome">Nome da Turma:</label>
-                                <input
-                                    type="text"
-                                    id="nome"
-                                    name="nome"
-                                    value={formData.nome}
-                                    onChange={handleChange}
-                                    placeholder="Digite o nome da turma"
-                                />
-                            </div>
+                        <div className="form-group">
+                            <label htmlFor="cursoIds">Curso:</label>
+                            <select
+                                id="cursoIds"
+                                name="cursoIds"
+                                value={formData.cursoIds[0] || "0"}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="0">Selecione um Curso</option>
+                                {cursos.map(curso => (
+                                    <option key={curso.id} value={curso.id}>{curso.nome}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                            <div className="form-group">
-                                <label htmlFor="cursoIds">Curso:</label>
-                                <select id="cursoIds" name="cursoIds" value={formData.cursoIds[0] || 0} onChange={handleChange}>
-                                    <option value="0">Selecione um Curso</option>
-                                    {opcoesCursos.map(curso => (
-                                        <option key={curso.id} value={curso.id}>{curso.nome}</option>
-                                    ))}
-                                </select>
-                            </div>
+                        <div className="form-group">
+                            <label htmlFor="disciplinaId">Disciplina:</label>
+                            <select
+                                id="disciplinaId"
+                                name="disciplinaId"
+                                value={formData.disciplinaId || "0"}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="0">Selecione uma Disciplina</option>
+                                {disciplinas.map(disc => (
+                                    <option key={disc.id} value={disc.id}>{disc.nome}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                            <div className="form-group">
-                                <label htmlFor="disciplinaId">Disciplina:</label>
-                                <select id="disciplinaId" name="disciplinaId" value={formData.disciplinaId} onChange={handleChange}>
-                                    <option value="0">Selecione uma Disciplina</option>
-                                    {opcoesDisciplinas.map(disciplina => (
-                                        <option key={disciplina.id} value={disciplina.id}>{disciplina.nome}</option>
-                                    ))}
-                                </select>
-                            </div>
+                        <div className="form-group">
+                            <label htmlFor="semestreId">Semestre:</label>
+                            <select
+                                id="semestreId"
+                                name="semestreId"
+                                value={formData.semestreId || "0"}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="0">Selecione um Semestre</option>
+                                {semestres.map(sem => (
+                                    <option key={sem.id} value={sem.id}>{sem.nome}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                            <div className="form-group">
-                                <label htmlFor="semestreId">Semestre:</label>
-                                <select id="semestreId" name="semestreId" value={formData.semestreId} onChange={handleChange}>
-                                    <option value="0">Selecione um Semestre</option>
-                                    {opcoesSemestres.map(semestre => (
-                                        <option key={semestre.id} value={semestre.id}>{semestre.nome}</option>
-                                    ))}
-                                </select>
-                            </div>
+                        <div className="form-group">
+                            <label htmlFor="professorIds">Professor:</label>
+                            <select
+                                id="professorIds"
+                                name="professorIds"
+                                value={formData.professorIds[0] || "0"}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="0">Selecione um Professor</option>
+                                {professores.map(prof => (
+                                    <option key={prof.id} value={prof.id}>{prof.nome || prof.username}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                            <div className="form-group">
-                                <label htmlFor="professorIds">Professor:</label>
-                                <select id="professorIds" name="professorIds" value={formData.professorIds[0] || 0} onChange={handleChange}>
-                                    <option value="0">Selecione um Professor</option>
-                                    {opcoesProfessores.map(professor => (
-                                        <option key={professor.id} value={professor.id}>{professor.nome}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <button type="submit" className="btn-primary" id="btn-criar" disabled={loading} style={{ padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px', marginBottom: '15px' }}>
-                                {loading ? "Processando..." : "Criar Turma"}
+                        <div className="form-buttons">
+                            <button type="submit" className="btn-primary" disabled={loading} style={{ marginBottom: '15px', padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px' }}>
+                                {editingId ? "Salvar Alterações" : "Cadastrar Turma"}
                             </button>
+                            {editingId && (
+                                <button type="button" className="btn-secondary" onClick={cancelEdit} disabled={loading}>
+                                    Cancelar
+                                </button>
+                            )}
+                        </div>
                     </form>
                 </section>
 
-                <section className="list-section" id="section-listar-turmas">
+              
+                <section className="list-section">
                     <h2>Turmas Cadastradas</h2>
-                    {loading && <p>Carregando turmas...</p>}
-                    {turmas.length > 0 ? (
-                        <ul className="lista-turmas" id="ul-turmas">
-                            {turmas.map(turma => (
-                                <li key={turma.id} className="item-turma">
-                                    <h3>{turma.nome}</h3>
+                    {loading && <p>Processando requisição de dados...</p>}
 
-                                    <p><strong>Cursos:</strong> {turma.cursos && turma.cursos.length > 0 ? turma.cursos.map(c => c.nome).join(", ") : "N/A"}</p>
-                                    <p><strong>Disciplina:</strong> {turma.disciplina?.nome || "N/A"}</p>
-                                    <p><strong>Semestre:</strong> {turma.semestre?.nome || "N/A"}</p>
-                                    <p><strong>Professores:</strong> {turma.professores && turma.professores.length > 0 ? turma.professores.map(p => p.username).join(", ") : "N/A"}</p>
-
-                                    <div className="acoes-turma">
-                                        <button
-                                            className="btn-warning"
-                                            onClick={() => handleUpdateTurma(turma.id)}
-                                            disabled={loading}>
-                                            style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#dd6b20', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}
-                                            Atualizar com Dados do Form
-                                        </button>
-                                        <button
-                                            className="btn-danger"
-                                            onClick={() => handleDeleteTurma(turma.id)}
-                                            disabled={loading}>
-                                            style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#e53e3e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}
-                                            Deletar Turma
-                                        </button>
+                    {!loading && turmas.length > 0 ? (
+                        <ul className="cards-list" style={{ listStyle: 'none', padding: 0 }}>
+                            {turmas.map((turma) => (
+                                <li key={turma.id} className="card-item" style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+                                    <div className="card-info">
+                                        <h3>{turma.nome} <span style={{ fontSize: '14px', color: '#666' }}>(ID: {turma.id})</span></h3>
+                                        <p><strong>Curso:</strong> {turma.cursos?.map(c => c.nome).join(", ") || "Não informado"}</p>
+                                        <p><strong>Disciplina:</strong> {turma.disciplina?.nome || "Não informada"}</p>
+                                        <p><strong>Semestre:</strong> {turma.semestre?.nome || "Não informado"}</p>
+                                        <p><strong>Professor:</strong> {turma.professores?.map(p => p.nome || p.username).join(", ") || "Não informado"}</p>
                                     </div>
 
-                                    <div className="gestao-alunos">
-                                        <h4>Alunos da Turma</h4>
-                                        <ul>
-                                            {turma.alunos && turma.alunos.length > 0 ? turma.alunos.map(aluno => (
-                                                <li key={`${turma.id}-${aluno.id}`}>
-                                                    {aluno.username} ({aluno.email})
-                                                    <button
-                                                        className="btn-remover-aluno"
-                                                        onClick={() => handleRemoveAluno(turma.id, aluno.id)}
-                                                        disabled={loading}>
-                                                        Remover
-                                                    </button>
-                                                </li>
-                                            )) : <li>Nenhum aluno matriculado</li>}
+                                    <div className="card-actions" style={{ margin: '15px 0', display: 'flex', gap: '10px' }}>
+                                        <button className="btn-primary" onClick={() => editClick(turma)} disabled={loading} style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#dd6b20', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}>Editar</button>
+                                        <button className="btn-danger" onClick={() => deleteTurma(turma.id)} disabled={loading} style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#e53e3e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}>Remover</button>
+                                    </div>
+
+                                  
+                                    <div className="alunos-section" style={{ background: '#f9f9f9', padding: '15px', borderRadius: '6px', marginTop: '15px' }}>
+                                        <h4>Alunos Matriculados nesta Turma</h4>
+                                        <ul className="alunos-list" style={{ paddingLeft: '20px', marginBottom: '15px' }}>
+                                            {turma.alunos && turma.alunos.length > 0 ? (
+                                                turma.alunos.map((aluno) => (
+                                                    <li key={aluno.id} className="aluno-item" style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', maxWidth: '350px' }}>
+                                                        <span>{aluno.nome || aluno.username} (ID: {aluno.id})</span>
+                                                        <button
+                                                            className="btn-link-danger"
+                                                            onClick={() => handleRemoveAluno(turma.id, aluno.id)}
+                                                            disabled={loading}
+                                                            style={{ background: 'none', border: 'none', color: '#e53e3e', cursor: 'pointer', textDecoration: 'underline' }}
+                                                        >
+                                                            Remover
+                                                        </button>
+                                                    </li>
+                                                ))
+                                            ) : (
+                                                <li style={{ listStyle: 'none', color: '#777' }}>Nenhum aluno matriculado</li>
+                                            )}
                                         </ul>
 
-                                        <form onSubmit={(e) => handleAddAluno(e, turma.id)} className="form-add-aluno">
+                                      
+                                        <form onSubmit={(e) => handleAddAluno(e, turma.id)} className="form-add-aluno" style={{ display: 'flex', gap: '10px', maxWidth: '400px' }}>
                                             <input
                                                 type="number"
                                                 placeholder="ID do Aluno"
                                                 value={alunoIdForm}
                                                 onChange={(e) => setAlunoIdForm(e.target.value)}
                                                 min="1"
+                                                required
+                                                style={{ flex: 1, padding: '6px' }}
                                             />
-                                            <button type="submit" className="btn-secondary" disabled={loading}>Matricular Aluno</button>
+                                            <button type="submit" className="btn-secondary" disabled={loading} style={{ padding: '6px 12px' }}>Matricular Aluno</button>
                                         </form>
                                     </div>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        !loading && <p>Nenhuma turma cadastrada ou erro ao buscar.</p>
+                        !loading && <p>Nenhuma turma encontrada na base de dados.</p>
+                    )}
+                </section>
+            </div>
+        </div>
+    );
+}*/
+
+"use client";
+
+import { useTurmas } from "@/app/hooks/useTurmas";
+import Menu from "@/components/Menu";
+import "../global.css";
+
+export default function TurmasPage() {
+    const {
+        turmas,
+        loading,
+        formData,
+        searchId,
+        editingId,
+        alunoIdForm,
+        cursos,
+        disciplinasFiltradas,
+        semestres,
+        professores,
+        setSearchId,
+        setAlunoIdForm,
+        handleChange,
+        searchById,
+        clearSearch,
+        submit,
+        editClick,
+        cancelEdit,
+        deleteTurma,
+        handleAddAluno,
+        handleRemoveAluno
+    } = useTurmas();
+
+    return (
+        <div className="page-wrapper">
+            <Menu />
+
+            <div className="page-content">
+                <div className="page-header">
+                    <h1>Gestão de Turmas</h1>
+                </div>
+
+                {/* Seção de Pesquisa por ID */}
+                <section className="search-section">
+                    <h2>Pesquisar Turma por ID</h2>
+                    <form onSubmit={searchById} className="search-form">
+                        <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px', marginBottom: '35px' }}>
+                            <input
+                                type="number"
+                                placeholder="ID da Turma"
+                                value={searchId}
+                                onChange={(e) => setSearchId(e.target.value)}
+                                style={{ width: '100%' }}
+                            />
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <button
+                                    type="submit"
+                                    className="btn-primary"
+                                    disabled={loading}
+                                    style={{ padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px' }}
+                                >
+                                    Buscar
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    onClick={clearSearch}
+                                    disabled={loading}
+                                    style={{ padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: '#4a5568', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px' }}
+                                >
+                                    Limpar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                {/* Formulário de Cadastro / Edição */}
+                <section className="form-section">
+                    <h2>{editingId ? "Editar Turma" : "Cadastrar Nova Turma"}</h2>
+                    <form onSubmit={submit}>
+                        <div className="form-group">
+                            <label htmlFor="nome">Nome da Turma:</label>
+                            <input
+                                type="text"
+                                id="nome"
+                                name="nome"
+                                value={formData.nome}
+                                onChange={handleChange}
+                                placeholder="Ex: Engenharia de Software - Noturno"
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="cursoIds">Curso:</label>
+                            <select
+                                id="cursoIds"
+                                name="cursoIds"
+                                value={formData.cursoIds[0] || "0"}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="0">Selecione um Curso</option>
+                                {cursos.map(curso => (
+                                    <option key={curso.id} value={curso.id}>{curso.nome}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="disciplinaId">Disciplina:</label>
+                            <select
+                                id="disciplinaId"
+                                name="disciplinaId"
+                                value={formData.disciplinaId || "0"}
+                                onChange={handleChange}
+                                required
+                                disabled={!formData.cursoIds[0] || disciplinasFiltradas.length === 0}
+                            >
+                                <option value="0">
+                                    {!formData.cursoIds[0] 
+                                        ? "Selecione um Curso primeiro" 
+                                        : disciplinasFiltradas.length === 0 
+                                            ? "Nenhuma disciplina para este curso" 
+                                            : "Selecione uma Disciplina"
+                                    }
+                                </option>
+                                {disciplinasFiltradas.map(disc => (
+                                    <option key={disc.id} value={disc.id}>{disc.nome}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="semestreId">Semestre:</label>
+                            <select
+                                id="semestreId"
+                                name="semestreId"
+                                value={formData.semestreId || "0"}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="0">Selecione um Semestre</option>
+                                {semestres.map(sem => (
+                                    <option key={sem.id} value={sem.id}>{sem.nome}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-group">
+                            <label htmlFor="professorIds">Professor:</label>
+                            <select
+                                id="professorIds"
+                                name="professorIds"
+                                value={formData.professorIds[0] || "0"}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="0">Selecione um Professor</option>
+                                {professores.map(prof => (
+                                    <option key={prof.id} value={prof.id}>{prof.nome || prof.username}</option>
+                                ))}
+                            </select>
+                        </div>
+
+                        <div className="form-buttons">
+                            <button type="submit" className="btn-primary" disabled={loading} style={{ marginBottom: '15px', padding: '14px 44px', fontSize: '16px', fontWeight: 'bold', backgroundColor: 'rgb(221, 91, 49)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', minWidth: '190px' }}>
+                                {editingId ? "Salvar Alterações" : "Cadastrar Turma"}
+                            </button>
+                            {editingId && (
+                                <button type="button" className="btn-secondary" onClick={cancelEdit} disabled={loading}>
+                                    Cancelar
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </section>
+
+                {/* Listagem Geral de Turmas */}
+                <section className="list-section">
+                    <h2>Turmas Cadastradas</h2>
+                    {loading && <p>Processando requisição de dados...</p>}
+
+                    {!loading && turmas.length > 0 ? (
+                        <ul className="cards-list" style={{ listStyle: 'none', padding: 0 }}>
+                            {turmas.map((turma) => (
+                                <li key={turma.id} className="card-item" style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
+                                    <div className="card-info">
+                                        <h3>{turma.nome} <span style={{ fontSize: '14px', color: '#666' }}>(ID: {turma.id})</span></h3>
+                                        <p><strong>Curso:</strong> {turma.cursos?.map(c => c.nome).join(", ") || "Não informado"}</p>
+                                        <p><strong>Disciplina:</strong> {turma.disciplina?.nome || "Não informada"}</p>
+                                        <p><strong>Semestre:</strong> {turma.semestre?.nome || "Não informado"}</p>
+                                        <p><strong>Professor:</strong> {turma.professores?.map(p => p.nome || p.username).join(", ") || "Não informado"}</p>
+                                    </div>
+
+                                    <div className="card-actions" style={{ margin: '15px 0', display: 'flex', gap: '10px' }}>
+                                        <button className="btn-primary" onClick={() => editClick(turma)} disabled={loading} style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#dd6b20', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}>Editar</button>
+                                        <button className="btn-danger" onClick={() => deleteTurma(turma.id)} disabled={loading} style={{ padding: '10px 24px', fontSize: '14px', fontWeight: 'bold', backgroundColor: '#e53e3e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', minWidth: '110px' }}>Remover</button>
+                                    </div>
+
+                                    {/* Sub-seção interna de Alunos na Turma */}
+                                    <div className="alunos-section" style={{ background: '#f9f9f9', padding: '15px', borderRadius: '6px', marginTop: '15px' }}>
+                                        <h4>Alunos Matriculados nesta Turma</h4>
+                                        <ul className="alunos-list" style={{ paddingLeft: '20px', marginBottom: '15px' }}>
+                                            {turma.alunos && turma.alunos.length > 0 ? (
+                                                turma.alunos.map((aluno) => (
+                                                    <li key={aluno.id} className="aluno-item" style={{ marginBottom: '5px', display: 'flex', justifyContent: 'space-between', maxWidth: '350px' }}>
+                                                        <span>{aluno.nome || aluno.username} (ID: {aluno.id})</span>
+                                                        <button
+                                                            className="btn-link-danger"
+                                                            onClick={() => handleRemoveAluno(turma.id, aluno.id)}
+                                                            disabled={loading}
+                                                            style={{ background: 'none', border: 'none', color: '#e53e3e', cursor: 'pointer', textDecoration: 'underline' }}
+                                                        >
+                                                            Remover
+                                                        </button>
+                                                    </li>
+                                                ))
+                                            ) : (
+                                                <li style={{ listStyle: 'none', color: '#777' }}>Nenhum aluno matriculado</li>
+                                            )}
+                                        </ul>
+
+                                        {/* Formulário interno para Matrícula de Aluno */}
+                                        <form onSubmit={(e) => handleAddAluno(e, turma.id)} className="form-add-aluno" style={{ display: 'flex', gap: '10px', maxWidth: '400px' }}>
+                                            <input
+                                                type="number"
+                                                placeholder="ID do Aluno"
+                                                value={alunoIdForm}
+                                                onChange={(e) => setAlunoIdForm(e.target.value)}
+                                                min="1"
+                                                required
+                                                style={{ flex: 1, padding: '6px' }}
+                                            />
+                                            <button type="submit" className="btn-secondary" disabled={loading} style={{ padding: '6px 12px' }}>Matricular Aluno</button>
+                                        </form>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        !loading && <p>Nenhuma turma encontrada na base de dados.</p>
                     )}
                 </section>
             </div>
