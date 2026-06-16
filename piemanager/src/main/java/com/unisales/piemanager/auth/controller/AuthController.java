@@ -36,7 +36,8 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(request.getEmail().trim().toLowerCase(), request.getPassword()));
 
         User user = userService.findEntityByEmail(request.getEmail());
-        String token = jwtService.generateToken(user.getEmail());
+        //String token = jwtService.generateToken(user.getEmail());
+        String token = jwtService.generateToken(user.getEmail(), user.getProfile().name());
 
         LoginResponse response = new LoginResponse();
         response.setTokenType("Bearer");
