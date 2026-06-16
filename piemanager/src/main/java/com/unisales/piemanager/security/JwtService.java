@@ -23,10 +23,21 @@ public class JwtService {
         this.expirationMs = expirationMs;
     }
 
-    public String generateToken(String subject) {
+    /*public String generateToken(String subject) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(subject)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(expirationMs)))
+                .signWith(key)
+                .compact();
+    }*/
+
+    public String generateToken(String subject, String role) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .subject(subject)
+                .claim("role", role) // Adição do role para permissão de usuário
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMs)))
                 .signWith(key)
