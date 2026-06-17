@@ -12,7 +12,12 @@ export default function Menu() {
     
     if (token) {
       setHasToken(true);
-      setDisplayName(savedName || "Usuário");
+      if (savedName) {
+        const cleanName = savedName.includes("@") ? savedName.split("@")[0] : savedName;
+        setDisplayName(cleanName);
+      } else {
+        setDisplayName("Usuário");
+      }
     }
   }, []);
 
@@ -30,7 +35,7 @@ export default function Menu() {
     <nav style={{ display: "flex", justifyContent: "space-between", padding: "1rem", borderBottom: "1px solid #ccc" }}>
       <div>
         <span>Olá, {displayName}</span>
-        <button onClick={handleLogout} style={{ marginLeft: "1rem" }}>Logout</button>
+        <button onClick={handleLogout} style={{ marginLeft: "1rem", color: "red", border: "1px solid red", background: "none", padding: "2px 8px", cursor: "pointer", borderRadius: "4px" }}>Logout</button>
       </div>
       <div>
         <Link href="/" style={{ marginRight: "1rem" }}>Início</Link>

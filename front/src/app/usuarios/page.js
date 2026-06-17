@@ -54,6 +54,11 @@ export default function UsuariosPage() {
       return;
     }
 
+    if (!form.id && form.senha.length < 6) {
+      setError("A senha deve conter no mínimo 6 caracteres.");
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       const url = form.id ? `/api/users/${form.id}` : "/api/users";

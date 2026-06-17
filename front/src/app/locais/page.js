@@ -5,8 +5,9 @@ import FormInput from "@/components/FormInput";
 
 export default function LocaisPage() {
   const [locais, setLocais] = useState([]);
-  const [form, setForm] = useState({ id: null, nome: "", bloco: "", capacidade: "" });
+  const [form, setForm] = useState({ id: null, numero: "" });
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const fetchLocais = async () => {
     try {
@@ -46,9 +47,10 @@ export default function LocaisPage() {
   const handleSalvar = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
 
-    if (!form.nome || !form.bloco || !form.capacidade) {
-      setError("Por favor, preencha todos os campos.");
+    if (!form.numero) {
+      setError("Por favor, preencha o campo Número do Local.");
       return;
     }
 
@@ -57,24 +59,27 @@ export default function LocaisPage() {
       const url = form.id ? `/api/locais/${form.id}` : "/api/locais";
       const method = form.id ? "PUT" : "POST";
 
+      const payload = {
+        numero: form.numero
+      };
+
       const response = await fetch(url, {
         method: method,
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({
-          nome: form.nome,
-          bloco: form.bloco,
-          capacidade: parseInt(form.capacidade)
-        })
+        body: JSON.stringify(payload)
       });
 
       if (response.ok) {
-        setForm({ id: null, nome: "", bloco: "", capacidade: "" });
+        setSuccessMessage("Local salvo com sucesso!");
+        setForm({ id: null, numero: "" });
         fetchLocais();
+        setTimeout(() => setSuccessMessage(""), 4000);
       } else {
-        setError("Erro ao salvar o registro no servidor.");
+        const resBody = await response.json();
+        setError(resBody.message || "Erro ao salvar o registro no servidor.");
       }
     } catch (err) {
       setError("Falha na comunicação com o servidor.");
@@ -82,18 +87,34 @@ export default function LocaisPage() {
   };
 
   const handleEditar = (local) => {
-    setForm({ id: local.id, nome: local.nome, bloco: local.bloco, capacidade: local.capacidade });
+    setForm({
+      id: local.id,
+      numero: local.numero || ""
+    });
   };
 
-  const handleExcluir = async (id) => {
+  const handleExcluir = async (local) => {
+    setError("");
+    setSuccessMessage("");
+
+    const nomeExibicao = local.numero || `ID ${local.id}`;
+    const confirmacao = window.confirm(`Deseja realmente excluir o local ${nomeExibicao}?`);
+    if (!confirmacao) return;
+
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/locais/${id}`, {
+      const response = await fetch(`/api/locais/${local.id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
+      
       if (response.ok) {
+        setSuccessMessage("Registro excluído com sucesso!");
         fetchLocais();
+        setTimeout(() => setSuccessMessage(""), 4000);
+      } else {
+        const resBody = await response.json();
+        setError(resBody.message || "Não é possível excluir: registro possui vínculos ativos.");
       }
     } catch (err) {
       setError("Erro ao excluir registro.");
@@ -101,41 +122,48 @@ export default function LocaisPage() {
   };
 
   return (
-    <div className="container">
+    <div className="container container-flex-layout" style={{ maxWidth: "1000px", width: "100%" }}>
       <h1>Gerenciamento de Locais de Apresentação</h1>
-      <form onSubmit={handleSalvar} className="card" style={{ maxWidth: "100%", margin: "1rem 0" }}>
+      
+      <form onSubmit={handleSalvar} className="card form-full-width" style={{ minHeight: "365px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
         <h2>{form.id ? "Editar Local" : "Novo Local"}</h2>
-        {error && <div className="error-message">{error}</div>}
-        <FormInput label="Nome do Local" type="text" name="nome" value={form.nome} onChange={handleChange} />
-        <FormInput label="Bloco" type="text" name="bloco" value={form.bloco} onChange={handleChange} />
-        <FormInput label="Capacidade" type="number" name="capacidade" value={form.capacidade} onChange={handleChange} />
-        <Button type="submit">{form.id ? "Atualizar" : "Salvar"}</Button>
+        {error && <div className="alert-message error-box">{error}</div>}
+        {successMessage && <div className="alert-message success-box">{successMessage}</div>}
+        
+        <FormInput label="Número ou Identificação do Local (ex: Sala 102 - Bloco A)" type="text" name="numero" value={form.numero} onChange={handleChange} />
+        
+        <Button type="submit">Salvar</Button>
       </form>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "2rem", background: "#fff", border: "1px solid #e2e8f0" }}>
-        <thead>
-          <tr style={{ background: "#f1f5f9", textAlign: "left", borderBottom: "1px solid #e2e8f0" }}>
-            <th style={{ padding: "0.75rem" }}>ID</th>
-            <th style={{ padding: "0.75rem" }}>Nome</th>
-            <th style={{ padding: "0.75rem" }}>Bloco</th>
-            <th style={{ padding: "0.75rem" }}>Capacidade</th>
-            <th style={{ padding: "0.75rem" }}>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {locais.map((l) => (
-            <tr key={l.id} style={{ borderBottom: "1px solid #e2e8f0" }}>
-              <td style={{ padding: "0.75rem" }}>{l.id}</td>
-              <td style={{ padding: "0.75rem" }}>{l.nome}</td>
-              <td style={{ padding: "0.75rem" }}>{l.bloco}</td>
-              <td style={{ padding: "0.75rem" }}>{l.capacidade}</td>
-              <td style={{ padding: "0.75rem" }}>
-                <button onClick={() => handleEditar(l)} style={{ marginRight: "0.5rem", background: "none", border: "none", color: "#0284c7", cursor: "pointer", fontWeight: "500" }}>Editar</button>
-                <button onClick={() => handleExcluir(l.id)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontWeight: "500" }}>Excluir</button>
-              </td>
+
+      <div className="table-scroll-container" style={{ maxHeight: "315px", overflowY: "auto", width: "100%" }}>
+        <table className="data-table" style={{ width: "100%" }}>
+          <thead>
+            <tr>
+              <th style={{ width: "80px" }}>ID</th>
+              <th>Local / Número</th>
+              <th style={{ width: "200px" }}>Ações</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {locais.map((l) => {
+              const nomeTabela = l.numero || "Não informado";
+
+              return (
+                <tr key={l.id}>
+                  <td>{l.id}</td>
+                  <td>{nomeTabela}</td>
+                  <td>
+                    <div className="actions-cell">
+                      <button onClick={() => handleEditar(l)} className="btn-action edit">Editar</button>
+                      <button onClick={() => handleExcluir(l)} className="btn-action delete">Excluir</button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

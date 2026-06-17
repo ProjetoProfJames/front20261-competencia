@@ -4,7 +4,7 @@ import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ nome: "", email: "", senha: "" });
+  const [form, setForm] = useState({ email: "", senha: "" });
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
@@ -16,17 +16,19 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
-    if (!form.nome || !form.email || !form.senha) {
+    if (!form.email || !form.senha) {
       setError("Por favor, preencha todos os campos.");
       return;
     }
 
     try {
+      const extractedName = form.email.split('@')[0];
+
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: form.nome,
+          name: extractedName,
           email: form.email,
           password: form.senha
         })
@@ -36,13 +38,13 @@ export default function LoginPage() {
 
       if (response.ok) {
         const token = resBody.accessToken || resBody.data?.accessToken;
-        const username = resBody.user?.username || resBody.data?.user?.username || form.nome;
+        const username = resBody.user?.username || resBody.data?.user?.username || extractedName;
 
         localStorage.setItem("token", token);
         localStorage.setItem("user_display_name", username);
         window.location.href = "/"; 
       } else {
-        setError(resBody.message || "Credenciais inválidas ou nome incorreto.");
+        setError(resBody.message || "Credenciais inválidas.");
       }
     } catch (err) {
       setError("Falha na comunicação com o servidor.");
@@ -56,10 +58,9 @@ export default function LoginPage() {
         
         {error && <div className="error-message">{error}</div>}
         
-        <FormInput label="Nome" type="text" name="nome" value={form.nome} onChange={handleChange} />
         <FormInput label="Email" type="email" name="email" value={form.email} onChange={handleChange} />
-        <FormInput label="Password" type="password" name="senha" value={form.senha} onChange={handleChange} />
-        
+        <FormInput label="Senha" type="password" name="senha" value={form.senha} onChange={handleChange} />
+
         <Button type="submit">Login</Button>
       </form>
     </div>
