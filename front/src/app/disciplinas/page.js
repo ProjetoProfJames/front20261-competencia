@@ -31,7 +31,6 @@ export default function DisciplinasPage() {
                     <h1>Gestão de Disciplinas</h1>
                 </div>
 
-                {/* Seção de Pesquisa por ID */}
                 <section className="search-section">
                     <h2>Pesquisar Disciplina por ID</h2>
                     <form onSubmit={searchById} className="search-form">
@@ -66,7 +65,6 @@ export default function DisciplinasPage() {
                     </form>
                 </section>
 
-                {/* Formulário de Cadastro / Edição */}
                 <section className="form-section">
                     <h2>{editingId ? "Editar Disciplina" : "Cadastrar Nova Disciplina"}</h2>
                     <form onSubmit={submit}>
@@ -123,7 +121,6 @@ export default function DisciplinasPage() {
                     </form>
                 </section>
 
-                {/* Listagem Geral de Disciplinas */}
                 <section className="list-section">
                     <h2>Disciplinas Cadastradas</h2>
                     {loading && <p>Processando requisição de dados...</p>}

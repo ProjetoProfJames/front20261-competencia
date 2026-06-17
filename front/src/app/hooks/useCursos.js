@@ -15,10 +15,12 @@ export function useCursos() {
     const fetchCursos = async () => {
         setLoading(true);
         try {
-            const result = await apiRequest("/cursos", { method: "GET", headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},});
+            const result = await apiRequest("/cursos", {
+                method: "GET", headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+            });
             const listaCursos = result?.data || result;
             setCursos(Array.isArray(listaCursos) ? listaCursos : []);
         } catch (e) {
@@ -49,10 +51,12 @@ export function useCursos() {
 
         setLoading(true);
         try {
-            const result = await apiRequest(`/cursos/${searchId}`, { method: "GET", headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},});
+            const result = await apiRequest(`/cursos/${searchId}`, {
+                method: "GET", headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+            });
             if (result && (result.success !== false)) {
                 const dadosCurso = result.data || result;
                 setCursos(Array.isArray(dadosCurso) ? dadosCurso : [dadosCurso]);
@@ -87,9 +91,9 @@ export function useCursos() {
                 const result = await apiRequest(`/cursos/${editingId}`, {
                     method: "PUT",
                     headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify(formData)
                 });
                 if (result) {
@@ -102,9 +106,9 @@ export function useCursos() {
                 const result = await apiRequest(`/cursos`, {
                     method: "POST",
                     headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify(formData)
                 });
                 if (result) {
@@ -140,10 +144,12 @@ export function useCursos() {
 
         try {
             setLoading(true);
-            const result = await apiRequest(`/cursos/${id}`, { method: "DELETE", headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},});
+            const result = await apiRequest(`/cursos/${id}`, {
+                method: "DELETE", headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+            });
             if (result) {
                 alert("Curso deletado com sucesso!");
                 fetchCursos();

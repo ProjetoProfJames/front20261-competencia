@@ -15,10 +15,13 @@ export function useSemestre() {
     const fetchSemestres = async () => {
         setLoading(true);
         try {
-            const result = await apiRequest("/semestres", { method: "GET", headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},});
+            const result = await apiRequest("/semestres", {
+                method: "GET", 
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+            });
             const listaSemestres = result?.data || result;
             setSemestres(Array.isArray(listaSemestres) ? listaSemestres : []);
         } catch (e) {
@@ -46,10 +49,12 @@ export function useSemestre() {
 
         setLoading(true);
         try {
-            const result = await apiRequest(`/semestres/${searchId}`, { method: "GET", headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},});
+            const result = await apiRequest(`/semestres/${searchId}`, {
+                method: "GET", headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+            });
             if (result && result.success !== false) {
                 const dadosSemestre = result.data || result;
                 setSemestres(Array.isArray(dadosSemestre) ? dadosSemestre : [dadosSemestre]);
@@ -84,9 +89,9 @@ export function useSemestre() {
                 const result = await apiRequest(`/semestres/${editingId}`, {
                     method: "PUT",
                     headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify(formData)
                 });
                 if (result) {
@@ -98,9 +103,9 @@ export function useSemestre() {
                 const result = await apiRequest(`/semestres`, {
                     method: "POST",
                     headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
                     body: JSON.stringify(formData)
                 });
                 if (result) {
@@ -136,10 +141,12 @@ export function useSemestre() {
 
         try {
             setLoading(true);
-            const result = await apiRequest(`/semestres/${id}`, { method: "DELETE", headers: {
-'Content-Type': 'application/json', // Aqui no caso está avisando que vai ser um json para envio
-'Accept': 'application/json' // Já aqui é para ele receber json tmb
-},});
+            const result = await apiRequest(`/semestres/${id}`, {
+                method: "DELETE", headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+            });
             if (result) {
                 alert("Semestre deletado com sucesso!");
                 fetchSemestres();
