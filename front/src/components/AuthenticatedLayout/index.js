@@ -10,6 +10,9 @@ const navigationLinks = [
   { href: "/", label: "Início" },
   { href: "/usuarios", label: "Usuários", profiles: ["ADMIN", "PROFESSOR"] },
   { href: "/locais", label: "Locais" },
+  { href: "/cursos", label: "Cursos" },
+  { href: "/periodos-letivos", label: "Períodos Letivos" },
+  { href: "/turmas", label: "Turmas" },
 ];
 
 export default function AuthenticatedLayout({ children, requiredProfiles = [] }) {
