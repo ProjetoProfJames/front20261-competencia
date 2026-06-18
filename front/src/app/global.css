@@ -37,7 +37,8 @@ a {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -220,7 +221,8 @@ select {
 }
 
 .form-field input,
-.form-field select {
+.form-field select,
+.form-field textarea {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -230,15 +232,39 @@ select {
 }
 
 .form-field input:focus,
-.form-field select:focus {
+.form-field select:focus,
+.form-field textarea:focus {
   border-color: var(--primary);
   outline: 3px solid rgba(15, 118, 110, 0.14);
 }
 
 .form-field input:disabled,
-.form-field select:disabled {
+.form-field select:disabled,
+.form-field textarea:disabled {
   background: #f0f3f6;
   color: var(--muted);
+}
+
+.form-field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.form-field-wide {
+  grid-column: 1 / -1;
+}
+
+.form-field select[multiple] {
+  min-height: 128px;
+  padding: 8px;
+}
+
+.form-field select[multiple] option {
+  padding: 6px;
+}
+
+.panel + .panel {
+  margin-top: 16px;
 }
 
 .required-mark {
@@ -359,6 +385,21 @@ th {
 
 .muted {
   color: var(--muted);
+}
+
+.stacked-cell {
+  display: grid;
+  gap: 4px;
+}
+
+.stacked-cell strong {
+  font-size: 14px;
+}
+
+.stacked-cell span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
 }
 
 .badge {

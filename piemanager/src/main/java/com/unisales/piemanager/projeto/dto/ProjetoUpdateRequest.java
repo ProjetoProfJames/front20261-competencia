@@ -20,6 +20,8 @@ public class ProjetoUpdateRequest {
 
     private Set<Long> integranteIds;
 
+    private Long grupoProjetoId;
+
     private Long localId;
 
     private Instant horarioInicio;
@@ -72,6 +74,14 @@ public class ProjetoUpdateRequest {
 
     public void setIntegranteIds(Set<Long> integranteIds) {
         this.integranteIds = integranteIds;
+    }
+
+    public Long getGrupoProjetoId() {
+        return grupoProjetoId;
+    }
+
+    public void setGrupoProjetoId(Long grupoProjetoId) {
+        this.grupoProjetoId = grupoProjetoId;
     }
 
     public Long getLocalId() {

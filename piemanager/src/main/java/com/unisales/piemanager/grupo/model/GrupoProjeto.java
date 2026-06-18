@@ -1,8 +1,5 @@
-package com.unisales.piemanager.projeto.model;
+package com.unisales.piemanager.grupo.model;
 
-import com.unisales.piemanager.grupo.model.GrupoProjeto;
-import com.unisales.piemanager.local.model.Local;
-import com.unisales.piemanager.semestre.model.Semestre;
 import com.unisales.piemanager.turma.model.Turma;
 import com.unisales.piemanager.user.model.User;
 import jakarta.persistence.Column;
@@ -18,35 +15,30 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "projetos")
-public class Projeto {
+@Table(
+        name = "grupos_projeto",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_grupo_projeto_nome_turma", columnNames = {"nome", "turma_id"})
+        }
+)
+public class GrupoProjeto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 160)
+    @Column(nullable = false, length = 120)
     private String nome;
-
-    @Column(nullable = false, length = 2000)
-    private String descricao;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "turma_id", nullable = false)
     private Turma turma;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "grupo_projeto_id")
-    private GrupoProjeto grupoProjeto;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "semestre_id", nullable = false)
-    private Semestre semestre;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "professor_orientador_id", nullable = false)
@@ -54,21 +46,11 @@ public class Projeto {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "projeto_integrantes",
-            joinColumns = @JoinColumn(name = "projeto_id"),
+            name = "grupo_projeto_alunos",
+            joinColumns = @JoinColumn(name = "grupo_projeto_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private Set<User> integrantes = new LinkedHashSet<>();
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "local_id", nullable = false)
-    private Local local;
-
-    @Column(nullable = false)
-    private Instant horarioInicio;
-
-    @Column(nullable = false)
-    private Instant horarioFim;
+    private Set<User> alunos = new LinkedHashSet<>();
 
     @Column(nullable = false)
     private Instant createdAt;
@@ -110,36 +92,12 @@ public class Projeto {
         this.nome = nome;
     }
 
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
     public Turma getTurma() {
         return turma;
     }
 
     public void setTurma(Turma turma) {
         this.turma = turma;
-    }
-
-    public GrupoProjeto getGrupoProjeto() {
-        return grupoProjeto;
-    }
-
-    public void setGrupoProjeto(GrupoProjeto grupoProjeto) {
-        this.grupoProjeto = grupoProjeto;
-    }
-
-    public Semestre getSemestre() {
-        return semestre;
-    }
-
-    public void setSemestre(Semestre semestre) {
-        this.semestre = semestre;
     }
 
     public User getProfessorOrientador() {
@@ -150,36 +108,12 @@ public class Projeto {
         this.professorOrientador = professorOrientador;
     }
 
-    public Set<User> getIntegrantes() {
-        return integrantes;
+    public Set<User> getAlunos() {
+        return alunos;
     }
 
-    public void setIntegrantes(Set<User> integrantes) {
-        this.integrantes = integrantes;
-    }
-
-    public Local getLocal() {
-        return local;
-    }
-
-    public void setLocal(Local local) {
-        this.local = local;
-    }
-
-    public Instant getHorarioInicio() {
-        return horarioInicio;
-    }
-
-    public void setHorarioInicio(Instant horarioInicio) {
-        this.horarioInicio = horarioInicio;
-    }
-
-    public Instant getHorarioFim() {
-        return horarioFim;
-    }
-
-    public void setHorarioFim(Instant horarioFim) {
-        this.horarioFim = horarioFim;
+    public void setAlunos(Set<User> alunos) {
+        this.alunos = alunos;
     }
 
     public Instant getCreatedAt() {

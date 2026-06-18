@@ -10,6 +10,9 @@ export default function FormInput({
   placeholder = "",
   maxLength,
   minLength,
+  min,
+  max,
+  step,
   autoComplete,
 }) {
   return (
@@ -28,6 +31,9 @@ export default function FormInput({
         placeholder={placeholder}
         maxLength={maxLength}
         minLength={minLength}
+        min={min}
+        max={max}
+        step={step}
         autoComplete={autoComplete}
         aria-invalid={Boolean(error)}
       />
