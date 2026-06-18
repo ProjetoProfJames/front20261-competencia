@@ -2,6 +2,8 @@ package com.unisales.piemanager.projeto;
 
 import com.unisales.piemanager.common.exception.BusinessException;
 import com.unisales.piemanager.common.exception.ResourceNotFoundException;
+import com.unisales.piemanager.grupo.GrupoProjetoService;
+import com.unisales.piemanager.grupo.model.GrupoProjeto;
 import com.unisales.piemanager.local.LocalService;
 import com.unisales.piemanager.local.model.Local;
 import com.unisales.piemanager.projeto.dto.ProjetoCreateRequest;
@@ -32,40 +34,68 @@ public class ProjetoService {
     private final LocalService localService;
     private final UserRepository userRepository;
     private final TurmaRepository turmaRepository;
+    private final GrupoProjetoService grupoProjetoService;
 
     public ProjetoService(ProjetoRepository projetoRepository,
                           TurmaService turmaService,
                           SemestreService semestreService,
                           LocalService localService,
                           UserRepository userRepository,
-                          TurmaRepository turmaRepository) {
+                          TurmaRepository turmaRepository,
+                          GrupoProjetoService grupoProjetoService) {
         this.projetoRepository = projetoRepository;
         this.turmaService = turmaService;
         this.semestreService = semestreService;
         this.localService = localService;
         this.userRepository = userRepository;
         this.turmaRepository = turmaRepository;
+        this.grupoProjetoService = grupoProjetoService;
     }
 
     @Transactional
     public ProjetoResponse create(ProjetoCreateRequest request, String actorEmail) {
-        Turma turma = turmaService.getEntityById(request.getTurmaId());
-        Semestre semestre = semestreService.getEntityById(request.getSemestreId());
-        Local local = localService.getEntityById(request.getLocalId());
-        User professorOrientador = getUserById(request.getProfessorOrientadorId(), "Professor orientador not found");
+        if (request.getLocalId() == null) {
+            throw new BusinessException("localId is required");
+        }
 
-        validateTurmaSemestre(turma, semestre);
-        validateProfessorOrientador(turma, professorOrientador);
+        Local local = localService.getEntityById(request.getLocalId());
         validateHorario(request.getHorarioInicio(), request.getHorarioFim());
         validateLocalDisponivel(local.getId(), request.getHorarioInicio(), request.getHorarioFim(), null);
 
-        Set<User> integrantes = resolveIntegrantes(turma, semestre, request.getIntegranteIds(), null);
-        applyAlunoAutoInclusaoSeNecessario(actorEmail, turma, semestre, integrantes, null);
+        GrupoProjeto grupoProjeto = null;
+        Turma turma;
+        Semestre semestre;
+        User professorOrientador;
+        Set<User> integrantes;
+
+        if (request.getGrupoProjetoId() != null) {
+            grupoProjeto = grupoProjetoService.getEntityById(request.getGrupoProjetoId());
+            if (projetoRepository.existsByGrupoProjetoId(grupoProjeto.getId())) {
+                throw new BusinessException("Grupo de projeto already has a linked projeto");
+            }
+            validateGrupoProjetoRequestConsistency(request, grupoProjeto);
+            turma = grupoProjeto.getTurma();
+            semestre = turma.getSemestre();
+            professorOrientador = grupoProjeto.getProfessorOrientador();
+            integrantes = new LinkedHashSet<>(grupoProjeto.getAlunos());
+        } else {
+            validateRequiredProjetoFields(request);
+            turma = turmaService.getEntityById(request.getTurmaId());
+            semestre = semestreService.getEntityById(request.getSemestreId());
+            professorOrientador = getUserById(request.getProfessorOrientadorId(), "Professor orientador not found");
+
+            validateTurmaSemestre(turma, semestre);
+            validateProfessorOrientador(turma, professorOrientador);
+
+            integrantes = resolveIntegrantes(turma, semestre, request.getIntegranteIds(), null);
+            applyAlunoAutoInclusaoSeNecessario(actorEmail, turma, semestre, integrantes, null);
+        }
 
         Projeto projeto = new Projeto();
         projeto.setNome(request.getNome().trim());
         projeto.setDescricao(request.getDescricao().trim());
         projeto.setTurma(turma);
+        projeto.setGrupoProjeto(grupoProjeto);
         projeto.setSemestre(semestre);
         projeto.setProfessorOrientador(professorOrientador);
         projeto.setIntegrantes(integrantes);
@@ -101,19 +131,36 @@ public class ProjetoService {
     public ProjetoResponse update(Long id, ProjetoUpdateRequest request, String actorEmail) {
         Projeto projeto = getEntityById(id);
 
+        boolean updatedFromGrupo = false;
+        if (request.getGrupoProjetoId() != null) {
+            GrupoProjeto grupoProjeto = grupoProjetoService.getEntityById(request.getGrupoProjetoId());
+            if (projetoRepository.existsByGrupoProjetoIdAndIdNot(grupoProjeto.getId(), projeto.getId())) {
+                throw new BusinessException("Grupo de projeto already has a linked projeto");
+            }
+            projeto.setGrupoProjeto(grupoProjeto);
+            projeto.setTurma(grupoProjeto.getTurma());
+            projeto.setSemestre(grupoProjeto.getTurma().getSemestre());
+            projeto.setProfessorOrientador(grupoProjeto.getProfessorOrientador());
+            projeto.setIntegrantes(new LinkedHashSet<>(grupoProjeto.getAlunos()));
+            updatedFromGrupo = true;
+        }
+
         Turma turma = projeto.getTurma();
-        if (request.getTurmaId() != null) {
-            turma = turmaService.getEntityById(request.getTurmaId());
-            projeto.setTurma(turma);
-        }
-
         Semestre semestre = projeto.getSemestre();
-        if (request.getSemestreId() != null) {
-            semestre = semestreService.getEntityById(request.getSemestreId());
-            projeto.setSemestre(semestre);
-        }
 
-        validateTurmaSemestre(turma, semestre);
+        if (!updatedFromGrupo) {
+            if (request.getTurmaId() != null) {
+                turma = turmaService.getEntityById(request.getTurmaId());
+                projeto.setTurma(turma);
+            }
+
+            if (request.getSemestreId() != null) {
+                semestre = semestreService.getEntityById(request.getSemestreId());
+                projeto.setSemestre(semestre);
+            }
+
+            validateTurmaSemestre(turma, semestre);
+        }
 
         if (request.getNome() != null && !request.getNome().isBlank()) {
             projeto.setNome(request.getNome().trim());
@@ -122,12 +169,14 @@ public class ProjetoService {
             projeto.setDescricao(request.getDescricao().trim());
         }
 
-        User professorOrientador = projeto.getProfessorOrientador();
-        if (request.getProfessorOrientadorId() != null) {
-            professorOrientador = getUserById(request.getProfessorOrientadorId(), "Professor orientador not found");
-            projeto.setProfessorOrientador(professorOrientador);
+        if (!updatedFromGrupo) {
+            User professorOrientador = projeto.getProfessorOrientador();
+            if (request.getProfessorOrientadorId() != null) {
+                professorOrientador = getUserById(request.getProfessorOrientadorId(), "Professor orientador not found");
+                projeto.setProfessorOrientador(professorOrientador);
+            }
+            validateProfessorOrientador(turma, professorOrientador);
         }
-        validateProfessorOrientador(turma, professorOrientador);
 
         Local local = projeto.getLocal();
         if (request.getLocalId() != null) {
@@ -150,7 +199,7 @@ public class ProjetoService {
         validateHorario(horarioInicio, horarioFim);
         validateLocalDisponivel(local.getId(), horarioInicio, horarioFim, projeto.getId());
 
-        if (request.getIntegranteIds() != null) {
+        if (!updatedFromGrupo && request.getIntegranteIds() != null) {
             Set<User> integrantes = resolveIntegrantes(turma, semestre, request.getIntegranteIds(), projeto.getId());
             projeto.setIntegrantes(integrantes);
         }
@@ -289,6 +338,7 @@ public class ProjetoService {
         response.setNome(projeto.getNome());
         response.setDescricao(projeto.getDescricao());
         response.setTurma(toIdNome(projeto.getTurma().getId(), projeto.getTurma().getNome()));
+        response.setGrupoProjeto(toGrupoProjetoSummary(projeto.getGrupoProjeto()));
         response.setSemestre(toIdNome(projeto.getSemestre().getId(), projeto.getSemestre().getNome()));
         response.setProfessorOrientador(toUserSummary(projeto.getProfessorOrientador()));
         response.setIntegrantes(projeto.getIntegrantes().stream().map(this::toUserSummary).toList());
@@ -339,6 +389,43 @@ public class ProjetoService {
 
         validateIntegranteCount(integrantes);
         return integrantes;
+    }
+
+    private void validateRequiredProjetoFields(ProjetoCreateRequest request) {
+        if (request.getTurmaId() == null) {
+            throw new BusinessException("turmaId is required");
+        }
+        if (request.getSemestreId() == null) {
+            throw new BusinessException("semestreId is required");
+        }
+        if (request.getProfessorOrientadorId() == null) {
+            throw new BusinessException("professorOrientadorId is required");
+        }
+        if (request.getIntegranteIds() == null || request.getIntegranteIds().isEmpty()) {
+            throw new BusinessException("integranteIds is required");
+        }
+    }
+
+    private void validateGrupoProjetoRequestConsistency(ProjetoCreateRequest request, GrupoProjeto grupoProjeto) {
+        if (request.getTurmaId() != null && !request.getTurmaId().equals(grupoProjeto.getTurma().getId())) {
+            throw new BusinessException("turmaId must match grupoProjeto turma");
+        }
+        if (request.getSemestreId() != null && !request.getSemestreId().equals(grupoProjeto.getTurma().getSemestre().getId())) {
+            throw new BusinessException("semestreId must match grupoProjeto turma semestre");
+        }
+        if (request.getProfessorOrientadorId() != null
+                && !request.getProfessorOrientadorId().equals(grupoProjeto.getProfessorOrientador().getId())) {
+            throw new BusinessException("professorOrientadorId must match grupoProjeto professor orientador");
+        }
+        if (request.getIntegranteIds() != null && !request.getIntegranteIds().equals(toUserIds(grupoProjeto.getAlunos()))) {
+            throw new BusinessException("integranteIds must match grupoProjeto alunos");
+        }
+    }
+
+    private Set<Long> toUserIds(Set<User> users) {
+        return users.stream()
+                .map(User::getId)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
     }
 
     private void applyAlunoAutoInclusaoSeNecessario(String actorEmail,
@@ -429,6 +516,17 @@ public class ProjetoService {
         idNome.setId(id);
         idNome.setNome(nome);
         return idNome;
+    }
+
+    private ProjetoResponse.GrupoProjetoSummary toGrupoProjetoSummary(GrupoProjeto grupoProjeto) {
+        if (grupoProjeto == null) {
+            return null;
+        }
+
+        ProjetoResponse.GrupoProjetoSummary summary = new ProjetoResponse.GrupoProjetoSummary();
+        summary.setId(grupoProjeto.getId());
+        summary.setNome(grupoProjeto.getNome());
+        return summary;
     }
 
     private ProjetoResponse.UserSummary toUserSummary(User user) {

@@ -1,8 +1,6 @@
 package com.unisales.piemanager.projeto.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.Set;
@@ -17,25 +15,20 @@ public class ProjetoCreateRequest {
     @Size(max = 2000, message = "descricao must have up to 2000 chars")
     private String descricao;
 
-    @NotNull(message = "turmaId is required")
     private Long turmaId;
 
-    @NotNull(message = "semestreId is required")
     private Long semestreId;
 
-    @NotNull(message = "professorOrientadorId is required")
     private Long professorOrientadorId;
 
-    @NotEmpty(message = "integranteIds is required")
     private Set<Long> integranteIds;
 
-    @NotNull(message = "localId is required")
+    private Long grupoProjetoId;
+
     private Long localId;
 
-    @NotNull(message = "horarioInicio is required")
     private Instant horarioInicio;
 
-    @NotNull(message = "horarioFim is required")
     private Instant horarioFim;
 
     public String getNome() {
@@ -84,6 +77,14 @@ public class ProjetoCreateRequest {
 
     public void setIntegranteIds(Set<Long> integranteIds) {
         this.integranteIds = integranteIds;
+    }
+
+    public Long getGrupoProjetoId() {
+        return grupoProjetoId;
+    }
+
+    public void setGrupoProjetoId(Long grupoProjetoId) {
+        this.grupoProjetoId = grupoProjetoId;
     }
 
     public Long getLocalId() {

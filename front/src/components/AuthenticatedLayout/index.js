@@ -13,6 +13,8 @@ const navigationLinks = [
   { href: "/cursos", label: "Cursos" },
   { href: "/periodos-letivos", label: "Períodos Letivos" },
   { href: "/turmas", label: "Turmas" },
+  { href: "/grupos-projeto", label: "Grupos" },
+  { href: "/avaliacoes-projetos", label: "Avaliações" },
 ];
 
 export default function AuthenticatedLayout({ children, requiredProfiles = [] }) {

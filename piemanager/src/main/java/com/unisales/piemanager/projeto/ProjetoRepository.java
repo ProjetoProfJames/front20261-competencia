@@ -14,6 +14,12 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Long> {
 
     Optional<Projeto> findByNomeIgnoreCaseAndTurmaIdAndSemestreId(String nome, Long turmaId, Long semestreId);
 
+    Optional<Projeto> findByGrupoProjetoId(Long grupoProjetoId);
+
+    boolean existsByGrupoProjetoId(Long grupoProjetoId);
+
+    boolean existsByGrupoProjetoIdAndIdNot(Long grupoProjetoId, Long projetoId);
+
     List<Projeto> findBySemestreId(Long semestreId);
 
     List<Projeto> findByLocalId(Long localId);

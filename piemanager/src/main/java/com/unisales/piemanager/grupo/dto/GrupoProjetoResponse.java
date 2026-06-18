@@ -1,20 +1,15 @@
-package com.unisales.piemanager.projeto.dto;
+package com.unisales.piemanager.grupo.dto;
 
 import java.time.Instant;
 import java.util.List;
 
-public class ProjetoResponse {
+public class GrupoProjetoResponse {
     private Long id;
     private String nome;
-    private String descricao;
-    private IdNome turma;
-    private GrupoProjetoSummary grupoProjeto;
-    private IdNome semestre;
+    private TurmaSummary turma;
     private UserSummary professorOrientador;
-    private List<UserSummary> integrantes;
-    private IdNome local;
-    private Instant horarioInicio;
-    private Instant horarioFim;
+    private List<UserSummary> alunos;
+    private ProjetoSummary projeto;
     private Instant createdAt;
     private String createdBy;
     private Instant updatedAt;
@@ -36,36 +31,12 @@ public class ProjetoResponse {
         this.nome = nome;
     }
 
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public IdNome getTurma() {
+    public TurmaSummary getTurma() {
         return turma;
     }
 
-    public void setTurma(IdNome turma) {
+    public void setTurma(TurmaSummary turma) {
         this.turma = turma;
-    }
-
-    public GrupoProjetoSummary getGrupoProjeto() {
-        return grupoProjeto;
-    }
-
-    public void setGrupoProjeto(GrupoProjetoSummary grupoProjeto) {
-        this.grupoProjeto = grupoProjeto;
-    }
-
-    public IdNome getSemestre() {
-        return semestre;
-    }
-
-    public void setSemestre(IdNome semestre) {
-        this.semestre = semestre;
     }
 
     public UserSummary getProfessorOrientador() {
@@ -76,36 +47,20 @@ public class ProjetoResponse {
         this.professorOrientador = professorOrientador;
     }
 
-    public List<UserSummary> getIntegrantes() {
-        return integrantes;
+    public List<UserSummary> getAlunos() {
+        return alunos;
     }
 
-    public void setIntegrantes(List<UserSummary> integrantes) {
-        this.integrantes = integrantes;
+    public void setAlunos(List<UserSummary> alunos) {
+        this.alunos = alunos;
     }
 
-    public IdNome getLocal() {
-        return local;
+    public ProjetoSummary getProjeto() {
+        return projeto;
     }
 
-    public void setLocal(IdNome local) {
-        this.local = local;
-    }
-
-    public Instant getHorarioInicio() {
-        return horarioInicio;
-    }
-
-    public void setHorarioInicio(Instant horarioInicio) {
-        this.horarioInicio = horarioInicio;
-    }
-
-    public Instant getHorarioFim() {
-        return horarioFim;
-    }
-
-    public void setHorarioFim(Instant horarioFim) {
-        this.horarioFim = horarioFim;
+    public void setProjeto(ProjetoSummary projeto) {
+        this.projeto = projeto;
     }
 
     public Instant getCreatedAt() {
@@ -140,9 +95,11 @@ public class ProjetoResponse {
         this.updatedBy = updatedBy;
     }
 
-    public static class IdNome {
+    public static class TurmaSummary {
         private Long id;
         private String nome;
+        private List<IdNome> cursos;
+        private IdNome semestre;
 
         public Long getId() {
             return id;
@@ -159,9 +116,73 @@ public class ProjetoResponse {
         public void setNome(String nome) {
             this.nome = nome;
         }
+
+        public List<IdNome> getCursos() {
+            return cursos;
+        }
+
+        public void setCursos(List<IdNome> cursos) {
+            this.cursos = cursos;
+        }
+
+        public IdNome getSemestre() {
+            return semestre;
+        }
+
+        public void setSemestre(IdNome semestre) {
+            this.semestre = semestre;
+        }
     }
 
-    public static class GrupoProjetoSummary {
+    public static class ProjetoSummary {
+        private Long id;
+        private String nome;
+        private IdNome local;
+        private Instant horarioInicio;
+        private Instant horarioFim;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getNome() {
+            return nome;
+        }
+
+        public void setNome(String nome) {
+            this.nome = nome;
+        }
+
+        public IdNome getLocal() {
+            return local;
+        }
+
+        public void setLocal(IdNome local) {
+            this.local = local;
+        }
+
+        public Instant getHorarioInicio() {
+            return horarioInicio;
+        }
+
+        public void setHorarioInicio(Instant horarioInicio) {
+            this.horarioInicio = horarioInicio;
+        }
+
+        public Instant getHorarioFim() {
+            return horarioFim;
+        }
+
+        public void setHorarioFim(Instant horarioFim) {
+            this.horarioFim = horarioFim;
+        }
+    }
+
+    public static class IdNome {
         private Long id;
         private String nome;
 

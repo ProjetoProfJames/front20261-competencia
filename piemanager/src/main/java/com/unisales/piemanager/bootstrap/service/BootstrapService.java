@@ -7,6 +7,8 @@ import com.unisales.piemanager.curso.CursoRepository;
 import com.unisales.piemanager.curso.model.Curso;
 import com.unisales.piemanager.disciplina.DisciplinaRepository;
 import com.unisales.piemanager.disciplina.model.Disciplina;
+import com.unisales.piemanager.grupo.GrupoProjetoRepository;
+import com.unisales.piemanager.grupo.model.GrupoProjeto;
 import com.unisales.piemanager.local.LocalRepository;
 import com.unisales.piemanager.local.model.Local;
 import com.unisales.piemanager.projeto.ProjetoRepository;
@@ -44,6 +46,7 @@ public class BootstrapService {
     private final CursoRepository cursoRepository;
     private final DisciplinaRepository disciplinaRepository;
     private final TurmaRepository turmaRepository;
+    private final GrupoProjetoRepository grupoProjetoRepository;
     private final LocalRepository localRepository;
     private final ProjetoRepository projetoRepository;
     private final AvaliacaoRepository avaliacaoRepository;
@@ -54,6 +57,7 @@ public class BootstrapService {
                             CursoRepository cursoRepository,
                             DisciplinaRepository disciplinaRepository,
                             TurmaRepository turmaRepository,
+                            GrupoProjetoRepository grupoProjetoRepository,
                             LocalRepository localRepository,
                             ProjetoRepository projetoRepository,
                             AvaliacaoRepository avaliacaoRepository) {
@@ -63,6 +67,7 @@ public class BootstrapService {
         this.cursoRepository = cursoRepository;
         this.disciplinaRepository = disciplinaRepository;
         this.turmaRepository = turmaRepository;
+        this.grupoProjetoRepository = grupoProjetoRepository;
         this.localRepository = localRepository;
         this.projetoRepository = projetoRepository;
         this.avaliacaoRepository = avaliacaoRepository;
@@ -251,6 +256,24 @@ public class BootstrapService {
             locaisSeeded++;
         }
 
+        GrupoProjeto grupoProjeto = grupoProjetoRepository.findByNomeIgnoreCaseAndTurmaId(
+                "Grupo PIE Manager", turma.getId()).orElse(null);
+        if (grupoProjeto == null) {
+            grupoProjeto = new GrupoProjeto();
+            grupoProjeto.setNome("Grupo PIE Manager");
+            grupoProjeto.setTurma(turma);
+            grupoProjeto.setProfessorOrientador(professorComputacao);
+            grupoProjeto.setAlunos(new LinkedHashSet<>(Set.of(alunoUm, alunoDois, alunoTres)));
+            grupoProjeto.setCreatedBy("bootstrap");
+            grupoProjeto.setUpdatedBy("bootstrap");
+            grupoProjeto = grupoProjetoRepository.save(grupoProjeto);
+        } else {
+            grupoProjeto.setProfessorOrientador(professorComputacao);
+            grupoProjeto.setAlunos(new LinkedHashSet<>(Set.of(alunoUm, alunoDois, alunoTres)));
+            grupoProjeto.setUpdatedBy("bootstrap");
+            grupoProjeto = grupoProjetoRepository.save(grupoProjeto);
+        }
+
         Projeto projeto = projetoRepository.findByNomeIgnoreCaseAndTurmaIdAndSemestreId(
                 "PIE Manager", turma.getId(), semestre20261.getId()).orElse(null);
         if (projeto == null) {
@@ -261,6 +284,7 @@ public class BootstrapService {
             projeto.setSemestre(semestre20261);
             projeto.setProfessorOrientador(professorComputacao);
             projeto.setIntegrantes(new LinkedHashSet<>(Set.of(alunoUm, alunoDois, alunoTres)));
+            projeto.setGrupoProjeto(grupoProjeto);
             projeto.setLocal(localA01);
             projeto.setHorarioInicio(Instant.parse("2026-06-20T18:00:00Z"));
             projeto.setHorarioFim(Instant.parse("2026-06-20T19:00:00Z"));
@@ -268,6 +292,10 @@ public class BootstrapService {
             projeto.setUpdatedBy("bootstrap");
             projeto = projetoRepository.save(projeto);
             projetosSeeded++;
+        } else if (projeto.getGrupoProjeto() == null && !projetoRepository.existsByGrupoProjetoId(grupoProjeto.getId())) {
+            projeto.setGrupoProjeto(grupoProjeto);
+            projeto.setUpdatedBy("bootstrap");
+            projeto = projetoRepository.save(projeto);
         }
 
         avaliacoesSeeded += ensureAvaliacao(projeto, professorComputacao, new BigDecimal("8.50"),
