@@ -13,10 +13,15 @@ function joinURL(endpoint) {
 
 async function handleFetch(endpoint, options = {}) {
     const url = joinURL(endpoint);
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     const defaultHeaders = {
         "Content-Type": "application/json",
         "Accept": "application/json"
     };
+
+    if (token) {
+        defaultHeaders["Authorization"] = `Bearer ${token}`;
+    }
 
     const config = {
         ...options,
@@ -30,8 +35,9 @@ async function handleFetch(endpoint, options = {}) {
         const response = await fetch(url, config);
 
         if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error || `Erro na requisição: ${response.status}`);
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData?.message || errorData?.error || `Erro na requisição: ${response}`;
+            throw new Error(errorMessage);
         }
 
         if (response.status === 204) return null;
@@ -44,7 +50,15 @@ async function handleFetch(endpoint, options = {}) {
 }
 
 export const api = {
-    get: (endpoint, params = {}, options = {}) => {
+    get: (endpoint, paramsOrOptions = {}, options = {}) => {
+        let params = paramsOrOptions;
+        let requestOptions = options;
+
+        if (paramsOrOptions && typeof paramsOrOptions === "object" && "params" in paramsOrOptions) {
+            params = paramsOrOptions.params || {};
+            requestOptions = { ...paramsOrOptions };
+            delete requestOptions.params;
+        }
 
         let finalEndpoint = endpoint;
 
@@ -61,7 +75,7 @@ export const api = {
         
         return handleFetch(finalEndpoint, {
             method: "GET",
-            ...options
+            ...requestOptions
         });
     },
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Form from "./_components/form";
 import Table from "./_components/table";
-import { api } from "../api";
+import { api } from "../../services/api";
 import styles from "./avaliacoes.module.css";
 
 export default function AssessmentPage() {
@@ -25,7 +25,7 @@ export default function AssessmentPage() {
             if (filterProjetoId) queryParams.projetoId = Number(filterProjetoId);
             if (filterAvaliadorId) queryParams.avaliadorId = Number(filterAvaliadorId);
 
-            const response = await api.get("/api/avaliacoes", { params: queryParams });
+            const response = await api.get("/api/avaliacoes", queryParams);
             
             if (response && response.data) setAssessments(Array.isArray(response.data) ? response.data : [response.data]);
             else setAssessments([]);

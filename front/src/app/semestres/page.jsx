@@ -16,14 +16,9 @@ export default function SemestresPage() {
     carregarSemestres();
   }, []);
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    return { Authorization: `Bearer ${token}` };
-  };
-
   const carregarSemestres = async () => {
     try {
-      const resposta = await api.get("/semestres", {}, { headers: getAuthHeaders() });
+      const resposta = await api.get("/api/semestres");
       setSemestres(resposta.data || []);
     } catch (err) {
       setError("Não foi possível carregar os períodos letivos.");
@@ -62,10 +57,10 @@ export default function SemestresPage() {
 
     try {
       if (editingId) {
-        await api.put(`/semestres/${editingId}`, payload, { headers: getAuthHeaders() });
+        await api.put(`/api/semestres/${editingId}`, payload);
         setSuccess("Período letivo atualizado com sucesso.");
       } else {
-        await api.post("/semestres", payload, { headers: getAuthHeaders() });
+        await api.post("/api/semestres", payload);
         setSuccess("Período letivo cadastrado com sucesso.");
       }
       resetForm();
@@ -90,7 +85,7 @@ export default function SemestresPage() {
     }
 
     try {
-      await api.delete(`/semestres/${id}`, { headers: getAuthHeaders() });
+      await api.delete(`/api/semestres/${id}`);
       setSuccess("Período letivo removido com sucesso.");
       carregarSemestres();
     } catch (err) {
