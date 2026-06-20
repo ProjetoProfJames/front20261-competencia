@@ -37,12 +37,7 @@ export default function Menu() {
       )}
       
       {(user.profile === "ADMIN" || user.profile === "COORDENADOR") && (
-      <>
-        <Link href="/locais" style={{ color: "blue", textDecoration: "none" }}>Locais</Link>
-        <Link href="/cursos" style={{ color: "blue", textDecoration: "none" }}>Cursos</Link>
-        <Link href="/periodos" style={{ color: "blue", textDecoration: "none" }}>Períodos Letivos</Link>
-        <Link href="/turmas" style={{ color: "blue", textDecoration: "none" }}>Turmas</Link>
-      </>
+ 
     )}
 
       <button 
