@@ -17,6 +17,9 @@ function getHeaders() {
 
 async function handleResponse(res) {
     if (res.status === 401 || res.status === 403) {
+        if (typeof window !== 'undefined') {
+            window.location.href = '/menu';
+        }
         alert('Não autorizado');
         return null;
     }
@@ -96,6 +99,9 @@ export async function login(email, password) {
         if (res.user && res.user.username) {
             localStorage.setItem('user', res.user.username);
         }
+        if (res.user && res.user.profile) {
+            localStorage.setItem('profile', JSON.stringify(res.user.profile));
+        }
     }
 
     return res;
@@ -113,6 +119,51 @@ export function getUsername() {
     if (typeof window !== 'undefined') {
         return localStorage.getItem('user');
     }
+}
+export function getProfile() {
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem('profile');
+    }
+}
+
+export async function listarUsuarios() {
+    return await get('/users');
+}
+
+export async function obterUsuarioPorId(id) {
+    return await get(`/users/${id}`);
+}
+
+export async function criarUsuario(usuarioData) {
+    return await post('/users', usuarioData);
+}
+
+export async function atualizarUsuario(id, usuarioData) {
+    return await put(`/users/${id}`, usuarioData);
+}
+
+export async function deletarUsuario(id) {
+    return await del(`/users/${id}`);
+}
+
+export async function listarLocais() {
+    return await get('/locais');
+}
+
+export async function obterLocalPorId(id) {
+    return await get(`/locais/${id}`);
+}
+
+export async function criarLocal(localData) {
+    return await post('/locais', localData);
+}
+
+export async function atualizarLocal(id, localData) {
+    return await put(`/locais/${id}`, localData);
+}
+
+export async function deletarLocal(id) {
+    return await del(`/locais/${id}`);
 }
 
 export async function listarCursos() {

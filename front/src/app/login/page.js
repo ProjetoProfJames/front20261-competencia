@@ -20,7 +20,6 @@ export default function LoginPage() {
   const authenticate = async () => {
     setError("");
 
-
     const resultado = await login(user.email, user.password);
 
     if (resultado && resultado.accessToken) {
