@@ -1,5 +1,13 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+> **Nota sobre Node.js 25+:** a partir do Node 25, o `localStorage` passou a existir
+> como objeto global experimental mesmo no servidor, mas incompleto (sem
+> `getItem`/`setItem` funcionais), o que pode causar o erro
+> `TypeError: localStorage.getItem is not a function` ao rodar `npm run dev`.
+> Os scripts `dev` e `start` já desativam esse recurso experimental via
+> `NODE_OPTIONS=--no-experimental-webstorage`. Se o erro persistir, use uma
+> versão LTS do Node (ex.: Node 22, ver `.nvmrc`) com `nvm use`.
+
 ## Getting Started
 
 First, run the development server:

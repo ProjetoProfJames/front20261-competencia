@@ -29,6 +29,9 @@ public class User {
     @Column(nullable = false, length = 120)
     private String password;
 
+    @Column(nullable = true, unique = true, length = 10)
+    private String matricula;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -127,5 +130,13 @@ public class User {
 
     public void setProfile(Profile profile) {
         this.profile = profile;
+    }
+
+    public String getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
     }
 }

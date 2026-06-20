@@ -35,6 +35,12 @@ public class UserService {
         user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setProfile(request.getProfile());
+        if (request.getMatricula() != null && !request.getMatricula().isBlank()) {
+            if (userRepository.existsByMatricula(request.getMatricula())) {
+                throw new BusinessException("Matricula already exists");
+            }
+            user.setMatricula(request.getMatricula());
+        }
         user.setCreatedBy(defaultActor(actor));
         user.setUpdatedBy(defaultActor(actor));
 
@@ -99,6 +105,7 @@ public class UserService {
         response.setUpdatedAt(user.getUpdatedAt());
         response.setUpdatedBy(user.getUpdatedBy());
         response.setProfile(user.getProfile());
+        response.setMatricula(user.getMatricula());
         return response;
     }
 

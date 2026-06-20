@@ -12,6 +12,7 @@ public class UserResponse {
     private Instant updatedAt;
     private String updatedBy;
     private Profile profile;
+    private String matricula;
 
     public Long getId() {
         return id;
@@ -75,5 +76,13 @@ public class UserResponse {
 
     public void setProfile(Profile profile) {
         this.profile = profile;
+    }
+
+    public String getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
     }
 }

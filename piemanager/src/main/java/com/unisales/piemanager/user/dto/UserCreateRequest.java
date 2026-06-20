@@ -4,6 +4,7 @@ import com.unisales.piemanager.user.model.Profile;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class UserCreateRequest {
@@ -23,6 +24,9 @@ public class UserCreateRequest {
 
     @NotNull(message = "profile is required")
     private Profile profile;
+
+    @Pattern(regexp = "\\d{10}", message = "matricula must be exactly 10 digits")
+    private String matricula;
 
     public String getUsername() {
         return username;
@@ -54,5 +58,13 @@ public class UserCreateRequest {
 
     public void setProfile(Profile profile) {
         this.profile = profile;
+    }
+
+    public String getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
     }
 }
