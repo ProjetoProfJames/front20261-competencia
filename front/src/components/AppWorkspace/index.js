@@ -15,6 +15,8 @@ import {
   editarAvaliacao,
   deletarAvaliacao,
 } from "@/services/projetoService";
+import { listarTurmas } from "@/services/turmaService";
+import { listarSemestres } from "@/services/semestreService";
 
 const roleLabels = {
   ADMIN: "Administrador",
@@ -48,9 +50,6 @@ const projetoFormInicial = {
   horarioFim: "",
 };
 
-const turmasMock = [{ id: 1, nome: "T1-Estatistica" }];
-const semestresMock = [{ id: 1, nome: "2026/1" }];
-
 export default function AppWorkspace({ session, onLogout }) {
   const [activeSection, setActiveSection] = useState("dashboard");
 
@@ -66,6 +65,8 @@ export default function AppWorkspace({ session, onLogout }) {
 
   const [projetos, setProjetos] = useState([]);
   const [loadingProjetos, setLoadingProjetos] = useState(false);
+  const [turmas, setTurmas] = useState([]);
+  const [semestres, setSemestres] = useState([]);
   const [projetoForm, setProjetoForm] = useState(projetoFormInicial);
   const [editandoProjetoId, setEditandoProjetoId] = useState(null);
   const [projetoAvaliacaoId, setProjetoAvaliacaoId] = useState(null);
@@ -91,7 +92,13 @@ export default function AppWorkspace({ session, onLogout }) {
   }, []);
 
   async function refreshData() {
-    await Promise.all([loadUsers(), loadLocais(), loadProjetos()]);
+    await Promise.all([
+      loadUsers(),
+      loadLocais(),
+      loadProjetos(),
+      loadTurmas(),
+      loadSemestres(),
+    ]);
   }
 
   async function loadUsers() {
@@ -128,6 +135,24 @@ export default function AppWorkspace({ session, onLogout }) {
       setNotice(error.message || "Erro ao carregar projetos");
     } finally {
       setLoadingProjetos(false);
+    }
+  }
+
+  async function loadTurmas() {
+    try {
+      const data = await listarTurmas();
+      setTurmas(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setNotice(error.message || "Erro ao carregar turmas");
+    }
+  }
+
+  async function loadSemestres() {
+    try {
+      const data = await listarSemestres();
+      setSemestres(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setNotice(error.message || "Erro ao carregar semestres");
     }
   }
 
@@ -643,7 +668,7 @@ export default function AppWorkspace({ session, onLogout }) {
               required
             >
               <option value="">Selecione</option>
-              {turmasMock.map((t) => (
+              {turmas.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.nome}
                 </option>
@@ -659,7 +684,7 @@ export default function AppWorkspace({ session, onLogout }) {
               required
             >
               <option value="">Selecione</option>
-              {semestresMock.map((s) => (
+              {semestres.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.nome}
                 </option>
@@ -840,8 +865,8 @@ export default function AppWorkspace({ session, onLogout }) {
   const activeSectionLabel = activeSection === "projetos-form"
     ? (editandoProjetoId ? "Editar Projeto" : "Novo Projeto")
     : activeSection === "projetos-avaliacoes"
-    ? "Avaliações"
-    : currentSection?.label || "Painel";
+      ? "Avaliações"
+      : currentSection?.label || "Painel";
 
   return (
     <main className="workspace-shell">
