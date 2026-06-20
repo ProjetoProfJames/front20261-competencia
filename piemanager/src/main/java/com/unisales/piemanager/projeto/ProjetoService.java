@@ -34,11 +34,11 @@ public class ProjetoService {
     private final TurmaRepository turmaRepository;
 
     public ProjetoService(ProjetoRepository projetoRepository,
-                          TurmaService turmaService,
-                          SemestreService semestreService,
-                          LocalService localService,
-                          UserRepository userRepository,
-                          TurmaRepository turmaRepository) {
+            TurmaService turmaService,
+            SemestreService semestreService,
+            LocalService localService,
+            UserRepository userRepository,
+            TurmaRepository turmaRepository) {
         this.projetoRepository = projetoRepository;
         this.turmaService = turmaService;
         this.semestreService = semestreService;
@@ -79,17 +79,10 @@ public class ProjetoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjetoResponse> findAll(Long turmaId, Long semestreId, Long localId) {
-        if (turmaId != null) {
-            return projetoRepository.findByTurmaId(turmaId).stream().map(this::toResponse).toList();
-        }
-        if (semestreId != null) {
-            return projetoRepository.findBySemestreId(semestreId).stream().map(this::toResponse).toList();
-        }
-        if (localId != null) {
-            return projetoRepository.findByLocalId(localId).stream().map(this::toResponse).toList();
-        }
-        return projetoRepository.findAll().stream().map(this::toResponse).toList();
+    public List<ProjetoResponse> findAll(Long turmaId, Long semestreId, Long localId, 
+            String componente, String professor, String turmaNome, String cursoNome) {
+        return projetoRepository.findAllComFiltros(turmaId, semestreId, localId, componente, professor, turmaNome, cursoNome)
+                .stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
@@ -342,10 +335,10 @@ public class ProjetoService {
     }
 
     private void applyAlunoAutoInclusaoSeNecessario(String actorEmail,
-                                                    Turma turma,
-                                                    Semestre semestre,
-                                                    Set<User> integrantes,
-                                                    Long projetoId) {
+            Turma turma,
+            Semestre semestre,
+            Set<User> integrantes,
+            Long projetoId) {
         if (actorEmail == null || actorEmail.isBlank()) {
             return;
         }

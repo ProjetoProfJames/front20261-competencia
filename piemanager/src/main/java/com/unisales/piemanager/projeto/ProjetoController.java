@@ -38,16 +38,23 @@ public class ProjetoController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ALUNO','PROFESSOR','COORDENADOR','ADMIN')")
     public ApiResponse<ProjetoResponse> create(@Valid @RequestBody ProjetoCreateRequest request,
-                                               Authentication authentication) {
+            Authentication authentication) {
         String actor = authentication != null ? authentication.getName() : "system";
         return ApiResponse.success("Projeto created", projetoService.create(request, actor));
     }
 
     @GetMapping
-    public ApiResponse<List<ProjetoResponse>> findAll(@RequestParam(required = false) Long turmaId,
-                                                      @RequestParam(required = false) Long semestreId,
-                                                      @RequestParam(required = false) Long localId) {
-        return ApiResponse.success("Projetos fetched", projetoService.findAll(turmaId, semestreId, localId));
+    public ApiResponse<List<ProjetoResponse>> findAll(
+            @RequestParam(required = false) Long turmaId,
+            @RequestParam(required = false) Long semestreId,
+            @RequestParam(required = false) Long localId,
+            @RequestParam(required = false) String componente,
+            @RequestParam(required = false) String professor,
+            @RequestParam(required = false) String turmaNome,
+            @RequestParam(required = false) String cursoNome) {
+
+        return ApiResponse.success("Projetos fetched",
+                projetoService.findAll(turmaId, semestreId, localId, componente, professor, turmaNome, cursoNome));
     }
 
     @GetMapping("/{id}")
@@ -60,8 +67,8 @@ public class ProjetoController {
             "(hasRole('PROFESSOR') and @projetoService.isProfessorInProjectTurma(#id, authentication.name)) or " +
             "(hasRole('ALUNO') and @projetoService.isAlunoIntegrante(#id, authentication.name))")
     public ApiResponse<ProjetoResponse> update(@PathVariable Long id,
-                                               @Valid @RequestBody ProjetoUpdateRequest request,
-                                               Authentication authentication) {
+            @Valid @RequestBody ProjetoUpdateRequest request,
+            Authentication authentication) {
         String actor = authentication != null ? authentication.getName() : "system";
         return ApiResponse.success("Projeto updated", projetoService.update(id, request, actor));
     }
@@ -93,8 +100,8 @@ public class ProjetoController {
     @PreAuthorize("hasAnyRole('COORDENADOR','ADMIN') or " +
             "(hasRole('PROFESSOR') and @projetoService.isProfessorOrientador(#id, authentication.name))")
     public ApiResponse<ProjetoResponse> addIntegrante(@PathVariable Long id,
-                                                      @Valid @RequestBody ProjetoIntegranteRequest request,
-                                                      Authentication authentication) {
+            @Valid @RequestBody ProjetoIntegranteRequest request,
+            Authentication authentication) {
         String actor = authentication != null ? authentication.getName() : "system";
         return ApiResponse.success("Integrante added", projetoService.addIntegrante(id, request.getAlunoId(), actor));
     }
@@ -103,8 +110,8 @@ public class ProjetoController {
     @PreAuthorize("hasAnyRole('COORDENADOR','ADMIN') or " +
             "(hasRole('PROFESSOR') and @projetoService.isProfessorOrientador(#id, authentication.name))")
     public ApiResponse<ProjetoResponse> removeIntegrante(@PathVariable Long id,
-                                                         @PathVariable Long alunoId,
-                                                         Authentication authentication) {
+            @PathVariable Long alunoId,
+            Authentication authentication) {
         String actor = authentication != null ? authentication.getName() : "system";
         return ApiResponse.success("Integrante removed", projetoService.removeIntegrante(id, alunoId, actor));
     }
@@ -112,8 +119,8 @@ public class ProjetoController {
     @PostMapping("/{id}/avaliacoes")
     @PreAuthorize("hasAnyRole('PROFESSOR','AVALIADOR_EXTERNO')")
     public ApiResponse<AvaliacaoResponse> createAvaliacao(@PathVariable Long id,
-                                                          @Valid @RequestBody ProjetoAvaliacaoCreateRequest request,
-                                                          Authentication authentication) {
+            @Valid @RequestBody ProjetoAvaliacaoCreateRequest request,
+            Authentication authentication) {
         String actor = authentication != null ? authentication.getName() : "";
         return ApiResponse.success("Avaliacao created", avaliacaoService.createByProjeto(id, request, actor));
     }
@@ -121,18 +128,19 @@ public class ProjetoController {
     @PutMapping("/{id}/avaliacoes/{avaliacaoId}")
     @PreAuthorize("@avaliacaoService.isOwnerAvaliadorByProjeto(#id, #avaliacaoId, authentication.name)")
     public ApiResponse<AvaliacaoResponse> updateAvaliacao(@PathVariable Long id,
-                                                          @PathVariable Long avaliacaoId,
-                                                          @Valid @RequestBody ProjetoAvaliacaoUpdateRequest request,
-                                                          Authentication authentication) {
+            @PathVariable Long avaliacaoId,
+            @Valid @RequestBody ProjetoAvaliacaoUpdateRequest request,
+            Authentication authentication) {
         String actor = authentication != null ? authentication.getName() : "";
-        return ApiResponse.success("Avaliacao updated", avaliacaoService.updateByProjeto(id, avaliacaoId, request, actor));
+        return ApiResponse.success("Avaliacao updated",
+                avaliacaoService.updateByProjeto(id, avaliacaoId, request, actor));
     }
 
     @DeleteMapping("/{id}/avaliacoes/{avaliacaoId}")
     @PreAuthorize("hasAnyRole('COORDENADOR','ADMIN') or " +
             "@avaliacaoService.isOwnerAvaliadorByProjeto(#id, #avaliacaoId, authentication.name)")
     public ApiResponse<Void> deleteAvaliacao(@PathVariable Long id,
-                                             @PathVariable Long avaliacaoId) {
+            @PathVariable Long avaliacaoId) {
         avaliacaoService.deleteByProjeto(id, avaliacaoId);
         return ApiResponse.success("Avaliacao deleted", null);
     }
