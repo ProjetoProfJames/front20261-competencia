@@ -1,6 +1,6 @@
 export default function FormInput({ label, type, name, value, onChange }) {
   return (
-    <div className="input-group">
+    <div>
       <label>{label}</label>
       <input type={type} name={name} value={value} onChange={onChange} />
     </div>
