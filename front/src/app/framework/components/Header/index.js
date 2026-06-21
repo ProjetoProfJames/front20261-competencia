@@ -23,7 +23,7 @@ export default function Header() {
     }
 
     function botoeMenu() {
-        const paginas = ['users', 'turmas', 'projetos', 'locais', 'cursos', 'avaliacoes']
+        const paginas = ['users', 'turmas', 'projetos', 'locais', 'cursos','periodos-letivos']
         return( paginas.map( pagina => (
             <Button key={pagina} type={'azul'} onClick={() => router.push(`/menu/${pagina}`)}>{pagina}</Button>
         )))
