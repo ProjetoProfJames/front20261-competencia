@@ -1,8 +1,27 @@
-export default function FormInput({ label, type, name, value, onChange }) {
+export default function FormInput({
+  label,
+  type,
+  name,
+  value,
+  onChange,
+  placeholder,
+  required = false,
+  min,
+  max,
+}) {
   return (
-    <div>
-      <label>{label}</label>
-      <input type={type} name={name} value={value} onChange={onChange} />
-    </div>
+    <label>
+      <span>{label}</span>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        min={min}
+        max={max}
+      />
+    </label>
   );
 }
