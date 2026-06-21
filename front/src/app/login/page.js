@@ -1,111 +1,72 @@
 'use client';
-
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
-import { login } from "@/services/authService";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [user, setUser] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
+  const [mensagem, setMensagem] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    const rawUser = localStorage.getItem("user");
-
-    if (token) {
-      try {
-        const storedUser = rawUser ? JSON.parse(rawUser) : null;
-        router.replace(storedUser?.profile === "PROFESSOR" ? "/turmas" : "/cursos");
-      } catch {
-        router.replace("/cursos");
-      }
-    }
-  }, [router]);
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setUser((current) => ({ ...current, [name]: value }));
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUser((prevUser) => ({ ...prevUser, [name]: value }));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError("");
+  const validar = () => {
+    if (!user.email || !user.password) {
+      setMensagem('Preencha email e senha');
+      return false;
+    }
 
-    if (!user.email.trim() || !user.password.trim()) {
-      setError("Informe email e senha");
+    if (!user.email.includes('@')) {
+      setMensagem('Informe um email valido');
+      return false;
+    }
+
+    return true;
+  }
+
+  const authenticate = () => {
+    if (!validar()) {
       return;
     }
 
     setLoading(true);
+    setMensagem('');
 
-    try {
-      const response = await login({
-        email: user.email.trim(),
-        password: user.password,
-      });
-
-      localStorage.setItem("token", response.accessToken);
-      localStorage.setItem("user", JSON.stringify(response.user));
-      router.replace(response.user?.profile === "PROFESSOR" ? "/turmas" : "/cursos");
-    } catch (err) {
-      setError(err.message || "Falha no login");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadBootstrap = async () => {
-    setError("");
-
-    try {
-      const response = await fetch("http://localhost:8080/api/public/bootstrap", {
-        method: "POST",
-      });
-
-      if (!response.ok) {
-        throw new Error("Falha ao executar o bootstrap");
+    fetch("http://localhost:8080/api/auth/login", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: user.email,
+        password: user.password
+      })
+    }).then((res) => {
+      if (res.ok) {
+        return res.json();
       }
-    } catch (err) {
-      setError(err.message || "Falha ao executar o bootstrap");
-    }
+      throw new Error('Email ou senha invalido');
+    }).then((obj) => {
+      localStorage.setItem('API-KEY', obj.data.accessToken);
+      localStorage.setItem('USER', JSON.stringify(obj.data.user));
+      location.href = '/home';
+    }).catch((error) => {
+      setMensagem(error.message);
+    }).finally(() => {
+      setLoading(false);
+    })
   };
 
   return (
-    <main>
+    <div>
       <h1>Login</h1>
-
-      <form onSubmit={handleSubmit}>
-        <FormInput
-          label="Email"
-          type="email"
-          name="email"
-          value={user.email}
-          onChange={handleChange}
-          required
-        />
-        <FormInput
-          label="Senha"
-          type="password"
-          name="password"
-          value={user.password}
-          onChange={handleChange}
-          required
-        />
-
-        {error ? <p>{error}</p> : null}
-
-        <Button type="submit" disabled={loading}>
-          {loading ? "Entrando..." : "Entrar"}
-        </Button>
-        {" "}
-        <Button type="button" onClick={loadBootstrap}>
-          Bootstrap
-        </Button>
-      </form>
-    </main>
+      {mensagem && <p>{mensagem}</p>}
+      <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
+      <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
+      <Button type="button" onClick={authenticate} disabled={loading}>{loading ? 'Entrando...' : 'Login'}</Button>
+    </div>
   );
 }
