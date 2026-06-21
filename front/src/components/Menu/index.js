@@ -32,15 +32,18 @@ export default function Menu() {
   }
 
   return (
-    <nav style={{ display: "flex", justifyContent: "space-between", padding: "1rem", borderBottom: "1px solid #ccc" }}>
+    <nav style={{ display: "flex", justifyContent: "space-between", padding: "1rem", borderBottom: "1px solid #ccc", flexWrap: "wrap", gap: "1rem" }}>
       <div>
         <span>Olá, {displayName}</span>
         <button onClick={handleLogout} style={{ marginLeft: "1rem", color: "red", border: "1px solid red", background: "none", padding: "2px 8px", cursor: "pointer", borderRadius: "4px" }}>Logout</button>
       </div>
-      <div>
-        <Link href="/" style={{ marginRight: "1rem" }}>Início</Link>
-        <Link href="/usuarios" style={{ marginRight: "1rem" }}>Usuários</Link>
-        <Link href="/locais">Locais de Apresentação</Link>
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+        <Link href="/">Início</Link>
+        <Link href="/usuarios">Usuários</Link>
+        <Link href="/locais">Locais</Link>
+        <Link href="/semestres">Semestres</Link>
+        <Link href="/cursos">Cursos</Link>
+        <Link href="/turmas">Turmas</Link>
       </div>
     </nav>
   );
