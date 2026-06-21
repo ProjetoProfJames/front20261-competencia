@@ -1,7 +1,10 @@
+'use client';
+import RotaProtegida from '@/app/framework/components/RotaProtegida';
+
 export default function Turmas() {
   return (
-    <>
-    <div>Turmas</div>
-    </>
+    <RotaProtegida roles={['ALUNO', 'PROFESSOR', 'COORDENADOR', 'ADMIN']}>
+      <div>Turmas</div>
+    </RotaProtegida>
   );
 }

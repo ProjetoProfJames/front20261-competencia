@@ -6,15 +6,14 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { removerToken, verificarToken } from '@/utils/api/Auth';
 import { obterToken } from '@/utils/api/Auth';
+import Row from '../Layouts/Row';
 
 export default function Header() {
     const router = useRouter();
     const [estaAutenticado, setEstaAutenticado] = useState(false);
     
     useEffect(() => {
-        const token = obterToken()
-        console.log(token)
-        setEstaAutenticado(!!token)
+        setEstaAutenticado(verificarToken())
     }, []);
 
     function handleLogout(){
@@ -23,12 +22,29 @@ export default function Header() {
         router.push('/login')
     }
 
+    function botoeMenu() {
+        const paginas = ['users', 'turmas', 'projetos', 'locais', 'cursos', 'avaliacoes']
+        return( paginas.map( pagina => (
+            <Button key={pagina} type={'azul'} onClick={() => router.push(`/menu/${pagina}`)}>{pagina}</Button>
+        )))
+    }
+
     return (
         <div className={styles.wrapper}>
             <header className={styles.header}>
                 <div className={styles.mainContent}>
                     <h1>Sistema de Cadastro de Projetos</h1>
                 </div>
+                {estaAutenticado ? (
+                    <div>
+                        <Row align={'center'} justify={'evenly'}>
+                            {botoeMenu()}
+                            <Button type={'laranja'} onClick={() => router.push(`/menu`)}>Menu</Button>
+                        </Row>
+                    </div>
+                ) : (
+                    <></>
+                )}
                 {estaAutenticado ? (
                     <div>
                         <Button type={'vermelho'} onClick={() => handleLogout()}>Log-out</Button>

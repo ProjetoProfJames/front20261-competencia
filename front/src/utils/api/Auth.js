@@ -1,31 +1,51 @@
-const TOKEN_KEY = 'meu_framework_token';
+const TOKEN_KEY = 'TKN';
+const PROFILE_KEY = 'TKN_PROFILE';
 
-export function salvarToken(token) {
-  const dataExpiracao = new Date();
-  dataExpiracao.setTime(dataExpiracao.getTime() + (30 * 60 * 1000)); // 30 minutos
-  const expires = `expires=${dataExpiracao.toUTCString()}`;
-
-  document.cookie = `${TOKEN_KEY}=${token}; ${expires}; path=/; SameSite=Strict`;
+export function salvarToken(token, profile) {
+  if (typeof window === 'undefined') return null;
+  localStorage.setItem(TOKEN_KEY, token);
+  if (profile) {
+    localStorage.setItem(PROFILE_KEY, profile);
+  }
 }
 
 export function obterToken() {
   if (typeof window === 'undefined') return null;
-
-  const nomeChave = `${TOKEN_KEY}=`;
-
-  const cookiesArray = document.cookie.split(';');
-
-  for (let i = 0; i < cookiesArray.length; i++) {
-    let cookie = cookiesArray[i].trim(); 
-
-    if (cookie.indexOf(nomeChave) === 0) {
-      return cookie.substring(nomeChave.length, cookie.length); 
-    }
-  }
-  
-  return null; 
+  return localStorage.getItem(TOKEN_KEY);
 }
 
 export function removerToken() {
-  document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict`;
+  if (typeof window === 'undefined') return null;
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(PROFILE_KEY);
+}
+
+export function decodificarToken() {
+  const token = obterToken();
+  if (!token) return null;
+
+  try {
+    const payload = token.split('.')[1];
+    const decoded = atob(payload);
+    return JSON.parse(decoded);
+  } catch (error) {
+    return null;
+  }
+}
+
+export function obterRole() {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(PROFILE_KEY);
+}
+
+export function verificarToken() {
+  const payload = decodificarToken();
+  if (!payload) return false;
+
+  if (payload.exp) {
+    const agora = Math.floor(Date.now() / 1000);
+    return payload.exp > agora;
+  }
+
+  return true;
 }

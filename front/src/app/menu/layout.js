@@ -1,10 +1,10 @@
 'use client';
 import RotaProtegida from '@/app/framework/components/RotaProtegida';
 
-export default function Cursos() {
+export default function MenuLayout({ children }) {
   return (
-    <RotaProtegida roles={['ADMIN']}>
-      <div>Cursos</div>
+    <RotaProtegida>
+      {children}
     </RotaProtegida>
   );
 }

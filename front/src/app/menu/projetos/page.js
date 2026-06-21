@@ -1,7 +1,10 @@
+'use client';
+import RotaProtegida from '@/app/framework/components/RotaProtegida';
+
 export default function Projetos() {
   return (
-    <>
-    <div>Projetos</div>
-    </>
+    <RotaProtegida roles={['ALUNO', 'PROFESSOR', 'COORDENADOR', 'ADMIN']}>
+      <div>Projetos</div>
+    </RotaProtegida>
   );
 }

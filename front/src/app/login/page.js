@@ -27,8 +27,9 @@ export default function LoginPage() {
       const resposta = await Post('/api/auth/login', {email, 'password':senha})
       
       if (resposta.success && resposta.data.accessToken) {
-        const token = resposta.data.accessToken; 
-        salvarToken(token)
+        const token = resposta.data.accessToken;
+        const profile = resposta.data.user?.profile;
+        salvarToken(token, profile)
         window.location.href = '/menu'
       } else{
        alert('Resposta invalida do servidor')
