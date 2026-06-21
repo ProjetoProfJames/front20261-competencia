@@ -100,7 +100,7 @@ export async function login(email, password) {
             localStorage.setItem('user', res.user.username);
         }
         if (res.user && res.user.profile) {
-            localStorage.setItem('profile', JSON.stringify(res.user.profile));
+            localStorage.setItem('profile', res.user.profile);
         }
     }
 
@@ -110,6 +110,7 @@ export async function login(email, password) {
 export async function logout(router) {
     localStorage.removeItem('JWT');
     localStorage.removeItem('user');
+    localStorage.removeItem('profile');
     if (router) {
         router.push('/login');
     }
@@ -122,8 +123,19 @@ export function getUsername() {
 }
 export function getProfile() {
     if (typeof window !== 'undefined') {
-        return localStorage.getItem('profile');
+        const profile = localStorage.getItem('profile');
+        if (!profile) {
+            return '';
+        }
+
+        try {
+            return JSON.parse(profile);
+        } catch {
+            return profile;
+        }
     }
+
+    return '';
 }
 
 export async function listarUsuarios() {

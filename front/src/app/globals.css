@@ -8,7 +8,7 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f4f6f9;
     color: #333;
-    margin-top: 0px; /* Espaço para o header fixo */
+    margin-top: 0px; 
     padding-top: 0px;
 }
 
@@ -30,6 +30,14 @@ header nav a {
     text-decoration: none;
     margin-right: 20px;
     font-weight: bold;
+}
+header nav a:hover {
+    color: #3498db;
+}
+header div {
+    display: flex;
+    align-items: center;
+   gap: 10px;
 }
 
 button {
@@ -102,6 +110,7 @@ label {
 }
 
 input[type="text"],
+input[type="email"],
 input[type="number"],
 input[type="date"] {
     width: 100%;

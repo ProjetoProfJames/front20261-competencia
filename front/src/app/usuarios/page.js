@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Button from '@/components/Button';
 import { listarUsuarios, obterUsuarioPorId, criarUsuario, atualizarUsuario, deletarUsuario } from '@/utils/api';
 
 export default function UsuariosPage() {
@@ -40,6 +41,15 @@ export default function UsuariosPage() {
         }
     }
 
+    function handleCriar() {
+        setIdEdicao(null);
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setProfile('');
+        setModo('criar');
+    }
+
     function limparFormulario() {
         setIdEdicao(null);
         setUsername('');
@@ -47,7 +57,41 @@ export default function UsuariosPage() {
         setPassword('');
         setProfile('');
         setModo('listar');
-    }   
+    }
+
+    const formularioUsuario = (
+        <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '10px' }}>
+                <label>Username:</label><br />
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+                <label>Email:</label><br />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+                <label>Senha:</label><br />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+            <div style={{ marginBottom: '10px' }}>
+                <label>Perfil:</label><br />
+                <select value={profile} onChange={(e) => setProfile(e.target.value)} required>
+                    <option value="">Selecione um perfil</option>
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="COORDENADOR">COORDENADOR</option>
+                    <option value="ALUNO">ALUNO</option>
+                    <option value="PROFESSOR">PROFESSOR</option>
+                    <option value="AVALIADOR_EXTERNO">AVALIADOR_EXTERNO</option>
+                </select>
+            </div>
+            <button type="submit">{modo === 'editar' ? 'Atualizar' : 'Criar'}</button>
+            {modo !== 'listar' && (
+                <button type="button" onClick={limparFormulario} style={{ marginLeft: '10px' }}>
+                    Cancelar
+                </button>
+            )}
+        </form>
+    );
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -73,35 +117,19 @@ export default function UsuariosPage() {
         }
     }
 
+    if (modo === 'editar' || modo === 'criar') {
+        return (
+            <div style={{ padding: '20px', maxWidth: '50%', margin: '0 auto' }}>
+                <h1>{modo === 'editar' ? 'Editar Usuário' : 'Criar Usuário'}</h1>
+                {formularioUsuario}
+            </div>
+        );
+    }
+
     return (
         <div style={{ padding: '20px', maxWidth: '50%', margin: '0 auto' }}>
             <h1>Usuários</h1>
-            <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Username:</label><br />
-                    <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required />
-                </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Email:</label><br />
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Senha:</label><br />
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Perfil:</label><br />
-                    <select value={profile} onChange={(e) => setProfile(e.target.value)} required>
-                        <option value="">Selecione um perfil</option>
-                        <option value="ADMIN">ADMIN</option>
-                        <option value="COORDENADOR">COORDENADOR</option>
-                        <option value="ALUNO">ALUNO</option>
-                        <option value="PROFESSOR">PROFESSOR</option>
-                    </select>
-                </div>
-                <button type="submit">{modo === 'editar' ? 'Atualizar' : 'Criar'}</button>
-                {modo === 'editar' && <button type="button" onClick={limparFormulario} style={{ marginLeft: '10px' }}>Cancelar</button>}
-            </form>
+            <Button onClick={handleCriar}>Criar Usuário</Button>
             <table>
                 <thead>
                     <tr>
