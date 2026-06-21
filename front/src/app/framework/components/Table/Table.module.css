@@ -1,0 +1,35 @@
+.tableResponsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Deixa o scroll suave no iPhone/Safari */
+  margin-bottom: var(--spacing-lg, 2rem);
+}
+
+
+.table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--background-color-black);
+}
+
+.table th{
+    background-color: var(--background-color-white);
+    font-weight: 600;
+    text-align: center;
+    padding: var(--spacing-md, 1rem);
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td{
+    padding: var(--spacing-md, 1rem);
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.table tbody tr:hover{
+    background-color: rgba(0,0,0, 0.02);
+    cursor: default;
+}
+

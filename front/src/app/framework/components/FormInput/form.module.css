@@ -1,0 +1,30 @@
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  width: 100%;
+}
+
+.label {
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.input {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-size: 14px;
+  border: 1px solid #cccccc;
+  border-radius: var(--radius-sm);
+  background-color: #ffffff;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.15);
+}
