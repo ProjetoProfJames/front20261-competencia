@@ -10,3 +10,8 @@ piemanager/tasks/task4.md
 piemanager/tasks/plano4.md
 front/.github/prompts/devjunior.prompt.md
 front/tasks/001Task.md
+piemanager.db
+node_modules/
+.next/
+.env.local
+.DS_Store
