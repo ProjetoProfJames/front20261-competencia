@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import API from "@/services/api";
+import API from "@/utils/api";
 
 export default function TelaCadastroGrupo() {
   const navegador = useRouter();
@@ -23,25 +23,38 @@ export default function TelaCadastroGrupo() {
   const [horaEncerramento, setHoraEncerramento] = useState("");
 
   // 🔄 Busca os dados das outras Tasks assim que a tela abre
-  useEffect(() => {
+ 
+ useEffect(() => {
     async function carregarDadosDosColegas() {
-      try {
-        // Executa todas as buscas em paralelo para carregar de forma otimizada
-        const [turmas, professores, locais, alunos] = await Promise.all([
-          API.buscarTurmas().catch(() => []),
-          API.buscarProfessores().catch(() => []),
-          API.buscarLocais().catch(() => []),
-          API.buscarAlunos().catch(() => [])
-        ]);
-        
-        setListaTurmas(turmas);
-        setListaProfessores(professores);
-        setListaLocais(locais);
-        setListaAlunos(alunos);
-      } catch (erro) {
-        console.error("Erro ao integrar dados das outras Tasks:", erro);
+      const resultados = await Promise.allSettled([
+        API.get("/turmas"),
+        API.get("/locais"),
+        API.get("/users"), // 👈 endpoint único: professores e alunos vêm daqui
+      ]);
+
+      const [resTurmas, resLocais, resUsers] = resultados;
+
+      if (resTurmas.status === "fulfilled") {
+        setListaTurmas(Array.isArray(resTurmas.value) ? resTurmas.value : []);
+      } else {
+        console.error("Erro ao buscar turmas:", resTurmas.reason?.message);
+      }
+
+      if (resLocais.status === "fulfilled") {
+        setListaLocais(Array.isArray(resLocais.value) ? resLocais.value : []);
+      } else {
+        console.error("Erro ao buscar locais:", resLocais.reason?.message);
+      }
+
+      if (resUsers.status === "fulfilled") {
+        const users = Array.isArray(resUsers.value) ? resUsers.value : [];
+        setListaProfessores(users.filter((u) => u.profile === "PROFESSOR"));
+        setListaAlunos(users.filter((u) => u.profile === "ALUNO"));
+      } else {
+        console.error("Erro ao buscar usuarios:", resUsers.reason?.message);
       }
     }
+
     carregarDadosDosColegas();
   }, []);
 
@@ -55,33 +68,31 @@ export default function TelaCadastroGrupo() {
   };
 
   const processarFormulario = async (evento) => {
-    evento.preventDefault();
+  evento.preventDefault();
 
-    // Regra de Negócio da Task 3: Validar limite de alunos por grupo (Mínimo 3, Máximo 7)
-    if (alunosSelecionados.length < 3 || alunosSelecionados.length > 7) {
-      alert(`Aviso da Task 3: O grupo possui atualmente ${alunosSelecionados.length} aluno(s). Deve conter entre 3 e 7 integrantes.`);
-      return;
-    }
+  if (alunosSelecionados.length < 3 || alunosSelecionados.length > 7) {
+    alert(`Aviso da Task 3: O grupo possui atualmente ${alunosSelecionados.length} aluno(s). Deve conter entre 3 e 7 integrantes.`);
+    return;
+  }
 
-    const payload = {
-      turmaId: turmaSelecionada,
-      professorId: professorSelecionado,
-      localId: localSelecionado,
-      alunosIds: alunosSelecionados, // IDs enviados para o relacionamento no backend
-      dataApresentacao: campoData,
-      horarioInicio: horaAbertura,
-      horarioFim: horaEncerramento
-    };
-
-    try {
-      // Envia os dados autenticados com o Bearer Token JWT configurado na API
-      await API.cadastrar(payload);
-      alert("Grupo de Trabalho registrado com sucesso!");
-      navegador.push("/grupos");
-    } catch (erro) {
-      alert(`Erro ao salvar: ${erro.message}`);
-    }
+  const payload = {
+    turmaId: Number(turmaSelecionada),
+    professorId: Number(professorSelecionado),
+    localId: Number(localSelecionado),
+    alunosIds: alunosSelecionados.map(Number), // garante que são números
+    dataApresentacao: campoData,
+    horarioInicio: horaAbertura,
+    horarioFim: horaEncerramento
   };
+
+  try {
+    await API.post("/projetos", payload); // ✅ era /grupos, agora /projetos
+    alert("Grupo de Trabalho registrado com sucesso!");
+    navegador.push("/grupos");
+  } catch (erro) {
+    alert(`Erro ao salvar: ${erro.message}`);
+  }
+};
 
   return (
     <div style={{ padding: "30px", maxWidth: "600px", margin: "0 auto", fontFamily: "sans-serif" }}>
@@ -116,7 +127,7 @@ export default function TelaCadastroGrupo() {
           >
             <option value="">Selecione o Orientador...</option>
             {listaProfessores.map((p) => (
-              <option key={p.id} value={p.id}>{p.nome}</option>
+              <option key={p.id} value={p.id}>{p.username}</option>
             ))}
           </select>
         </div>
@@ -144,7 +155,7 @@ export default function TelaCadastroGrupo() {
                     checked={alunosSelecionados.includes(aluno.id)}
                     onChange={() => lidarComSelecaoAluno(aluno.id)}
                   />
-                  {aluno.nome}
+                  {aluno.username}
                 </label>
               ))
             )}
@@ -155,20 +166,20 @@ export default function TelaCadastroGrupo() {
         </div>
 
         {/* Seletor de Local (Task 2 dos colegas) */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <label style={{ marginBottom: "5px", fontWeight: "bold" }}>Local da Apresentação:</label>
-          <select 
-            value={localSelecionado} 
-            onChange={(e) => setLocalSelecionado(e.target.value)} 
-            required
-            style={{ padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }}
-          >
-            <option value="">Selecione o Local Reservado...</option>
-            {listaLocais.map((l) => (
-              <option key={l.id} value={l.id}>{l.nome || l.descricao}</option>
-            ))}
-          </select>
-        </div>
+       <div style={{ display: "flex", flexDirection: "column" }}>
+  <label style={{ marginBottom: "5px", fontWeight: "bold" }}>Local da Apresentação:</label>
+  <select 
+    value={localSelecionado} 
+    onChange={(e) => setLocalSelecionado(e.target.value)} 
+    required
+    style={{ padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }}
+  >
+    <option value="">Selecione o Local Reservado...</option>
+    {listaLocais.map((l) => (
+      <option key={l.id} value={l.id}>{l.numero}</option>
+    ))}
+  </select>
+</div>
         
         {/* Data da Apresentação */}
         <div style={{ display: "flex", flexDirection: "column" }}>
@@ -216,7 +227,7 @@ export default function TelaCadastroGrupo() {
           </button>
           <button 
             type="button" 
-            onClick={() => navegador.push("/grupos")} 
+            onClick={() => navegador.push("/projetos")} 
             style={{ padding: "12px 20px", backgroundColor: "#ccc", color: "#333", border: "none", borderRadius: "4px", cursor: "pointer" }}
           >
             Cancelar
