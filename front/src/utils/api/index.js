@@ -4,14 +4,14 @@ function getHeaders() {
     const headers = {
         'Content-Type': 'application/json'
     };
-    
+
     if (typeof window !== 'undefined') {
         const token = localStorage.getItem('JWT');
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
     }
-    
+
     return headers;
 }
 
@@ -250,7 +250,6 @@ export async function removerAlunoTurma(id, alunoId) {
     return await del(`/turmas/${id}/alunos/${alunoId}`);
 }
 
-// Grupos de Projeto
 export async function listarGrupos() {
     return await get('/grupos');
 }
@@ -271,17 +270,12 @@ export async function deletarGrupo(id) {
     return await del(`/grupos/${id}`);
 }
 
-// Auxiliares: professores, alunos, locais, projetos
 export async function listarProfessores() {
     return await get('/professores');
 }
 
 export async function listarAlunos() {
     return await get('/alunos');
-}
-
-export async function listarLocais() {
-    return await get('/locais');
 }
 
 export async function listarProjetos() {

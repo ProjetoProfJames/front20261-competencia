@@ -6,7 +6,6 @@ import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 import { login, criarUsuario } from "@/utils/api";
 
-import { login } from "@/utils/api";
 
 export default function LoginPage() {
   const [user, setUser] = useState({ username: "", email: "", password: "", profile: "" });
@@ -85,8 +84,18 @@ export default function LoginPage() {
   };
 
   const loadBootstrap = () => {
-    fetch("http://localhost:8080/api/public/bootstrap")
-      .then((response) => response.json())
+    fetch("http://localhost:8080/api/public/bootstrap", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+      })
       .then((data) => console.log("Bootstrap carregado:", data))
       .catch((requestError) => console.error("Erro ao carregar Bootstrap:", requestError));
   };
@@ -95,14 +104,14 @@ export default function LoginPage() {
     return (
       <div style={containerStyle}>
         <div style={formBoxStyle}>
-        <h1>Login</h1>
+          <h1>Login</h1>
 
-        <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-        <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
+          <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
+          <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
 
-        <Button type="button" onClick={authenticate}>Login</Button>
-        <Button type="button" onClick={() => setMode("register")}>Cadastrar</Button>
-        <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
+          <Button type="button" onClick={authenticate}>Login</Button>
+          <Button type="button" onClick={() => setMode("register")}>Cadastrar</Button>
+          <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
         </div>
       </div>
     );
@@ -111,25 +120,25 @@ export default function LoginPage() {
   return (
     <div style={containerStyle}>
       <div style={formBoxStyle}>
-      <h1>Cadastrar</h1>
-      
-      <FormInput label="Username" type="text" name="username" value={user.username} onChange={handleChange} />
-      <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-      <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
+        <h1>Cadastrar</h1>
 
-      <div style={{ marginBottom: '10px' }}>
-        <label>Perfil</label><br />
-        <select name="profile" value={user.profile} onChange={handleChange} style={{ width: '100%' }}>
-          <option value="">Selecione um perfil</option>
-          <option value="COORDENADOR">COORDENADOR</option>
-          <option value="ALUNO">ALUNO</option>
-          <option value="PROFESSOR">PROFESSOR</option>
-          <option value="AVALIADOR_EXTERNO">AVALIADOR_EXTERNO</option>
-        </select>
-      </div>
+        <FormInput label="Username" type="text" name="username" value={user.username} onChange={handleChange} />
+        <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
+        <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
 
-      <Button type="button" onClick={handleRegister}>Cadastrar</Button>
-      <Button type="button" onClick={() => setMode("login")}>Voltar para login</Button>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Perfil</label><br />
+          <select name="profile" value={user.profile} onChange={handleChange} style={{ width: '100%' }}>
+            <option value="">Selecione um perfil</option>
+            <option value="COORDENADOR">COORDENADOR</option>
+            <option value="ALUNO">ALUNO</option>
+            <option value="PROFESSOR">PROFESSOR</option>
+            <option value="AVALIADOR_EXTERNO">AVALIADOR_EXTERNO</option>
+          </select>
+        </div>
+
+        <Button type="button" onClick={handleRegister}>Cadastrar</Button>
+        <Button type="button" onClick={() => setMode("login")}>Voltar para login</Button>
       </div>
     </div>
   );

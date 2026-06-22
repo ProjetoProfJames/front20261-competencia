@@ -44,7 +44,6 @@ export default function GrupoForm({ initialData = null, onSaved }) {
     }
 
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -78,7 +77,6 @@ export default function GrupoForm({ initialData = null, onSaved }) {
     if (!form.orientador) return "Informe o orientador";
     if (form.alunos.length < 3 || form.alunos.length > 7) return "O grupo deve ter entre 3 e 7 alunos";
 
-    // Verificar se alunos pertencem a outro grupo na mesma turma
     const grupos = await listarGrupos();
     if (grupos) {
       for (const alunoId of form.alunos) {
