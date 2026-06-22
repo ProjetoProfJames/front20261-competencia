@@ -62,10 +62,11 @@ export default function UserNewPage() {
   };
 
   return (
-    <>
+    <div className="page-content">
+      <section className="content-panel">
       <h1>Novo Usuario</h1>
-      {mensagem && <p>{mensagem}</p>}
-      <div>
+      {mensagem && <p className="mensagem">{mensagem}</p>}
+      <div className="form-grid">
         <FormInput
           label="Username"
           type="text"
@@ -87,7 +88,7 @@ export default function UserNewPage() {
           value={user.password}
           onChange={handleChange}
         ></FormInput>
-        <select name="profile" value={user.profile} onChange={handleChange}>
+        <select className="select-simples" name="profile" value={user.profile} onChange={handleChange}>
           <option value="">Selecione o perfil</option>
           <option value="ADMIN">ADMIN</option>
           <option value="COORDENADOR">COORDENADOR</option>
@@ -99,6 +100,7 @@ export default function UserNewPage() {
           {loading ? "Salvando..." : "Criar Usuario"}
         </Button>
       </div>
-    </>
+      </section>
+    </div>
   );
 }

@@ -68,14 +68,16 @@ export default function LocalEditPage() {
     };
 
     return (
-        <>
+        <div className="page-content">
+            <section className="content-panel">
             <h1>Editar Local</h1>
-            {mensagem && <p>{mensagem}</p>}
-            {carregando && <p>Carregando...</p>}
-            {!carregando && <div>
+            {mensagem && <p className="mensagem">{mensagem}</p>}
+            {carregando && <p className="mensagem">Carregando...</p>}
+            {!carregando && <div className="form-grid">
                 <FormInput label="Numero" type="text" name="numero" value={local.numero} onChange={handleChange}></FormInput>
                 <Button type="button" onClick={handleSubmit} disabled={loading}>{loading ? 'Salvando...' : 'Salvar Local'}</Button>
             </div>}
-        </>
+            </section>
+        </div>
     );
 }

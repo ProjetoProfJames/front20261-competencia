@@ -32,17 +32,24 @@ export default function Menu() {
     }
 
     return (
-        <div>
-            <p>Usuario: {user.username}</p>
-            {
-                links.map((link) => {
-                    if (link.profiles.includes(user.profile)) {
-                        return <a key={link.href} href={link.href}>{link.label} </a>
+        <>
+            <aside className="sidebar">
+                <h2>PIE Manager</h2>
+                <nav>
+                    {
+                        links.map((link) => {
+                            if (link.profiles.includes(user.profile)) {
+                                return <a className="menu-link" key={link.href} href={link.href}>{link.label}</a>
+                            }
+                            return null;
+                        })
                     }
-                    return null;
-                })
-            }
-            <Button type="button" onClick={auth.logout}>Logout</Button>
-        </div>
+                </nav>
+            </aside>
+            <header className="topbar">
+                <p>Bem vindo, {user.username}</p>
+                <Button type="button" onClick={auth.logout}>Sair</Button>
+            </header>
+        </>
     )
 }

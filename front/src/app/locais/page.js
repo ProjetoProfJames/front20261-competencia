@@ -48,14 +48,15 @@ export default function LocalPage() {
     }
 
     return (
-        <>
+        <div className="page-content">
+            <section className="content-panel">
             <h1>Locais de Apresentacao</h1>
-            {mensagem && <p>{mensagem}</p>}
-            <div>
-                <Button onClick={() => { location.href = '/locais/new' }}>Novo</Button>
+            {mensagem && <p className="mensagem">{mensagem}</p>}
+            <div className="page-actions">
+                <Button onClick={() => { location.href = '/locais/new' }}>+ Adicionar</Button>
             </div>
-            {loading && <p>Carregando...</p>}
-            {!loading && <table>
+            {loading && <p className="mensagem">Carregando...</p>}
+            {!loading && <table className="tabela-simples">
                 <thead>
                     <tr>
                         <th>numero</th>
@@ -68,7 +69,7 @@ export default function LocalPage() {
                             return (
                                 <tr key={local.id}>
                                     <td>{local.numero}</td>
-                                    <td>
+                                    <td className="acoes">
                                         <Button onClick={() => location.href = `/locais/${local.id}`}>Editar</Button>
                                         <Button onClick={() => excluirLocal(local.id)} disabled={excluindo === local.id}>{excluindo === local.id ? 'Excluindo...' : 'Excluir'}</Button>
                                     </td>
@@ -78,6 +79,7 @@ export default function LocalPage() {
                     }
                 </tbody>
             </table>}
-        </>
+            </section>
+        </div>
     )
 }
