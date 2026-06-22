@@ -75,7 +75,7 @@ export default function LoginPage() {
         
         <div className="actions">
           <Button onClick={authenticate}>Login</Button>
-          <Button onClick={loadBootstrap}>Carregar Bootstrap</Button>
+         {/*<Button onClick={loadBootstrap}>Carregar Bootstrap</Button>*/}
         </div>
       </section>
     </main>
