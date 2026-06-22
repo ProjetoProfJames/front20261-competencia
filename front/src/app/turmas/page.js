@@ -55,8 +55,8 @@ export default function TurmasPage() {
     });
   }, [items, search]);
 
-  const canCreate = user?.profile === "PROFESSOR";
-  const canEdit = user?.profile === "PROFESSOR";
+  const canCreate = user?.profile === "PROFESSOR" || user?.profile === "ADMIN";
+  const canEdit = user?.profile === "PROFESSOR" || user?.profile === "ADMIN";
   const canDelete = user?.profile === "PROFESSOR" || user?.profile === "ADMIN";
 
   if (loading) {
