@@ -13,7 +13,6 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "PIE Manager",
   description: "Controle de Projeto Integrador de Extensao",
 };
 

@@ -90,15 +90,16 @@ export default function UserEditPage() {
     };
 
     return (
-        <>
+        <div className="page-content">
+            <section className="content-panel">
             <h1>Editar Usuario</h1>
-            {mensagem && <p>{mensagem}</p>}
-            {carregando && <p>Carregando...</p>}
-            {!carregando && <div>
+            {mensagem && <p className="mensagem">{mensagem}</p>}
+            {carregando && <p className="mensagem">Carregando...</p>}
+            {!carregando && <div className="form-grid">
                 <p>Email: {user.email}</p>
                 <FormInput label="Username" type="text" name="username" value={user.username} onChange={handleChange}></FormInput>
                 <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange}></FormInput>
-                <select name="profile" value={user.profile} onChange={handleChange}>
+                <select className="select-simples" name="profile" value={user.profile} onChange={handleChange}>
                     <option value="">Selecione o perfil</option>
                     <option value="ADMIN">ADMIN</option>
                     <option value="COORDENADOR">COORDENADOR</option>
@@ -108,6 +109,7 @@ export default function UserEditPage() {
                 </select>
                 <Button type="button" onClick={handleSubmit} disabled={loading}>{loading ? 'Salvando...' : 'Salvar Usuario'}</Button>
             </div>}
-        </>
+            </section>
+        </div>
     );
 }

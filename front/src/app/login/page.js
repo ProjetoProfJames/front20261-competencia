@@ -61,12 +61,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div>
+    <div className="login-page">
+      <div className="auth-panel">
       <h1>Login</h1>
-      {mensagem && <p>{mensagem}</p>}
+      {mensagem && <p className="mensagem">{mensagem}</p>}
       <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
       <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
       <Button type="button" onClick={authenticate} disabled={loading}>{loading ? 'Entrando...' : 'Login'}</Button>
+      </div>
     </div>
   );
 }
