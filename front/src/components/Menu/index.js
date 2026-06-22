@@ -25,6 +25,10 @@ export default function Menu() {
         { label: 'Home', href: '/home', profiles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO', 'AVALIADOR_EXTERNO'] },
         { label: 'Usuarios', href: '/users', profiles: ['ADMIN', 'PROFESSOR'] },
         { label: 'Locais', href: '/locais', profiles: ['ADMIN', 'COORDENADOR'] },
+        { label: 'Cursos', href: '/cursos', profiles: ['ADMIN', 'COORDENADOR'] },
+        { label: 'Semestre', href: '/semestres', profiles: ['ADMIN', 'COORDENADOR'] },
+        { label: 'Turma', href: '/turmas', profiles: ['ADMIN', 'COORDENADOR', 'PROFESSOR'] },
+        { label: 'Grupos', href: '/grupos', profiles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO'] },
     ];
 
     if (path === '/login' || !user) {
