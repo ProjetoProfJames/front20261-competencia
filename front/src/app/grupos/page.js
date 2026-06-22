@@ -10,7 +10,7 @@ export default function TelaListagemGrupos() {
   const [carregando, setCarregando] = useState(true);
 
   const obterTokenAutenticacao = () => {
-    return localStorage.getItem("token") || "";
+    return localStorage.getItem("API-KEY") || "";
   };
 
   const carregarDadosDoBackend = async () => {

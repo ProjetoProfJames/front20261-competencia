@@ -3,7 +3,7 @@ export function getStoredUser() {
     return null;
   }
 
-  const raw = localStorage.getItem("user");
+  const raw = localStorage.getItem("USER");
 
   if (!raw) {
     return null;
@@ -21,5 +21,5 @@ export function getStoredToken() {
     return null;
   }
 
-  return localStorage.getItem("token");
+  return localStorage.getItem("API-KEY");
 }
