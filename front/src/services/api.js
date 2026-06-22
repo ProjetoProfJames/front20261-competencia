@@ -13,26 +13,37 @@ async function request(path, options = {}) {
     ...options.headers,
   }
 
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers,
-  })
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      headers,
+    })
 
-  if (response.status === 401) {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    window.location.href = '/login'
-    return
+    if (response.status === 401) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      window.location.href = '/login'
+      return
+    }
+
+    const text = await response.text()
+    const data = text ? JSON.parse(text) : {}
+
+    console.log(`[API ${options.method || 'GET'}] ${path}:`, { status: response.status, data })
+
+    if (!response.ok) {
+      const errorMessage = data.message || data.error || data.errors?.[0]?.message || 'Erro na requisição'
+      const error = new Error(errorMessage)
+      error.status = response.status
+      error.data = data
+      throw error
+    }
+
+    return data
+  } catch (err) {
+    console.error('[API Error]', err)
+    throw err
   }
-
-  const text = await response.text()
-  const data = text ? JSON.parse(text) : {}
-
-  if (!response.ok) {
-    throw new Error(data.message || 'Erro na requisição')
-  }
-
-  return data
 }
 
 export const api = {
