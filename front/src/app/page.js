@@ -8,6 +8,10 @@ export default function HomePage() {
 
   const showUsers = authService.hasPermission(['ADMIN', 'PROFESSOR'])
   const showLocals = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
+  const showProjetos = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO', 'AVALIADOR_EXTERNO'])
+  const showTurmas = authService.hasPermission(['ADMIN'])
+  const showCursos = authService.hasPermission(['ADMIN'])
+  const showPeriodos = authService.hasPermission(['ADMIN'])
 
   return (
     <LayoutComponent>
@@ -89,71 +93,77 @@ export default function HomePage() {
             </div>
           </Link>
 
-          <Link href="/turmas" style={{ textDecoration: 'none' }}>
-            <div style={{
-              padding: '24px',
-              backgroundColor: 'var(--gray-50)',
-              borderRadius: 'var(--border-radius)',
-              border: '1px solid var(--gray-200)',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              textDecoration: 'none',
-              color: 'inherit'
-            }} onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'var(--primary)'
-              e.currentTarget.style.boxShadow = 'var(--shadow-md)'
-            }} onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'var(--gray-200)'
-              e.currentTarget.style.boxShadow = 'none'
-            }}>
-              <h3 style={{ color: 'var(--primary)', marginBottom: '8px' }}>Turmas</h3>
-              <p style={{ color: 'var(--gray-600)' }}>Gerenciar turmas</p>
-            </div>
-          </Link>
+          {showTurmas && (
+            <Link href="/turmas" style={{ textDecoration: 'none' }}>
+              <div style={{
+                padding: '24px',
+                backgroundColor: 'var(--gray-50)',
+                borderRadius: 'var(--border-radius)',
+                border: '1px solid var(--gray-200)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                textDecoration: 'none',
+                color: 'inherit'
+              }} onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)'
+                e.currentTarget.style.boxShadow = 'var(--shadow-md)'
+              }} onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--gray-200)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}>
+                <h3 style={{ color: 'var(--primary)', marginBottom: '8px' }}>Turmas</h3>
+                <p style={{ color: 'var(--gray-600)' }}>Gerenciar turmas</p>
+              </div>
+            </Link>
+          )}
 
-          <Link href="/cursos" style={{ textDecoration: 'none' }}>
-            <div style={{
-              padding: '24px',
-              backgroundColor: 'var(--gray-50)',
-              borderRadius: 'var(--border-radius)',
-              border: '1px solid var(--gray-200)',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              textDecoration: 'none',
-              color: 'inherit'
-            }} onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'var(--primary)'
-              e.currentTarget.style.boxShadow = 'var(--shadow-md)'
-            }} onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'var(--gray-200)'
-              e.currentTarget.style.boxShadow = 'none'
-            }}>
-              <h3 style={{ color: 'var(--primary)', marginBottom: '8px' }}>Cursos</h3>
-              <p style={{ color: 'var(--gray-600)' }}>Gerenciar cursos</p>
-            </div>
-          </Link>
+          {showCursos && (
+            <Link href="/cursos" style={{ textDecoration: 'none' }}>
+              <div style={{
+                padding: '24px',
+                backgroundColor: 'var(--gray-50)',
+                borderRadius: 'var(--border-radius)',
+                border: '1px solid var(--gray-200)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                textDecoration: 'none',
+                color: 'inherit'
+              }} onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)'
+                e.currentTarget.style.boxShadow = 'var(--shadow-md)'
+              }} onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--gray-200)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}>
+                <h3 style={{ color: 'var(--primary)', marginBottom: '8px' }}>Cursos</h3>
+                <p style={{ color: 'var(--gray-600)' }}>Gerenciar cursos</p>
+              </div>
+            </Link>
+          )}
 
-          <Link href="/periodos" style={{ textDecoration: 'none' }}>
-            <div style={{
-              padding: '24px',
-              backgroundColor: 'var(--gray-50)',
-              borderRadius: 'var(--border-radius)',
-              border: '1px solid var(--gray-200)',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              textDecoration: 'none',
-              color: 'inherit'
-            }} onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'var(--primary)'
-              e.currentTarget.style.boxShadow = 'var(--shadow-md)'
-            }} onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'var(--gray-200)'
-              e.currentTarget.style.boxShadow = 'none'
-            }}>
-              <h3 style={{ color: 'var(--primary)', marginBottom: '8px' }}>Períodos</h3>
-              <p style={{ color: 'var(--gray-600)' }}>Gerenciar períodos letivos</p>
-            </div>
-          </Link>
+          {showPeriodos && (
+            <Link href="/periodos" style={{ textDecoration: 'none' }}>
+              <div style={{
+                padding: '24px',
+                backgroundColor: 'var(--gray-50)',
+                borderRadius: 'var(--border-radius)',
+                border: '1px solid var(--gray-200)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                textDecoration: 'none',
+                color: 'inherit'
+              }} onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary)'
+                e.currentTarget.style.boxShadow = 'var(--shadow-md)'
+              }} onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'var(--gray-200)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}>
+                <h3 style={{ color: 'var(--primary)', marginBottom: '8px' }}>Períodos</h3>
+                <p style={{ color: 'var(--gray-600)' }}>Gerenciar períodos letivos</p>
+              </div>
+            </Link>
+          )}
         </div>
 
         <div style={{ marginTop: '32px', padding: '16px', backgroundColor: 'var(--gray-50)', borderRadius: 'var(--border-radius)', borderLeft: '4px solid var(--primary)' }}>

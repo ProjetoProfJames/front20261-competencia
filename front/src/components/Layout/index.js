@@ -25,12 +25,12 @@ export default function LayoutComponent({ children }) {
     setUser(userData)
     
     setPermissions({
-      showUsers: authService.hasPermission(['ADMIN', 'PROFESSOR', 'COORDENADOR']),
+      showUsers: authService.hasPermission(['ADMIN', 'PROFESSOR']),
       showLocals: authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR']),
-      showProjects: true,
-      showTurmas: authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR']),
-      showCursos: authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR']),
-      showPeriodos: authService.hasPermission(['ADMIN', 'COORDENADOR']),
+      showProjects: authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO', 'AVALIADOR_EXTERNO']),
+      showTurmas: authService.hasPermission(['ADMIN']),
+      showCursos: authService.hasPermission(['ADMIN']),
+      showPeriodos: authService.hasPermission(['ADMIN']),
     })
     
     setLoading(false)
