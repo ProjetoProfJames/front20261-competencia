@@ -1,4 +1,10 @@
 const BASE_URL = "http://localhost:8080";
+const PUBLIC_ENDPOINTS = ["/api/auth/login", "/api/public/bootstrap"];
+
+function isPublicEndpoint(endpoint) {
+    const path = endpoint.split("?")[0];
+    return PUBLIC_ENDPOINTS.includes(path);
+}
 
 function joinURL(endpoint) {
     try {
@@ -14,12 +20,18 @@ function joinURL(endpoint) {
 async function handleFetch(endpoint, options = {}) {
     const url = joinURL(endpoint);
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const publicEndpoint = isPublicEndpoint(endpoint);
+
+    if (!publicEndpoint && !token) {
+        throw new Error("Token de autenticação não encontrado. Faça login novamente.");
+    }
+
     const defaultHeaders = {
         "Content-Type": "application/json",
         "Accept": "application/json"
     };
 
-    if (token) {
+    if (!publicEndpoint && token) {
         defaultHeaders["Authorization"] = `Bearer ${token}`;
     }
 

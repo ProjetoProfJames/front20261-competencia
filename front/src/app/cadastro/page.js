@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { api } from '../../services/api';
 
 export default function Cadastro() {
   const [nome, setNome] = useState('');
@@ -20,15 +21,7 @@ export default function Cadastro() {
     }
 
     try {
-      const res = await fetch('http://localhost:8080/api/usuarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, senha }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Erro ao cadastrar. Verifique os dados.');
-      }
+      await api.post('/api/users', { nome, email, senha });
 
       alert('Cadastro realizado com sucesso! Faça seu login.');
       router.push('/login');
