@@ -1,6 +1,6 @@
 'use client';
-import { useState } from "react";
-import  Button  from "@/components/Button";
+import { useState, useEffect } from "react";
+import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 import { api } from "@/services/api";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,16 @@ export default function LoginPage() {
 
   const [user, setUser] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [showBootstrapBtn, setShowBootstrapBtn] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hasBootstrap = localStorage.getItem("bootstrapLoaded");
+      if (!hasBootstrap) {
+        setShowBootstrapBtn(true);
+      }
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -19,45 +29,46 @@ export default function LoginPage() {
 
   const authenticate = async () => {
     setError("");
-      try {
-        const data = await api.post("/auth/login", { 
-          email: user.email, 
-          password: user.password 
-        });
-
-      console.log("Resposta completa da API:", data);
+    try {
+      const data = await api.post("/auth/login", { 
+        email: user.email, 
+        password: user.password 
+      });
 
       const token = data.data?.accessToken || data.accessToken;
       const userData = data.data?.user || data.user;
 
-    if (token) {
-            localStorage.setItem("token", token);
-            
-            if (userData && userData.profile) {
-              localStorage.setItem("userProfile", userData.profile);
-              localStorage.setItem("userName", userData.username);
-              console.log("4. Perfil salvo com sucesso:", userData.profile);
-            } else {
-              console.warn("Atenção: userData não foi encontrado na resposta!");
-            }
+      if (token) {
+        localStorage.setItem("token", token);
+        
+        if (userData && userData.profile) {
+          localStorage.setItem("userProfile", userData.profile);
+          localStorage.setItem("userName", userData.username);
+        } else {
+          console.warn("Atenção: userData não foi encontrado na resposta!");
+        }
 
-          router.push("/menu");
-          } else {
-            setError("Erro: Token não retornado pela API.");
-          }
+        router.push("/menu");
+      } else {
+        setError("Erro: Token não retornado pela API.");
+      }
 
     } catch (err) {
       console.error("Falha no login:", err.message);
-      setError(err.message);
+      setError(err.message || "Erro de autenticação.");
     }
   };
 
-  const loadBootstrap = async () => {
+const loadBootstrap = async () => {
+    localStorage.setItem("bootstrapLoaded", "true");
+    setShowBootstrapBtn(false);
+
     try {
       const data = await api.post("/public/bootstrap", null);
       console.log("Bootstrap carregado:", data);
+      alert("Sistema inicializado com sucesso!");
     } catch (error) {
-      console.error("Erro completo capturado:", error);
+      console.error("Erro capturado (o banco já pode estar preenchido):", error);
     }
   };
 
@@ -65,17 +76,37 @@ export default function LoginPage() {
     <main className="main">
       <section className="card">
         <header>
-            <h1>Login</h1>
+          <h1>Login</h1>
         </header>
 
         {error && <p className="error-message">{error}</p>}
 
-        <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-        <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
+        <FormInput 
+          label="Email" 
+          type="email" 
+          name="email" 
+          value={user.email} 
+          onChange={handleChange} 
+        />
+        <FormInput 
+          label="Senha" 
+          type="password" 
+          name="password" 
+          value={user.password} 
+          onChange={handleChange} 
+        />
         
         <div className="actions">
-          <Button onClick={authenticate}>Login</Button>
-         {/*<Button onClick={loadBootstrap}>Carregar Bootstrap</Button>*/}
+        <Button onClick={authenticate} className="btn-custom">
+            Login
+          </Button>
+          
+          {showBootstrapBtn && (
+            <Button onClick={loadBootstrap} className="btn-custom">
+              Carregar Bootstrap
+            </Button>
+          )}
+          <p>* o bootstrap é carregado uma única vez quando clicado.</p>
         </div>
       </section>
     </main>
