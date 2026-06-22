@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Button from '@/components/Button';
 import PageLayout from '@/components/PageLayout';
-import RoleGuard from '@/components/RoleGuard';
 
 export default function MenuPrincipal() {
   const [userProfile, setUserProfile] = useState(''); 

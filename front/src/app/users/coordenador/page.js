@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import PageLayout from '@/components/PageLayout';
 import Table from '@/components/Table';
 import Button from '@/components/Button';
+import FormInput from '@/components/FormInput';
 import { api } from '@/services/api';
 
 export default function CoordenadoresPage() {
@@ -11,11 +12,15 @@ export default function CoordenadoresPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const [editingUser, setEditingUser] = useState(null);
+  const [editUsername, setEditUsername] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const columns = [
     { label: 'ID', key: 'id' },
     { label: 'Nome', key: 'username' },
     { label: 'E-mail', key: 'email' },
-    { label: 'Perfil', key: 'profile' },
   ];
 
   useEffect(() => {
@@ -23,23 +28,19 @@ export default function CoordenadoresPage() {
   }, []);
 
   const carregarCoordenadores = async () => {
-    setIsLoading(true);
     try {
       const response = await api.get('/users');
-      const apenasCoordenadores = (response.data || []).filter(u => u.profile === 'COORDENADOR');
-      setCoordenadores(apenasCoordenadores);
+      const filtrados = (response.data || []).filter(u => u.profile === 'COORDENADOR');
+      setCoordenadores(filtrados);
     } catch (err) {
-      console.error("Erro ao buscar coordenadores:", err);
       setError("Não foi possível carregar a lista de coordenadores.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleEdit = (user) => alert(`Editando coordenador: ${user.username}`);
-
   const handleDelete = async (user) => {
-    if (window.confirm(`Excluir coordenador ${user.username}?`)) {
+    if (window.confirm(`Excluir o coordenador "${user.username}"?`)) {
       try {
         await api.delete(`/users/${user.id}`);
         setCoordenadores(prev => prev.filter(p => p.id !== user.id));
@@ -47,15 +48,48 @@ export default function CoordenadoresPage() {
     }
   };
 
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+    setEditUsername(user.username);
+    setEditEmail(user.email);
+  };
+
+  const handleUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      await api.put(`/users/${editingUser.id}`, { username: editUsername, email: editEmail });
+      setCoordenadores(prev => prev.map(p => p.id === editingUser.id ? { ...p, username: editUsername, email: editEmail } : p));
+      alert("Coordenador atualizado!");
+      setEditingUser(null);
+    } catch (err) { alert("Erro ao atualizar."); }
+    finally { setIsUpdating(false); }
+  };
+
   return (
     <PageLayout
       title="Gestão de Coordenadores"
-      subtitle="Lista de coordenadores cadastrados"
-      topRightAction={<Button href="/cadastro" className="btn-secondary">Novo Coordenador</Button>}
+      subtitle="Equipe de coordenação cadastrada"
+      topRightAction={<Button href="/cadastro?perfil=COORDENADOR">Novo Coordenador</Button>}
       bottomLeftAction={<Button href="/menu">Voltar</Button>}
     >
       {error && <p className="error-message">{error}</p>}
-      {isLoading ? <div>Carregando...</div> : <Table data={coordenadores} columns={columns} onEdit={handleEdit} onDelete={handleDelete} />}
+      {isLoading ? <div>Carregando...</div> : (
+        <Table data={coordenadores} columns={columns} onEdit={handleEditClick} onDelete={handleDelete} />
+      )}
+
+      {editingUser && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="modal-header">Editar Coordenador</h2>
+            <FormInput label="Nome" value={editUsername} onChange={(e) => setEditUsername(e.target.value)} />
+            <FormInput label="E-mail" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} />
+            <div className="actions" style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+              <Button onClick={handleUpdate}>{isUpdating ? "Salvando..." : "Salvar"}</Button>
+              <Button onClick={() => setEditingUser(null)} className="btn-danger">Cancelar</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
 }
