@@ -1,41 +1,52 @@
-"use client";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import RotaProtegida from '@/app/framework/components/RotaProtegida';
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import EmptyState from "@/app/framework/EmptyState"
-import StatusMessage from "@/app/framework/StatusMessage";
-import { listarPeriodosLetivos, removerPeriodoLetivo } from "@/utils/services/periodoLetivoService";
+import EmptyState from '@/app/framework/EmptyState';
+import StatusMessage from '@/app/framework/StatusMessage';
+import { listarPeriodosLetivos, removerPeriodoLetivo } from '@/utils/services/periodoLetivoService';
+
+function formatarData(data) {
+  if (!data) {
+    return '-';
+  }
+
+  return data.split('-').reverse().join('/');
+}
 
 export default function PeriodosLetivosPage() {
   const router = useRouter();
   const [periodos, setPeriodos] = useState([]);
-  const [erro, setErro] = useState("");
+  const [erro, setErro] = useState('');
   const [carregando, setCarregando] = useState(true);
 
   async function carregarPeriodos() {
     try {
+      setErro('');
       setCarregando(true);
       const data = await listarPeriodosLetivos();
       setPeriodos(Array.isArray(data) ? data : []);
-    } catch {
-      setErro("Não foi possível carregar os períodos letivos");
+    } catch (error) {
+      setErro(error.message || 'Não foi possível carregar os períodos letivos');
     } finally {
       setCarregando(false);
     }
   }
 
   async function excluirPeriodo(id) {
-    const confirmar = confirm("Deseja excluir este período letivo?");
+    const confirmar = confirm('Deseja excluir este período letivo?');
 
     if (!confirmar) {
       return;
     }
 
     try {
+      setErro('');
       await removerPeriodoLetivo(id);
       await carregarPeriodos();
-    } catch {
-      setErro("Não foi possível excluir o período letivo");
+    } catch (error) {
+      setErro(error.message || 'Não foi possível excluir o período letivo');
     }
   }
 
@@ -43,16 +54,17 @@ export default function PeriodosLetivosPage() {
     carregarPeriodos();
   }, []);
 
-  return ( <RotaProtegida roles={'ADMIN'}>
-    <main className="page-container">
+  return (
+    <RotaProtegida roles={['ADMIN']}>
+      <main className="page-container">
         <div className="page-header">
           <div className="page-title">
             <span>Cadastro</span>
             <h1>Períodos Letivos</h1>
-            <p>Gerencie ano, semestre, datas e status dos períodos.</p>
+            <p>Gerencie o nome e as datas de início e fim dos períodos letivos.</p>
           </div>
 
-          <button onClick={() => router.push("/menu/periodos-letivos/form")}>Novo Período</button>
+          <button onClick={() => router.push('/menu/periodos-letivos/form')}>Novo Período</button>
         </div>
 
         <StatusMessage>{erro}</StatusMessage>
@@ -67,11 +79,8 @@ export default function PeriodosLetivosPage() {
               <thead>
                 <tr>
                   <th>Nome</th>
-                  <th>Ano</th>
-                  <th>Semestre</th>
-                  <th>Início</th>
-                  <th>Fim</th>
-                  <th>Status</th>
+                  <th>Data de início</th>
+                  <th>Data de fim</th>
                   <th>Ações</th>
                 </tr>
               </thead>
@@ -80,11 +89,8 @@ export default function PeriodosLetivosPage() {
                 {periodos.map((periodo) => (
                   <tr key={periodo.id}>
                     <td>{periodo.nome}</td>
-                    <td>{periodo.ano}</td>
-                    <td>{periodo.semestre}</td>
-                    <td>{periodo.dataInicio}</td>
-                    <td>{periodo.dataFim}</td>
-                    <td>{periodo.ativo ? "Ativo" : "Inativo"}</td>
+                    <td>{formatarData(periodo.dataInicio)}</td>
+                    <td>{formatarData(periodo.dataFim)}</td>
                     <td className="actions-cell">
                       <button className="secondary-button" onClick={() => router.push(`/menu/periodos-letivos/form?id=${periodo.id}`)}>
                         Editar
