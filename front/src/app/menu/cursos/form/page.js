@@ -1,34 +1,48 @@
-"use client";
+'use client';
+
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import RotaProtegida from '@/app/framework/components/RotaProtegida';
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import StatusMessage from "@/app/framework/StatusMessage";
-import { atualizarCurso, buscarCursoPorId, criarCurso } from "@/utils/services/cursoService";
+import StatusMessage from '@/app/framework/StatusMessage';
+import { atualizarCurso, buscarCursoPorId, criarCurso } from '@/utils/services/cursoService';
+import { listarUsuarios } from '@/utils/services/userService';
+
+function idsSelecionados(options) {
+  return Array.from(options, (option) => option.value);
+}
 
 function CursoFormContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const id = searchParams.get("id");
+  const id = searchParams.get('id');
 
-  const [nome, setNome] = useState("");
-  const [codigo, setCodigo] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [erro, setErro] = useState("");
-  const [carregando, setCarregando] = useState(Boolean(id));
+  const [nome, setNome] = useState('');
+  const [coordenadorId, setCoordenadorId] = useState('');
+  const [professorIds, setProfessorIds] = useState([]);
+  const [coordenadores, setCoordenadores] = useState([]);
+  const [professores, setProfessores] = useState([]);
+  const [erro, setErro] = useState('');
+  const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
 
-  async function carregarCurso() {
-    if (!id) {
-      return;
-    }
-
+  async function carregarDados() {
     try {
-      const curso = await buscarCursoPorId(id);
-      setNome(curso.nome || "");
-      setCodigo(curso.codigo || "");
-      setDescricao(curso.descricao || "");
-    } catch {
-      setErro("Não foi possível carregar o curso");
+      setErro('');
+      setCarregando(true);
+      const usuarios = await listarUsuarios();
+      const listaUsuarios = Array.isArray(usuarios) ? usuarios : [];
+
+      setCoordenadores(listaUsuarios.filter((usuario) => usuario.profile === 'COORDENADOR'));
+      setProfessores(listaUsuarios.filter((usuario) => usuario.profile === 'PROFESSOR'));
+
+      if (id) {
+        const curso = await buscarCursoPorId(id);
+        setNome(curso.nome || '');
+        setCoordenadorId(String(curso.coordenador?.id || ''));
+        setProfessorIds(Array.isArray(curso.professores) ? curso.professores.map((professor) => String(professor.id)) : []);
+      }
+    } catch (error) {
+      setErro(error.message || 'Não foi possível carregar os dados do curso');
     } finally {
       setCarregando(false);
     }
@@ -36,17 +50,17 @@ function CursoFormContent() {
 
   async function salvarCurso(event) {
     event.preventDefault();
-    setErro("");
+    setErro('');
 
-    if (!nome.trim() || !codigo.trim()) {
-      setErro("Nome e código são obrigatórios");
+    if (!nome.trim() || !coordenadorId || professorIds.length === 0) {
+      setErro('Preencha nome, coordenador e pelo menos um professor.');
       return;
     }
 
     const curso = {
       nome: nome.trim(),
-      codigo: codigo.trim(),
-      descricao: descricao.trim()
+      coordenadorId: Number(coordenadorId),
+      professorIds: professorIds.map(Number)
     };
 
     try {
@@ -58,24 +72,26 @@ function CursoFormContent() {
         await criarCurso(curso);
       }
 
-      router.push("/menu/cursos");
-    } catch {
-      setErro("Não foi possível salvar o curso");
+      router.push('/menu/cursos');
+    } catch (error) {
+      setErro(error.message || 'Não foi possível salvar o curso');
     } finally {
       setSalvando(false);
     }
   }
 
   useEffect(() => {
-    carregarCurso();
+    carregarDados();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return (<RotaProtegida roles={['ADMIN']}> 
+  return (
+    <RotaProtegida roles={['ADMIN']}>
       <main className="form-page">
         <form className="form-card" onSubmit={salvarCurso}>
           <div className="form-title">
             <span>Cursos</span>
-            <h1>{id ? "Editar Curso" : "Novo Curso"}</h1>
+            <h1>{id ? 'Editar Curso' : 'Novo Curso'}</h1>
           </div>
 
           {carregando ? (
@@ -85,17 +101,31 @@ function CursoFormContent() {
               <label>Nome</label>
               <input value={nome} onChange={(event) => setNome(event.target.value)} maxLength="120" />
 
-              <label>Código</label>
-              <input value={codigo} onChange={(event) => setCodigo(event.target.value)} maxLength="30" />
+              <label>Coordenador</label>
+              <select value={coordenadorId} onChange={(event) => setCoordenadorId(event.target.value)}>
+                <option value="">Selecione um coordenador</option>
+                {coordenadores.map((coordenador) => (
+                  <option key={coordenador.id} value={coordenador.id}>
+                    {coordenador.username} ({coordenador.email})
+                  </option>
+                ))}
+              </select>
 
-              <label>Descrição</label>
-              <textarea value={descricao} onChange={(event) => setDescricao(event.target.value)} maxLength="255" />
+              <label>Professores</label>
+              <select multiple value={professorIds} onChange={(event) => setProfessorIds(idsSelecionados(event.target.selectedOptions))}>
+                {professores.map((professor) => (
+                  <option key={professor.id} value={professor.id}>
+                    {professor.username} ({professor.email})
+                  </option>
+                ))}
+              </select>
+              <small className="field-help">Segure Ctrl ou Command para selecionar mais de um professor.</small>
 
               <StatusMessage>{erro}</StatusMessage>
 
               <div className="form-actions">
-                <button type="submit" disabled={salvando}>{salvando ? "Salvando..." : "Salvar"}</button>
-                <button type="button" className="secondary-button" onClick={() => router.push("/menu/cursos")}>Cancelar</button>
+                <button type="submit" disabled={salvando}>{salvando ? 'Salvando...' : 'Salvar'}</button>
+                <button type="button" className="secondary-button" onClick={() => router.push('/menu/cursos')}>Cancelar</button>
               </div>
             </>
           )}

@@ -1,18 +1,25 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api-backend";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 function getToken() {
   if (typeof window === "undefined") {
     return null;
   }
 
-  return localStorage.getItem("token");
+  return localStorage.getItem("TKN") || localStorage.getItem("token");
+}
+
+function clearToken() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  localStorage.removeItem("TKN");
+  localStorage.removeItem("TKN_PROFILE");
+  localStorage.removeItem("token");
+  localStorage.removeItem("usuario");
 }
 
 function getConnectionMessage() {
-  if (API_URL.startsWith("/")) {
-    return "Não foi possível conectar ao backend. Confira se o backend está rodando, se BACKEND_URL está correto no .env.local e reinicie o npm run dev.";
-  }
-
   return `Não foi possível conectar ao backend em ${API_URL}. Confira se o backend está rodando e se a URL está correta no .env.local.`;
 }
 
@@ -30,6 +37,14 @@ async function getErrorMessage(response) {
   } catch {
     return "Erro na requisição";
   }
+}
+
+function unwrapApiResponse(payload) {
+  if (payload && typeof payload === "object" && "data" in payload) {
+    return payload.data;
+  }
+
+  return payload;
 }
 
 export async function apiFetch(endpoint, options = {}) {
@@ -56,15 +71,20 @@ export async function apiFetch(endpoint, options = {}) {
     throw new Error(getConnectionMessage());
   }
 
-  if (response.status === 401 || response.status === 403) {
+  if (response.status === 401) {
+    const message = await getErrorMessage(response);
+
     if (redirectOnUnauthorized && typeof window !== "undefined") {
-      localStorage.removeItem("token");
-      localStorage.removeItem("usuario");
+      clearToken();
       window.location.href = "/login";
     }
 
+    throw new Error(`Sessão expirada ou inválida. ${message}`);
+  }
+
+  if (response.status === 403) {
     const message = await getErrorMessage(response);
-    throw new Error(`Acesso não autorizado. ${message}`);
+    throw new Error(`Você não tem permissão para executar esta ação. ${message}`);
   }
 
   if (!response.ok) {
@@ -77,5 +97,6 @@ export async function apiFetch(endpoint, options = {}) {
   }
 
   const text = await response.text();
-  return text ? JSON.parse(text) : null;
+  const payload = text ? JSON.parse(text) : null;
+  return unwrapApiResponse(payload);
 }
