@@ -104,6 +104,14 @@ export default function Form({ typeForm, onSave }) {
                         value={project.descricao}
                         onChange={handleFieldChange("project")}
                     />
+
+                    <div className={styles.selectorGroup}>
+                        <p>Turma ID: {project.turmaId}</p>
+                        <Popup 
+                            campo="turmaId" 
+                            onSelect={(id) => handleSelectField("turmaId", id)} 
+                        />
+                    </div>
                     
                     <div className={styles.selectorGroup}>
                         <p>Semestre ID: {project.semestreId}</p>

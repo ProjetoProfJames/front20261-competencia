@@ -16,7 +16,7 @@ export default function RootLayout({ children }) {
     const storedUser = localStorage.getItem('user');
 
     if (!token || !storedUser) {
-      if (pathname !== '/login' && pathname !== '/cadastro') {
+      if (pathname !== '/login') {
         router.push('/login');
       }
     } else {
@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
     router.push('/login');
   };
 
-  const isPublicRoute = pathname === '/login' || pathname === '/cadastro';
+  const isPublicRoute = pathname === '/login';
 
   return (
     <html lang="pt-BR">
@@ -51,6 +51,8 @@ export default function RootLayout({ children }) {
                   <li><Link href="/cursos">Cursos</Link></li>
                   <li><Link href="/semestres">Semestres</Link></li>
                   <li><Link href="/turmas">Turmas</Link></li>
+                  <li><Link href="/projetos">Projetos</Link></li>
+                  <li><Link href="/avaliacoes">Avaliações</Link></li>
                 </ul>
               </nav>
             </header>

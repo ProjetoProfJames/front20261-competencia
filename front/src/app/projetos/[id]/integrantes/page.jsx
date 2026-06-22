@@ -24,9 +24,9 @@ export default function MembersPage({ params }) {
             setLoading(true);
             setError(null);
 
-            const response = await api.get(`/api/projetos/${projectId}/integrantes`);
+            const response = await api.get(`/api/projetos/${projectId}`);
             
-            if (response && response.data) setMemberList(response.data);
+            if (response && response.data) setMemberList(response.data.integrantes || []);
             else setMemberList([]);
         } catch (err) {
             log("Não foi possível carregar os integrantes: ", err);

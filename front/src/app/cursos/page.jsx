@@ -12,38 +12,32 @@ export default function CursosPage() {
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    carregarCursos();
-    carregarUsuarios();
+    carregarDados();
   }, []);
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    return { Authorization: `Bearer ${token}` };
-  };
-
-  const carregarCursos = async () => {
+  const carregarDados = async () => {
     try {
-      setLoading(true);
-      const resposta = await api.get("/cursos", {}, { headers: getAuthHeaders() });
-      setCursos(resposta.data || []);
+      const [cursosResp, usuariosResp] = await Promise.all([
+        api.get("/api/cursos"),
+        api.get("/api/users"),
+      ]);
+
+      setCursos(cursosResp.data || []);
+      setUsuarios(usuariosResp.data || []);
     } catch (err) {
-      setError("Não foi possível carregar os cursos.");
-    } finally {
-      setLoading(false);
+      setError("Não foi possível carregar cursos e usuários.");
     }
   };
 
-  const carregarUsuarios = async () => {
-    try {
-      const resposta = await api.get("/users", {}, { headers: getAuthHeaders() });
-      setUsuarios(resposta.data || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const parseIdList = (value) =>
+    value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map(Number)
+      .filter((number) => !Number.isNaN(number));
 
   const resetForm = () => {
     setNome("");
@@ -60,38 +54,34 @@ export default function CursosPage() {
     setSuccess("");
 
     if (!nome || !coordenadorId || !professorIds.trim()) {
-      setError("Preencha nome, coordenador e professores.");
+      setError("Preencha nome, coordenador e professor(es).");
       return;
     }
 
-    const professorIdList = professorIds
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean)
-      .map(Number)
-      .filter((value) => !Number.isNaN(value));
+    const professores = parseIdList(professorIds);
 
-    if (professorIdList.length === 0) {
-      setError("Informe pelo menos um ID de professor válido.");
+    if (professores.length === 0) {
+      setError("Informe ao menos um ID de professor válido.");
       return;
     }
 
     const payload = {
       nome,
       coordenadorId: Number(coordenadorId),
-      professorIds: [...new Set(professorIdList)],
+      professorIds: [...new Set(professores)],
     };
 
     try {
       if (editingId) {
-        await api.put(`/cursos/${editingId}`, payload, { headers: getAuthHeaders() });
+        await api.put(`/api/cursos/${editingId}`, payload);
         setSuccess("Curso atualizado com sucesso.");
       } else {
-        await api.post("/cursos", payload, { headers: getAuthHeaders() });
+        await api.post("/api/cursos", payload);
         setSuccess("Curso cadastrado com sucesso.");
       }
+
       resetForm();
-      carregarCursos();
+      carregarDados();
     } catch (err) {
       setError("Erro ao salvar o curso. Verifique os dados e tente novamente.");
     }
@@ -100,14 +90,10 @@ export default function CursosPage() {
   const handleEditar = (curso) => {
     setEditingId(curso.id);
     setNome(curso.nome || "");
-    setCoordenadorId(curso.coordenador?.id || "");
-    setProfessorIds((curso.professores || []).map((prof) => prof.id).join(", "));
+    setCoordenadorId(curso.coordenador?.id || curso.coordenadorId || "");
+    setProfessorIds((curso.professores || []).map((professor) => professor.id).join(", "));
     setError("");
     setSuccess("");
-  };
-
-  const handleCancelar = () => {
-    resetForm();
   };
 
   const handleExcluir = async (id) => {
@@ -116,9 +102,9 @@ export default function CursosPage() {
     }
 
     try {
-      await api.delete(`/cursos/${id}`, { headers: getAuthHeaders() });
+      await api.delete(`/api/cursos/${id}`);
       setSuccess("Curso removido com sucesso.");
-      carregarCursos();
+      carregarDados();
     } catch (err) {
       setError("Erro ao remover o curso.");
     }
@@ -127,12 +113,12 @@ export default function CursosPage() {
   return (
     <div>
       <h2>Gestão de Cursos</h2>
-      <p>Liste, cadastre e edite cursos com coordenador e professores associados.</p>
+      <p>Cadastre e atualize cursos com coordenador e professores responsáveis.</p>
 
       <form onSubmit={handleSalvar} className="login-form" style={{ margin: "2rem 0", maxWidth: "100%" }}>
         <h3>{editingId ? "Editar Curso" : "Novo Curso"}</h3>
         {error && <p className="error-message">{error}</p>}
-        {success && <p style={{ color: "green", textAlign: "center", fontWeight: "bold" }}>{success}</p>}
+        {success && <p className="success-message">{success}</p>}
 
         <div style={{ display: "grid", gap: "1rem" }}>
           <input
@@ -146,7 +132,7 @@ export default function CursosPage() {
             <option value="">Selecione o coordenador</option>
             {usuarios.map((usuario) => (
               <option key={usuario.id} value={usuario.id}>
-                {usuario.nome || usuario.username} ({usuario.profile})
+                {usuario.nome || usuario.username || usuario.email} (ID: {usuario.id})
               </option>
             ))}
           </select>
@@ -163,12 +149,16 @@ export default function CursosPage() {
               {editingId ? "Salvar alteração" : "Cadastrar curso"}
             </button>
             {editingId && (
-              <button type="button" onClick={handleCancelar} style={{ padding: "0.8rem 2rem", backgroundColor: "#6c757d" }}>
+              <button type="button" onClick={resetForm} style={{ padding: "0.8rem 2rem", backgroundColor: "#6c757d" }}>
                 Cancelar
               </button>
             )}
           </div>
         </div>
+
+        <p style={{ fontSize: "0.9rem", color: "#333" }}>
+          Use vírgulas para separar professores. Exemplo: <strong>1, 2, 3</strong>.
+        </p>
       </form>
 
       <section>
@@ -188,8 +178,8 @@ export default function CursosPage() {
               <tr key={curso.id}>
                 <td>{curso.id}</td>
                 <td>{curso.nome}</td>
-                <td>{curso.coordenador?.nome || curso.coordenador?.username || "-"}</td>
-                <td>{(curso.professores || []).map((prof) => prof.username || prof.nome).join(", ") || "-"}</td>
+                <td>{curso.coordenador?.username || curso.coordenador?.nome || curso.coordenador?.email || "-"}</td>
+                <td>{(curso.professores || []).map((professor) => professor.username || professor.nome || professor.email).join(", ") || "-"}</td>
                 <td>
                   <button type="button" onClick={() => handleEditar(curso)}>Editar</button>
                   <button type="button" onClick={() => handleExcluir(curso.id)} style={{ backgroundColor: "#dc3545" }}>

@@ -1,69 +1,59 @@
 "use client";
+
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { api } from "../../services/api";
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
-  const [nome, setNome] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [msgSucesso, setMsgSucesso] = useState("");
+  const router = useRouter();
 
-  // Função para buscar os usuários do backend
   const carregarUsuarios = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/users", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("Falha ao buscar usuários");
-
-      const json = await res.json();
-      // O backend do professor joga a lista dentro de json.data
+      const json = await api.get("/api/users");
       setUsuarios(json.data || []);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Falha ao buscar usuários");
     }
   };
 
   useEffect(() => {
-    carregarUsuarios();
-  }, []);
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
 
-  // Função para cadastrar um novo usuário/aluno
+    if (!token || !storedUser) {
+      router.push("/login");
+      return;
+    }
+
+    carregarUsuarios();
+  }, [router]);
+
   const handleCadastrar = async (e) => {
     e.preventDefault();
     setError("");
     setMsgSucesso("");
 
-    if (!nome || !email || !senha) {
+    if (!username || !email || !password) {
       setError("Preencha todos os campos para cadastrar");
       return;
     }
 
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8080/api/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ nome, email, senha, profile: "ALUNO" }),
-      });
-
-      if (!res.ok) throw new Error("Erro ao salvar o usuário");
+      await api.post("/api/users", { username, email, password, profile: "ALUNO" });
 
       setMsgSucesso("Usuário cadastrado com sucesso!");
-      setNome("");
+      setUsername("");
       setEmail("");
-      setSenha("");
-      carregarUsuarios(); // Atualiza a tabela na hora
+      setPassword("");
+      carregarUsuarios();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Erro ao salvar o usuário");
     }
   };
 
@@ -72,18 +62,17 @@ export default function Usuarios() {
       <h2>Gerenciamento de Usuários</h2>
       <p>Cadastre novos alunos e gerencie os acessos do sistema.</p>
 
-      {/* Formulário de Cadastro */}
       <form onSubmit={handleCadastrar} className="login-form" style={{ margin: "2rem 0", maxWidth: "100%" }}>
         <h3>Novo Usuário</h3>
         {error && <p className="error-message">{error}</p>}
         {msgSucesso && <p style={{ color: "green", textAlign: "center", fontWeight: "bold" }}>{msgSucesso}</p>}
-        
+
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
           <input
             type="text"
             placeholder="Nome Completo"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             style={{ flex: 1, minWidth: "200px" }}
           />
           <input
@@ -96,15 +85,14 @@ export default function Usuarios() {
           <input
             type="password"
             placeholder="Senha"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             style={{ flex: 1, minWidth: "200px" }}
           />
           <button type="submit" style={{ padding: "0.8rem 2rem" }}>Salvar</button>
         </div>
       </form>
 
-      {/* Tabela de Listagem */}
       <h3>Usuários Cadastrados</h3>
       <table className="data-table">
         <thead>

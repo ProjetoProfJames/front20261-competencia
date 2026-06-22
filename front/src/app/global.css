@@ -78,6 +78,15 @@ button:hover {
   border-radius: 4px;
 }
 
+.success-message {
+  color: #137333;
+  font-size: 0.9rem;
+  text-align: center;
+  background-color: #e6f4ea;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
 .layout-wrapper {
   display: flex;
   flex-direction: column;

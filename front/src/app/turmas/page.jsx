@@ -22,19 +22,14 @@ export default function TurmasPage() {
     carregarDados();
   }, []);
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem("token");
-    return { Authorization: `Bearer ${token}` };
-  };
-
   const carregarDados = async () => {
     try {
       const [turmasResp, cursosResp, semestresResp, disciplinasResp, usuariosResp] = await Promise.all([
-        api.get("/turmas", {}, { headers: getAuthHeaders() }),
-        api.get("/cursos", {}, { headers: getAuthHeaders() }),
-        api.get("/semestres", {}, { headers: getAuthHeaders() }),
-        api.get("/disciplinas", {}, { headers: getAuthHeaders() }),
-        api.get("/users", {}, { headers: getAuthHeaders() }),
+        api.get("/api/turmas"),
+        api.get("/api/cursos"),
+        api.get("/api/semestres"),
+        api.get("/api/disciplinas"),
+        api.get("/api/users"),
       ]);
 
       setTurmas(turmasResp.data || []);
@@ -94,10 +89,10 @@ export default function TurmasPage() {
 
     try {
       if (editingId) {
-        await api.put(`/turmas/${editingId}`, payload, { headers: getAuthHeaders() });
+        await api.put(`/api/turmas/${editingId}`, payload);
         setSuccess("Turma atualizada com sucesso.");
       } else {
-        await api.post("/turmas", payload, { headers: getAuthHeaders() });
+        await api.post("/api/turmas", payload);
         setSuccess("Turma cadastrada com sucesso.");
       }
       resetForm();
@@ -124,7 +119,7 @@ export default function TurmasPage() {
     }
 
     try {
-      await api.delete(`/turmas/${id}`, { headers: getAuthHeaders() });
+      await api.delete(`/api/turmas/${id}`);
       setSuccess("Turma removida com sucesso.");
       carregarDados();
     } catch (err) {
