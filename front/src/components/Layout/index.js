@@ -7,6 +7,15 @@ export default function LayoutComponent({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const [permissions, setPermissions] = useState({
+    showUsers: false,
+    showLocals: false,
+    showProjects: true,
+    showTurmas: false,
+    showCursos: false,
+    showPeriodos: false,
+  })
+
   useEffect(() => {
     const userData = authService.getUser()
     if (!userData) {
@@ -14,6 +23,16 @@ export default function LayoutComponent({ children }) {
       return
     }
     setUser(userData)
+    
+    setPermissions({
+      showUsers: authService.hasPermission(['ADMIN', 'PROFESSOR', 'COORDENADOR']),
+      showLocals: authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR']),
+      showProjects: true,
+      showTurmas: authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR']),
+      showCursos: authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR']),
+      showPeriodos: authService.hasPermission(['ADMIN', 'COORDENADOR']),
+    })
+    
     setLoading(false)
   }, [])
 
@@ -27,9 +46,7 @@ export default function LayoutComponent({ children }) {
     return <div style={{ padding: '40px', textAlign: 'center' }}>Carregando...</div>
   }
 
-  const showUsers = authService.hasPermission(['ADMIN', 'PROFESSOR'])
-  const showLocals = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
-  const showProjects = true
+  const { showUsers, showLocals, showProjects, showTurmas, showCursos, showPeriodos } = permissions
 
   return (
     <>
@@ -40,6 +57,9 @@ export default function LayoutComponent({ children }) {
             {showProjects && <Link href="/projetos">Projetos</Link>}
             {showLocals && <Link href="/locais">Locais</Link>}
             {showUsers && <Link href="/usuarios">Usuários</Link>}
+            {showTurmas && <Link href="/turmas">Turmas</Link>}
+            {showCursos && <Link href="/cursos">Cursos</Link>}
+            {showPeriodos && <Link href="/periodos">Periodos</Link>}
           </nav>
           <div className="user-info">
             <span className="user-name">{user?.username}</span>
