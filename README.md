@@ -1,12 +1,14 @@
-# 🎓 Sistema de Gestão de Competências (PieManager) - Frontend
+# 🎓 Sistema de Gestão de Competências — PieManager Frontend
 
-Este é o frontend do sistema de Gestão de Competências (**PieManager**), desenvolvido em **Next.js (App Router)** e **React**. Ele consome uma API RESTful construída em **Spring Boot** e utiliza controle de acesso baseado em perfis (**RBAC**).
+Este é o frontend do sistema de Gestão de Competências **PieManager**, desenvolvido com **Next.js App Router** e **React**.
+
+A aplicação consome uma API RESTful construída em **Spring Boot** e utiliza controle de acesso baseado em perfis, também conhecido como **Roles**.
 
 ---
 
 # 🚀 O que já construímos
 
-## 1. Autenticação e Segurança
+## 1. Autenticação e Inicialização do Sistema
 
 ### 🔐 Login com JWT
 
@@ -16,173 +18,230 @@ O sistema autentica o usuário e armazena as seguintes informações no `localSt
 * `userName`
 * `userProfile`
 
-### 🌐 Interceptor de Requisições (`api.js`)
+---
 
-Todas as requisições para o backend injetam automaticamente o Token JWT no cabeçalho:
+### ⚙️ Inicialização do Sistema — Bootstrap
+
+A tela de login conta com uma mecânica inteligente de inicialização do banco de dados, chamada de **Bootstrap**.
+
+#### Funcionamento
+
+* Um botão exclusivo aciona o endpoint:
+
+```http
+/public/bootstrap
+```
+
+* Após a execução bem-sucedida, o estado é salvo no `localStorage`:
+
+```js
+bootstrapLoaded
+```
+
+* Depois disso, o botão é ocultado permanentemente para melhorar a experiência do usuário.
+
+---
+
+### 🌐 Interceptor de Requisições — `api.js`
+
+Todas as requisições para o backend injetam automaticamente o token JWT no cabeçalho:
 
 ```http
 Authorization: Bearer <token>
 ```
 
-### ⚠️ Tratamento de Erros Inteligente
+---
 
-Erros de validação do Spring Boot (exemplo: `@Valid`) são capturados e repassados diretamente para os campos de formulário no frontend.
+### 🛡️ Controle de Acesso — RoleGuard / Filtros de Rota
 
-### 🛡️ Controle de Acesso (`RoleGuard`)
+O sistema possui controle de acesso baseado em perfis de usuário.
 
-Componente responsável por proteger elementos da interface, renderizando botões e menus apenas se o usuário possuir o perfil adequado:
+Esse mecanismo é responsável por proteger elementos da interface, renderizando botões, menus e funcionalidades apenas quando o usuário possui o perfil adequado.
+
+#### Perfis suportados
 
 * `ADMIN`
 * `COORDENADOR`
 * `PROFESSOR`
 * `ALUNO`
-* etc.
+* Entre outros perfis definidos pelo backend.
 
 ---
 
-# 🧩 Componentes Reutilizáveis (Design System)
+# 🧩 Componentes Reutilizáveis — Design System
 
-Para manter o código limpo e acelerar o desenvolvimento, foi criada uma biblioteca de componentes baseada no `global.css`.
+Para manter o código limpo, reutilizável e escalável, foi criada uma biblioteca de componentes e um sistema de design centralizado no arquivo:
 
-## 📄 `PageLayout`
+```txt
+global.css
+```
 
-Estrutura padrão de todas as telas da aplicação.
+O objetivo é aplicar o princípio **DRY** — *Don't Repeat Yourself* — e acelerar o desenvolvimento das telas.
+Além disso, regras globais garantem que:
 
-### Recursos:
+* Botões;
+* Inputs;
+* Formulários;
+* Elementos interativos;
+
+herdem corretamente a fonte base do sistema, evitando discrepâncias visuais.
+
+---
+
+## 📄 PageLayout
+
+O componente `PageLayout` define a estrutura padrão de todas as telas da aplicação.
+
+### Recursos
 
 * Mensagem de boas-vindas dinâmica:
 
-  ```txt
-  Olá, Nome! 👋
-  ```
-* Título e subtítulo padronizados
-* Áreas reservadas para botões de ação:
+```txt
+Olá, Nome! 👋
+```
 
-  * canto superior direito
-  * canto inferior esquerdo
+* Título padronizado;
+* Subtítulo padronizado;
+* Área reservada para botões de ação no canto superior direito;
+* Área reservada para botões de ação no canto inferior esquerdo.
 
 ---
 
-## 📊 `Table`
+## 📊 Table
 
-Tabela de dados inteligente com:
+O componente `Table` funciona como uma tabela inteligente para exibição de dados.
 
-* Busca híbrida em tempo real:
+### Funcionalidades
 
-  * Texto simples
-* Injeção dinâmica de colunas baseada no JSON da API
+* Busca em tempo real por texto simples;
+* Injeção dinâmica de colunas baseada no JSON retornado pela API;
 * Botões acoplados para:
 
-  * Editar
-  * Excluir registros
+  * Edição;
+  * Exclusão.
 
 ---
 
-## 🪟 Modal de Edição
+## 🪟 Modal de Edição Global
 
-Sistema de modal flutuante com:
-
-* Fundo escurecido
-* Padronização via CSS global
-* Edição rápida (`PUT`) sem sair da tela de listagem
+Foi criado um sistema de modal flutuante padronizado para edição de registros via requisição `PUT`.
 
 ---
 
-## 🔘 `Button` e `FormInput`
+## 📌 Menu Principal — `/menu`
 
-Componentes base padronizados para manter consistência visual e reaproveitamento de código.
+O menu principal funciona como um painel de navegação inteligente e adaptativo.
 
----
+#### Grid responsivo
 
-# 🖥️ Telas e CRUDs Finalizados
+Os botões são distribuídos em um layout de grade fixa com 4 colunas:
 
-## 📌 Menu Principal (`/menu`)
-
-Grade de navegação inteligente que:
-
-* Oculta módulos sem permissão
-* Exibe funcionalidades conforme o perfil do usuário logado
-
----
-
-## 👤 Cadastro Global de Usuários (`/cadastro`)
-
-Tela mestra para criação de usuários (`ADMIN`).
-
-### Recursos:
-
-* Botão de **Voltar** dinâmico:
-
-  ```js
-  router.back()
-  ```
-* Retorna exatamente para a tela anterior
-
----
-
-## 🎓 Gestão de Usuários (`/users`)
-
-Listagem de usuários consumindo o endpoint:
-
-```http
-/users
+```css
+grid-template-columns: repeat(4, 1fr);
 ```
 
-### Funcionalidades:
+#### Segurança visual
 
-* Filtro dinâmico pelo perfil
-* Integração completa com:
-
-  * Exclusão
-  * Modal de edição
+O menu oculta módulos sem permissão e exibe funcionalidades estritamente baseadas no perfil do usuário logado.
 
 ---
 
-## 🏢 Gestão de Locais (`/locais`)
+## 👤 Cadastro Global de Usuários — `/cadastro`
 
-### Funcionalidades:
+Tela principal para criação de usuários.
 
-* Listagem de locais
-* Exclusão de registros
-* Edição via modal
+### Características
 
-### Subtela de Cadastro (`/locais/cadastro`)
+* Acesso restrito ao perfil `ADMIN`;
+* Formulário centralizado para cadastro de usuários;
+* Botão de voltar dinâmico usando:
 
-Tela otimizada apenas para o campo:
-
-```txt
-Nome
+```js
+router.back()
 ```
 
-### Regras aplicadas:
+Esse botão retorna exatamente para a tela de gestão anterior.
 
-* Respeito aos limites da entidade Java:
+---
 
-  ```jsx
-  maxLength={40}
-  ```
+## 🎓 Gestão Especializada de Usuários
+
+Foram criadas telas dedicadas para listagem e gerenciamento de usuários, filtrando a rota `/users` conforme o perfil.
+
+### Rotas disponíveis
+
+| Rota             | Finalidade                     |
+| ---------------- | ------------------------------ |
+| `/alunos`        | Gestão de alunos               |
+| `/professores`   | Gestão de professores          |
+| `/coordenadores` | Gestão de coordenadores        |
+| `/avaliadores`   | Gestão de avaliadores externos |
+
+### Funcionalidades
+
+* Integração completa com botão de exclusão;
+* Confirmação antes de excluir registros;
+* Integração com modal flutuante para edição rápida;
+* Listagem filtrada conforme o perfil do usuário.
+
+---
+
+## 🏢 Gestão de Locais — `/locais`
+
+Tela destinada ao gerenciamento dos locais disponíveis para apresentação de projetos.
+
+### Funcionalidades
+
+* Listagem de locais cadastrados;
+* Edição via modal;
+* Exclusão direta;
+* Integração com backend via API.
 
 ---
 
 # 🛠️ Tecnologias Utilizadas
 
-* **Next.js (App Router)**
-* **React**
+## Frameworks e Bibliotecas
 
-  * `useState`
-  * `useEffect`
-  * Componentização baseada em `props`
+* **Next.js**
+* **React**
+* **App Router**
 * **Fetch API**
 
-  * Wrapper customizado para requisições
-* **CSS Global**
+---
 
-  * Abordagem pragmática e centralizada para estilização
-  * Consistência visual entre:
+## Hooks Utilizados
 
-    * Cards
-    * Modais
-    * Botões
-    * Formulários
+* `useState`
+* `useEffect`
 
 ---
+
+## Arquitetura e Organização
+
+* Componentização baseada em `props`;
+* Wrapper customizado de serviços;
+* Interceptação e padronização de requisições;
+* Separação de responsabilidades por componentes;
+* Reutilização de componentes globais.
+
+---
+
+# ✅ Resumo Geral
+
+Até o momento, o frontend do **PieManager** conta com:
+
+* Autenticação via JWT;
+* Bootstrap inteligente do sistema;
+* Interceptor de requisições;
+* Tratamento visual de erros;
+* Controle de acesso por perfil;
+* Design System reutilizável;
+* Layout padrão de páginas;
+* Tabelas dinâmicas;
+* Modal global de edição;
+* CRUDs de usuários;
+* CRUD de locais;
+* Estrutura escalável com Next.js e React.
+
+O sistema já possui uma base sólida para expansão de novos módulos, mantendo consistência visual, organização de código e segurança de acesso.
