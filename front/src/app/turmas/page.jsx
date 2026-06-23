@@ -24,7 +24,7 @@ export default function TurmasPage() {
 
   const carregarDados = async () => {
     try {
-      const [turmasResp, cursosResp, semestresResp, disciplinasResp, usuariosResp] = await Promise.all([
+      const resultados = await Promise.allSettled([
         api.get("/api/turmas"),
         api.get("/api/cursos"),
         api.get("/api/semestres"),
@@ -32,13 +32,49 @@ export default function TurmasPage() {
         api.get("/api/users"),
       ]);
 
-      setTurmas(turmasResp.data || []);
-      setCursos(cursosResp.data || []);
-      setSemestres(semestresResp.data || []);
-      setDisciplinas(disciplinasResp.data || []);
-      setUsuarios(usuariosResp.data || []);
+      const [turmasResp, cursosResp, semestresResp, disciplinasResp, usuariosResp] = resultados;
+
+      if (turmasResp.status === "fulfilled" && turmasResp.value && Array.isArray(turmasResp.value.data)) {
+        setTurmas(turmasResp.value.data);
+      } else {
+        console.error("Erro ou formato inesperado em /api/turmas:", turmasResp.reason || turmasResp.value);
+        setTurmas([]);
+      }
+
+      if (cursosResp.status === "fulfilled" && cursosResp.value && Array.isArray(cursosResp.value.data)) {
+        setCursos(cursosResp.value.data);
+      } else {
+        console.error("Erro ou formato inesperado em /api/cursos:", cursosResp.reason || cursosResp.value);
+        setCursos([]);
+      }
+
+      if (semestresResp.status === "fulfilled" && semestresResp.value && Array.isArray(semestresResp.value.data)) {
+        setSemestres(semestresResp.value.data);
+      } else {
+        console.error("Erro ou formato inesperado em /api/semestres:", semestresResp.reason || semestresResp.value);
+        setSemestres([]);
+      }
+
+      if (disciplinasResp.status === "fulfilled" && disciplinasResp.value && Array.isArray(disciplinasResp.value.data)) {
+        setDisciplinas(disciplinasResp.value.data);
+      } else {
+        console.error("Erro ou formato inesperado em /api/disciplinas:", disciplinasResp.reason || disciplinasResp.value);
+        setDisciplinas([]);
+      }
+
+      if (usuariosResp.status === "fulfilled" && usuariosResp.value && Array.isArray(usuariosResp.value.data)) {
+        setUsuarios(usuariosResp.value.data);
+      } else {
+        console.error("Erro ou formato inesperado em /api/users:", usuariosResp.reason || usuariosResp.value);
+        setUsuarios([]);
+      }
+
+      if (turmasResp.status === "rejected" || disciplinasResp.status === "rejected") {
+        setError("Não foi possível carregar turmas ou disciplinas devido a problemas no servidor.");
+      }
+
     } catch (err) {
-      setError("Não foi possível carregar os dados de turma. Verifique a conexão com o servidor.");
+      setError("Não foi possível carregar os dados das tabelas. Verifique a conexão.");
     }
   };
 
@@ -214,7 +250,7 @@ export default function TurmasPage() {
             </tr>
           </thead>
           <tbody>
-            {turmas.map((turma) => (
+            {Array.isArray(turmas) && turmas.map((turma) => (
               <tr key={turma.id}>
                 <td>{turma.id}</td>
                 <td>{turma.nome}</td>
