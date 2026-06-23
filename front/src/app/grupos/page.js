@@ -82,6 +82,7 @@ export default function TelaListagemGrupos() {
               <th>Professor Orientador</th>
               <th>Integrantes</th>
               <th>Local e Horário</th>
+              <th>Avaliações</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -99,18 +100,29 @@ export default function TelaListagemGrupos() {
                   <td>{item.turma?.nome}</td>
                   <td>{item.professorOrientador?.username}</td>
                   <td>{item.integrantes?.map((i) => i.username).join(", ")}</td>
-                  <td>
-                    {item.local?.nome}<br />
-                    {formatarInstant(item.horarioInicio)} - {formatarInstant(item.horarioFim)}
-                  </td>
-                  <td>
+                    <td>
+                        {item.local?.nome}<br />
+                        {formatarInstant(item.horarioInicio)} - {formatarInstant(item.horarioFim)}
+                      </td>
+                      <td>
+                        {item.avaliacoes && item.avaliacoes.length > 0 ? (
+                          item.avaliacoes.map((av) => (
+                            <div key={av.id}>
+                              <strong>{av.avaliador?.username}:</strong> {av.nota}
+                            </div>
+                          ))
+                        ) : (
+                          <span style={{ color: "#777" }}>Sem avaliações</span>
+                        )}
+                      </td>
+                      <td>
                     <div style={{ display: "flex", gap: "10px" }}>
                       <Link href={`/grupos/editar?id=${item.id}`}>
                         <button style={{ color: "blue", cursor: "pointer", background: "none", border: "none", textDecoration: "underline" }}>
                           Editar
                         </button>
                       </Link>
-                      {/* ✅ Botão Avaliar novo */}
+                      
                       <Link href={`/grupos/avaliacoes?id=${item.id}`}>
                         <button style={{ color: "#b8860b", cursor: "pointer", background: "none", border: "none", textDecoration: "underline", fontWeight: "bold" }}>
                           Avaliar
