@@ -1,4 +1,4 @@
-import { request } from "@/lib/api";
+import { request } from "@/services/api";
 
 export const userService = {
   list(token) {

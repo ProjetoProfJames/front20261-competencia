@@ -1,4 +1,4 @@
-import { request } from "@/lib/api";
+import { request } from "@/services/api";
 
 export async function login(payload) {
   return request("/api/auth/login", {

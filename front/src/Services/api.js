@@ -1,50 +1,47 @@
-const BASE_URL = "http://localhost:8080";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
-const GrupoService = {
-  listar: async () => {
-    try {
-      const resposta = await fetch(`${BASE_URL}/grupos`);
-      return resposta.ok ? await resposta.json() : [];
-    } catch { return []; }
-  },
+export async function request(path, options = {}, token = null) {
+  const headers = new Headers(options.headers || {});
 
-  buscarLocais: async () => {
-    try {
-      const resposta = await fetch(`${BASE_URL}/locais`); //
-      return respuesta.ok ? await resposta.json() : []; //
-    } catch { return []; } //
-  },
-
-  cadastrar: async (dadosDoGrupo) => {
-    const resposta = await fetch(`${BASE_URL}/grupos`, { //
-      method: "POST", //
-      headers: { "Content-Type": "application/json" }, //
-      body: JSON.stringify(dadosDoGrupo) //
-    });
-    if (!resposta.ok) throw new Error("Erro ao salvar grupo."); //
-    return true; //
-  },
-
-  buscarTurmas: async () => {
-    try {
-      const resposta = await fetch(`${BASE_URL}/turmas`);
-      return resposta.ok ? await resposta.json() : [];
-    } catch { return []; }
-  },
-
-  buscarProfessores: async () => {
-    try {
-      const resposta = await fetch(`${BASE_URL}/professores`);
-      return resposta.ok ? await resposta.json() : [];
-    } catch { return []; }
-  },
-
-  buscarAlunos: async () => {
-    try {
-      const resposta = await fetch(`${BASE_URL}/alunos`);
-      return resposta.ok ? await resposta.json() : [];
-    } catch { return []; }
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
   }
-};
 
-export default GrupoService; //
+  if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+    cache: "no-store",
+  });
+
+  let payload = null;
+
+  try {
+    payload = await response.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const message =
+      payload?.message ||
+      payload?.error ||
+      (typeof payload === "string" ? payload : null) ||
+      "Erro ao comunicar com a API";
+
+    throw new Error(message);
+  }
+
+  if (payload && Object.prototype.hasOwnProperty.call(payload, "data")) {
+    return payload.data;
+  }
+
+  return payload;
+}
+
+export function apiUrl() {
+  return API_BASE_URL;
+}
