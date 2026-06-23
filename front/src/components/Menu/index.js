@@ -101,6 +101,25 @@ export default function Menu() {
             </Link>
           </li>
         )}
+
+        {user && (
+          <li>
+            <Link href='/projetos' style={{ color: '#fff', fontWeight: '500' }}>
+              Projetos
+            </Link>
+          </li>
+        )}
+
+        {(user?.profile === 'ADMIN' ||
+          user?.profile === 'COORDENADOR' ||
+          user?.profile === 'PROFESSOR' ||
+          user?.profile === 'AVALIADOR_EXTERNO') && (
+          <li>
+            <Link href='/avaliacoes' style={{ color: '#fff', fontWeight: '500' }}>
+              Avaliações
+            </Link>
+          </li>
+        )}
       </ul>
 
       <button
