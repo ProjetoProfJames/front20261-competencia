@@ -5,6 +5,7 @@ export const NAVIGATION_ITEMS = [
     { href: '/usuarios', label: 'Usuários', roles: ['PROFESSOR', 'ADMIN'] },
     { href: '/semestres', label: 'Semestres', roles: ['ADMIN'] },
     { href: '/cursos', label: 'Cursos', roles: ['ADMIN'] },
+    { href: '/grupos', label: 'Grupos', roles: ['ADMIN'] },
 ];
 
 export function getNavigationItems(profile) {

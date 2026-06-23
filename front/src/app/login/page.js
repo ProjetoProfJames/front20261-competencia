@@ -4,13 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
-import { login, criarUsuario } from "@/utils/api";
+import { login } from "@/utils/api";
 
 
 export default function LoginPage() {
-  const [user, setUser] = useState({ username: "", email: "", password: "", profile: "" });
+  const [user, setUser] = useState({ email: "", password: ""});
   const [error, setError] = useState("");
-  const [mode, setMode] = useState("login");
 
   const containerStyle = {
     display: 'flex',
@@ -54,35 +53,6 @@ export default function LoginPage() {
     setError("E-mail ou senha inválidos.");
   };
 
-  const handleRegister = async () => {
-    setError("");
-
-    if (!user.username || !user.email || !user.profile) {
-      setError("Preencha username, e-mail e perfil.");
-      return;
-    }
-
-    const payload = {
-      username: user.username,
-      email: user.email,
-      profile: user.profile,
-    };
-
-    if (user.password) {
-      payload.password = user.password;
-    }
-
-    const resultado = await criarUsuario(payload);
-
-    if (resultado) {
-      setUser({ username: "", email: user.email, password: "", profile: "" });
-      setMode("login");
-      return;
-    }
-
-    setError("Não foi possível realizar o cadastro.");
-  };
-
   const loadBootstrap = () => {
     fetch("http://localhost:8080/api/public/bootstrap", {
       method: "POST",
@@ -100,45 +70,16 @@ export default function LoginPage() {
       .catch((requestError) => console.error("Erro ao carregar Bootstrap:", requestError));
   };
 
-  if (mode === "login") {
-    return (
-      <div style={containerStyle}>
-        <div style={formBoxStyle}>
-          <h1>Login</h1>
+  return (
+    <div style={containerStyle}>
+      <div style={formBoxStyle}>
+        <h1>Login</h1>
 
           <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
           <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
 
-          <Button type="button" onClick={authenticate}>Login</Button>
-          <Button type="button" onClick={() => setMode("register")}>Cadastrar</Button>
-          <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={containerStyle}>
-      <div style={formBoxStyle}>
-        <h1>Cadastrar</h1>
-
-        <FormInput label="Username" type="text" name="username" value={user.username} onChange={handleChange} />
-        <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-        <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
-
-        <div style={{ marginBottom: '10px' }}>
-          <label>Perfil</label><br />
-          <select name="profile" value={user.profile} onChange={handleChange} style={{ width: '100%' }}>
-            <option value="">Selecione um perfil</option>
-            <option value="COORDENADOR">COORDENADOR</option>
-            <option value="ALUNO">ALUNO</option>
-            <option value="PROFESSOR">PROFESSOR</option>
-            <option value="AVALIADOR_EXTERNO">AVALIADOR_EXTERNO</option>
-          </select>
-        </div>
-
-        <Button type="button" onClick={handleRegister}>Cadastrar</Button>
-        <Button type="button" onClick={() => setMode("login")}>Voltar para login</Button>
+        <Button type="button" onClick={authenticate}>Login</Button>
+        <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
       </div>
     </div>
   );
