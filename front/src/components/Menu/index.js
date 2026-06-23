@@ -44,6 +44,8 @@ export default function Menu() {
         <Link href="/semestres">Semestres</Link>
         <Link href="/cursos">Cursos</Link>
         <Link href="/turmas">Turmas</Link>
+        <Link href="/projetos">Projetos</Link>
+        <Link href="/avaliacoes">Avaliações</Link>
       </div>
     </nav>
   );
