@@ -4,14 +4,14 @@ function getHeaders() {
     const headers = {
         'Content-Type': 'application/json'
     };
-    
+
     if (typeof window !== 'undefined') {
         const token = localStorage.getItem('JWT');
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
     }
-    
+
     return headers;
 }
 
@@ -248,4 +248,36 @@ export async function adicionarAlunoTurma(id, alunoData) {
 
 export async function removerAlunoTurma(id, alunoId) {
     return await del(`/turmas/${id}/alunos/${alunoId}`);
+}
+
+export async function listarGrupos() {
+    return await get('/grupos');
+}
+
+export async function obterGrupoPorId(id) {
+    return await get(`/grupos/${id}`);
+}
+
+export async function criarGrupo(grupoData) {
+    return await post('/grupos', grupoData);
+}
+
+export async function atualizarGrupo(id, grupoData) {
+    return await put(`/grupos/${id}`, grupoData);
+}
+
+export async function deletarGrupo(id) {
+    return await del(`/grupos/${id}`);
+}
+
+export async function listarProfessores() {
+    return await get('/professores');
+}
+
+export async function listarAlunos() {
+    return await get('/alunos');
+}
+
+export async function listarProjetos() {
+    return await get('/projetos');
 }

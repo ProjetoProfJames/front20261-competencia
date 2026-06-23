@@ -75,8 +75,8 @@ export default function LoginPage() {
       <div style={formBoxStyle}>
         <h1>Login</h1>
 
-        <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-        <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
+          <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
+          <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
 
         <Button type="button" onClick={authenticate}>Login</Button>
         <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
