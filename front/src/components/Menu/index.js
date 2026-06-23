@@ -51,6 +51,11 @@ export default function Menu() {
       href: "/grupos",
       profiles: ["ADMIN", "COORDENADOR", "PROFESSOR", "ALUNO"],
     },
+    {
+      label: "Disciplinas",
+      href: "/disciplinas",
+      profiles: ["ADMIN", "COORDENADOR", "PROFESSOR"],
+    },
   ];
 
   if (path === "/login" || !user) {

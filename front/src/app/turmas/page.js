@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import AppShell from "@/components/AppShell";
 import Table from "@/components/Table";
 import Button from "@/components/Button";
@@ -10,10 +11,12 @@ import { turmaService } from "@/services/turmaService";
 import { joinNames } from "@/lib/display";
 
 export default function TurmasPage() {
+  const router = useRouter();
   const { loading, token, user, logout } = useSession();
   const [items, setItems] = useState([]);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [busyActionId, setBusyActionId] = useState(null);
 
   useEffect(() => {
     if (loading || !token) {
@@ -46,6 +49,7 @@ export default function TurmasPage() {
         item?.disciplina?.nome,
         item?.semestre?.nome,
         ...(item?.professores || []).map((professor) => professor?.username || professor?.email),
+        ...(item?.alunos || []).map((aluno) => aluno?.username || aluno?.email),
       ]
         .filter(Boolean)
         .join(" ")
@@ -55,9 +59,25 @@ export default function TurmasPage() {
     });
   }, [items, search]);
 
-  const canCreate = user?.profile === "PROFESSOR" || user?.profile === "ADMIN";
-  const canEdit = user?.profile === "PROFESSOR" || user?.profile === "ADMIN";
-  const canDelete = user?.profile === "PROFESSOR" || user?.profile === "ADMIN";
+  const canManage = user?.profile === "PROFESSOR" || user?.profile === "ADMIN";
+
+  const refresh = async () => {
+    const data = await turmaService.list(token);
+    setItems(Array.isArray(data) ? data : []);
+  };
+
+  const handleGenerateMatriculas = async (id) => {
+    try {
+      setBusyActionId(id);
+      setError("");
+      await turmaService.gerarMatriculas(id, token);
+      await refresh();
+    } catch (err) {
+      setError(err.message || "Falha ao gerar matrículas");
+    } finally {
+      setBusyActionId(null);
+    }
+  };
 
   if (loading) {
     return <p>Carregando...</p>;
@@ -74,13 +94,13 @@ export default function TurmasPage() {
             type="text"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Nome, curso, disciplina, período ou professor"
+            placeholder="Nome, curso, disciplina, período, professor ou aluno"
           />
         </label>
 
-        {canCreate ? (
+        {canManage ? (
           <p>
-            <Button type="button" onClick={() => window.location.assign("/turmas/novo")}>
+            <Button type="button" onClick={() => router.push("/turmas/novo")}>
               Nova turma
             </Button>
           </p>
@@ -89,7 +109,7 @@ export default function TurmasPage() {
         {error ? <p>{error}</p> : null}
 
         <Table
-          headers={["ID", "Nome", "Cursos", "Disciplina", "Período", "Professores", "Alunos", "Ações"]}
+          headers={["ID", "Nome", "Cursos", "Disciplina", "Semestre", "Professores", "Alunos", "Ações"]}
           isEmpty={filteredItems.length === 0}
           emptyMessage="Nenhuma turma encontrada"
         >
@@ -101,27 +121,44 @@ export default function TurmasPage() {
               <td>{item.disciplina?.nome || "-"}</td>
               <td>{item.semestre?.nome || "-"}</td>
               <td>{joinNames(item.professores)}</td>
-              <td>{joinNames(item.alunos)}</td>
+              <td>{Array.isArray(item.alunos) ? item.alunos.length : 0}</td>
               <td>
-                {canEdit || canDelete ? (
-                  <RecordActions
-                    canEdit={canEdit}
-                    canDelete={canDelete}
-                    onEdit={canEdit ? () => window.location.assign(`/turmas/${item.id}`) : undefined}
-                    onDelete={canDelete ? async () => {
-                      if (!confirm("Deseja excluir esta turma?")) {
-                        return;
-                      }
+                {canManage ? (
+                  <div>
+                    <RecordActions
+                      canEdit
+                      canDelete
+                      onEdit={() => router.push(`/turmas/${item.id}`)}
+                      onDelete={async () => {
+                        if (!confirm("Deseja excluir esta turma?")) {
+                          return;
+                        }
 
-                      try {
-                        await turmaService.remove(item.id, token);
-                        const data = await turmaService.list(token);
-                        setItems(Array.isArray(data) ? data : []);
-                      } catch (err) {
-                        setError(err.message || "Falha ao excluir a turma");
-                      }
-                    } : undefined}
-                  />
+                        try {
+                          setBusyActionId(item.id);
+                          setError("");
+                          await turmaService.remove(item.id, token);
+                          await refresh();
+                        } catch (err) {
+                          setError(err.message || "Falha ao excluir a turma");
+                        } finally {
+                          setBusyActionId(null);
+                        }
+                      }}
+                    />
+                    {" "}
+                    <Button type="button" onClick={() => router.push(`/turmas/${item.id}/alunos`)}>
+                      Alunos
+                    </Button>
+                    {" "}
+                    <Button
+                      type="button"
+                      onClick={() => handleGenerateMatriculas(item.id)}
+                      disabled={busyActionId === item.id}
+                    >
+                      {busyActionId === item.id ? "Processando..." : "Matrículas"}
+                    </Button>
+                  </div>
                 ) : (
                   "-"
                 )}

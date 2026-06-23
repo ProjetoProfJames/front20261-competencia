@@ -1,9 +1,9 @@
 'use client';
 
 import { useParams } from "next/navigation";
-import CursoForm from "@/components/forms/CursoForm";
+import DisciplinaForm from "@/components/forms/DisciplinaForm";
 
-export default function EditarCursoPage() {
+export default function EditarDisciplinaPage() {
   const params = useParams();
-  return <CursoForm id={params.id} />;
+  return <DisciplinaForm id={params.id} />;
 }

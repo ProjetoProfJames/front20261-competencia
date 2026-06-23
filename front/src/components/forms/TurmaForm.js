@@ -247,6 +247,14 @@ export default function TurmaForm({ id = null }) {
         <Button type="button" onClick={() => router.push("/turmas")}>
           Voltar
         </Button>
+        {isEditing ? (
+          <>
+            {" "}
+            <Button type="button" onClick={() => router.push(`/turmas/${id}/alunos`)}>
+              Gerenciar alunos
+            </Button>
+          </>
+        ) : null}
       </form>
     </section>
   );

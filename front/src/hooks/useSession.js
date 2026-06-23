@@ -32,8 +32,8 @@ export function useSession(requiredRoles = []) {
   }, [router, rolesKey]);
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    localStorage.removeItem("API-KEY");
+    localStorage.removeItem("USER");
     router.replace("/login");
   };
 

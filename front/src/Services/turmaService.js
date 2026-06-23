@@ -1,4 +1,4 @@
-import { request } from "@/lib/api";
+import { request } from "@/services/api";
 
 export const turmaService = {
   list(token) {
@@ -8,20 +8,60 @@ export const turmaService = {
     return request(`/api/turmas/${id}`, {}, token);
   },
   create(payload, token) {
-    return request("/api/turmas", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }, token);
+    return request(
+      "/api/turmas",
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      },
+      token
+    );
   },
   update(id, payload, token) {
-    return request(`/api/turmas/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(payload),
-    }, token);
+    return request(
+      `/api/turmas/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      },
+      token
+    );
   },
   remove(id, token) {
-    return request(`/api/turmas/${id}`, {
-      method: "DELETE",
-    }, token);
+    return request(
+      `/api/turmas/${id}`,
+      {
+        method: "DELETE",
+      },
+      token
+    );
+  },
+  addAluno(id, alunoId, token) {
+    return request(
+      `/api/turmas/${id}/alunos`,
+      {
+        method: "POST",
+        body: JSON.stringify({ alunoId: Number(alunoId) }),
+      },
+      token
+    );
+  },
+  removeAluno(id, alunoId, token) {
+    return request(
+      `/api/turmas/${id}/alunos/${alunoId}`,
+      {
+        method: "DELETE",
+      },
+      token
+    );
+  },
+  gerarMatriculas(id, token) {
+    return request(
+      `/api/turmas/${id}/matriculas`,
+      {
+        method: "POST",
+      },
+      token
+    );
   },
 };
