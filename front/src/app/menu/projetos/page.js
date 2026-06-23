@@ -6,38 +6,80 @@ import Modal from "@/app/framework/components/Modal/Modal";
 import GrupoForm from "@/app/framework/components/FormInput/GrupoForm";
 import AvaliacaoModal from "@/app/framework/components/Modal/AvaliacaoModal";
 import { grupoService } from "@/utils/api/api";
-
-const turmas = [
-  { id: 1, curso: "Engenharia de Software", periodo: "2026.1", semestre: "2026/1" },
-  { id: 2, curso: "Ciência da Computação", periodo: "2026.1", semestre: "2026/1" },
-];
-
-const professores = [
-  { id: 1, nome: "Dr. João Silva" },
-  { id: 2, nome: "Profa. Maria Santos" },
-];
-
-const alunosDisponiveis = [
-  { id: 1, nome: "Ana Oliveira", matricula: "2023001" },
-  { id: 2, nome: "Bruno Costa", matricula: "2023002" },
-  { id: 3, nome: "Carla Mendes", matricula: "2023003" },
-  { id: 4, nome: "Diego Souza", matricula: "2023004" },
-  { id: 5, nome: "Elena Rocha", matricula: "2023005" },
-];
+import { listarTurmas } from "@/utils/services/turmaService";
+import { listarUsuarios } from "@/utils/services/userService";
+import { apiFetch } from "@/utils/services/api";
 
 export default function ProjetosPage() {
   const [grupos, setGrupos] = useState([]);
+  const [turmas, setTurmas] = useState([]);
+  const [professores, setProfessores] = useState([]);
+  const [alunosDisponiveis, setAlunosDisponiveis] = useState([]);
+  const [locais, setLocais] = useState([]);
+
   const [showModal, setShowModal] = useState(false);
   const [editingGrupo, setEditingGrupo] = useState(null);
   const [grupoParaAvaliar, setGrupoParaAvaliar] = useState(null);
   const [search, setSearch] = useState("");
 
+  function getNomeUsuario(usuario) {
+    return usuario?.username || usuario?.nome || usuario?.name || usuario?.email || "Sem nome";
+  }
+
+  function getCursoTurma(turma) {
+    if (Array.isArray(turma?.cursos) && turma.cursos.length > 0) {
+      return turma.cursos.map((curso) => curso.nome).join(", ");
+    }
+
+    return turma?.curso?.nome || turma?.cursoNome || turma?.nome || "Curso não informado";
+  }
+
+  function getPeriodoTurma(turma) {
+    return turma?.semestre?.nome || turma?.periodoLetivo?.nome || turma?.periodo || "Período não informado";
+  }
+
+  function getSemestreIdTurma(turma) {
+    return turma?.semestre?.id || turma?.semestreId || turma?.periodoLetivo?.id || null;
+  }
+
+  function normalizarTurma(turma) {
+    return {
+      ...turma,
+      id: Number(turma.id),
+      cursoFormatado: getCursoTurma(turma),
+      periodoFormatado: getPeriodoTurma(turma),
+      semestreId: getSemestreIdTurma(turma),
+      professores: Array.isArray(turma.professores) ? turma.professores : [],
+      alunos: Array.isArray(turma.alunos) ? turma.alunos : [],
+    };
+  }
+
   async function carregarDados() {
     try {
-      const dados = await grupoService.getAll();
-      setGrupos(dados || []);
+      const [gruposRes, turmasRes, usuariosRes, locaisRes] = await Promise.all([
+        grupoService.getAll(),
+        listarTurmas(),
+        listarUsuarios(),
+        apiFetch("/api/locais"),
+      ]);
+
+      const turmasNormalizadas = Array.isArray(turmasRes)
+        ? turmasRes.map(normalizarTurma)
+        : [];
+
+      const usuarios = Array.isArray(usuariosRes) ? usuariosRes : [];
+
+      console.log("TURMAS DO BACK:", turmasNormalizadas);
+
+      setGrupos(gruposRes || []);
+      setTurmas(turmasNormalizadas);
+      setLocais(Array.isArray(locaisRes) ? locaisRes : []);
+
+      setProfessores(usuarios.filter((usuario) => usuario.profile === "PROFESSOR"));
+      setAlunosDisponiveis(usuarios.filter((usuario) => usuario.profile === "ALUNO"));
     } catch (error) {
-      console.error(error.message);
+      console.error(error);
+      alert(error.message || "Erro ao carregar dados.");
     }
   }
 
@@ -45,14 +87,15 @@ export default function ProjetosPage() {
     carregarDados();
   }, []);
 
-  const getTurma = (turmaId) => turmas.find((t) => t.id === turmaId);
+  const getTurma = (turmaId) =>
+    turmas.find((t) => Number(t.id) === Number(turmaId));
 
   const getProfessor = (professorId) =>
-    professores.find((p) => p.id === professorId);
+    professores.find((p) => Number(p.id) === Number(professorId));
 
   const getAlunosPorIds = (ids = []) =>
     ids
-      .map((id) => alunosDisponiveis.find((a) => a.id === id))
+      .map((id) => alunosDisponiveis.find((a) => Number(a.id) === Number(id)))
       .filter(Boolean);
 
   const filteredGrupos = grupos.filter((grupo) => {
@@ -65,14 +108,13 @@ export default function ProjetosPage() {
 
     const campos = [
       grupo.nome,
-      turma?.curso,
-      turma?.periodo,
-      turma?.semestre,
-      professor?.nome,
+      turma?.cursoFormatado,
+      turma?.periodoFormatado,
+      getNomeUsuario(professor),
       grupo.localApresentacao,
       grupo.horarioInicio,
       grupo.horarioFim,
-      ...alunosGrupo.map((aluno) => `${aluno.nome} ${aluno.matricula}`),
+      ...alunosGrupo.map((aluno) => getNomeUsuario(aluno)),
     ];
 
     return campos.some((valor) =>
@@ -82,9 +124,43 @@ export default function ProjetosPage() {
 
   async function handleSave(newGrupo) {
     try {
-      const payload = editingGrupo
-        ? { ...newGrupo, id: editingGrupo.id }
-        : newGrupo;
+      const turmaSelecionada = getTurma(newGrupo.turmaId);
+
+      if (!turmaSelecionada) {
+        alert("Turma selecionada não encontrada.");
+        return;
+      }
+
+      const professoresDaTurma = turmaSelecionada.professores || [];
+      const alunosDaTurma = turmaSelecionada.alunos || [];
+
+      const professorPertenceTurma = professoresDaTurma.some(
+        (professor) => Number(professor.id) === Number(newGrupo.professorId)
+      );
+
+      if (!professorPertenceTurma) {
+        alert("O professor selecionado não pertence à turma escolhida.");
+        return;
+      }
+
+      const alunosInvalidos = newGrupo.alunos.filter(
+        (alunoId) =>
+          !alunosDaTurma.some((aluno) => Number(aluno.id) === Number(alunoId))
+      );
+
+      if (alunosInvalidos.length > 0) {
+        alert("Um ou mais alunos selecionados não pertencem à turma escolhida.");
+        return;
+      }
+
+      const payload = {
+        ...newGrupo,
+        id: editingGrupo?.id,
+        semestreId: turmaSelecionada.semestreId,
+      };
+
+      console.log("TURMA SELECIONADA:", turmaSelecionada);
+      console.log("PAYLOAD FINAL PARA SALVAR:", payload);
 
       await grupoService.save(payload);
 
@@ -92,28 +168,23 @@ export default function ProjetosPage() {
       setEditingGrupo(null);
       await carregarDados();
     } catch (error) {
-      alert(error.message);
+      console.error(error);
+      alert(error.message || "Erro ao salvar grupo.");
     }
   }
 
   async function handleAvaliar(id, nota) {
     try {
       await grupoService.evaluate(id, nota);
-
       setGrupoParaAvaliar(null);
       await carregarDados();
     } catch (error) {
-      alert(error.message);
+      alert(error.message || "Erro ao avaliar grupo.");
     }
   }
 
   async function handleDelete(id) {
-    const grupo = grupos.find((g) => g.id === id);
-
-    if (grupo?.projetoId || grupo?.projetoVinculado) {
-      alert("Não é possível excluir um grupo com projeto vinculado.");
-      return;
-    }
+    const grupo = grupos.find((g) => Number(g.id) === Number(id));
 
     if (grupo?.nota !== undefined && grupo?.nota !== null) {
       alert("Não é possível excluir grupo já avaliado!");
@@ -125,7 +196,7 @@ export default function ProjetosPage() {
         await grupoService.delete(id);
         await carregarDados();
       } catch (error) {
-        alert(error.message);
+        alert(error.message || "Erro ao excluir grupo.");
       }
     }
   }
@@ -187,15 +258,15 @@ export default function ProjetosPage() {
 
                       <td>
                         {turma
-                          ? `${turma.curso} - ${turma.periodo}`
+                          ? `${turma.cursoFormatado} - ${turma.periodoFormatado}`
                           : "-"}
                       </td>
 
-                      <td>{professor?.nome || "-"}</td>
+                      <td>{getNomeUsuario(professor)}</td>
 
                       <td>
                         {alunosGrupo.length > 0
-                          ? alunosGrupo.map((aluno) => aluno.nome).join(", ")
+                          ? alunosGrupo.map((aluno) => getNomeUsuario(aluno)).join(", ")
                           : "-"}
                       </td>
 
@@ -203,15 +274,10 @@ export default function ProjetosPage() {
                         {grupo.localApresentacao || "-"}
                         <br />
                         {grupo.horarioInicio
-                          ? new Date(grupo.horarioInicio).toLocaleString(
-                              "pt-BR"
-                            )
+                          ? new Date(grupo.horarioInicio).toLocaleString("pt-BR")
                           : ""}
-
                         {grupo.horarioFim
-                          ? ` - ${new Date(grupo.horarioFim).toLocaleString(
-                              "pt-BR"
-                            )}`
+                          ? ` - ${new Date(grupo.horarioFim).toLocaleString("pt-BR")}`
                           : ""}
                       </td>
 
@@ -270,6 +336,7 @@ export default function ProjetosPage() {
           turmas={turmas}
           professores={professores}
           alunos={alunosDisponiveis}
+          locais={locais}
           onSave={handleSave}
           onClose={() => {
             setShowModal(false);

@@ -1,42 +1,110 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Button from '../Button/Button';
+import { useState, useEffect } from "react";
+import Button from "../Button/Button";
 
-export default function GrupoForm({ initialData, turmas, professores, alunos, onSave, onClose }) {
+export default function GrupoForm({
+  initialData,
+  turmas,
+  professores,
+  alunos,
+  locais,
+  onSave,
+  onClose,
+}) {
   const [form, setForm] = useState({
-    nome: '',
-    turmaId: turmas[0]?.id || 1,
-    professorId: professores[0]?.id || 1,
+    nome: "",
+    turmaId: "",
+    professorId: "",
     alunos: [],
-    localApresentacao: '',
-    horarioInicio: '',
-    horarioFim: '',
+    localId: "",
+    localApresentacao: "",
+    horarioInicio: "",
+    horarioFim: "",
   });
+
+  function getNomeUsuario(usuario) {
+    return usuario?.username || usuario?.nome || usuario?.name || usuario?.email || "Sem nome";
+  }
+
+  function getNomeTurma(turma) {
+    return `${turma?.cursoFormatado || "Curso não informado"} - ${
+      turma?.periodoFormatado || "Período não informado"
+    }`;
+  }
+
+  const turmaSelecionada = turmas.find(
+    (t) => Number(t.id) === Number(form.turmaId)
+  );
+
+  const professoresDaTurma = Array.isArray(turmaSelecionada?.professores)
+    ? turmaSelecionada.professores
+    : [];
+
+  const alunosDaTurma = Array.isArray(turmaSelecionada?.alunos)
+    ? turmaSelecionada.alunos
+    : [];
 
   useEffect(() => {
     if (initialData) {
       setForm({
         ...initialData,
+        turmaId: initialData.turmaId || "",
+        professorId: initialData.professorId || "",
         alunos: Array.isArray(initialData.alunos) ? initialData.alunos : [],
+        localId: initialData.localId || "",
       });
+      return;
     }
-  }, [initialData]);
+
+    setForm((prev) => ({
+      ...prev,
+      turmaId: prev.turmaId || turmas[0]?.id || "",
+      localId: prev.localId || locais[0]?.id || "",
+    }));
+  }, [initialData, turmas, locais]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (!form.turmaId) {
+      alert("Selecione uma turma.");
+      return;
+    }
+
+    if (!form.professorId) {
+      alert("Selecione um professor orientador.");
+      return;
+    }
+
+    if (!form.localId) {
+      alert("Selecione um local de apresentação.");
+      return;
+    }
+
     if (form.alunos.length < 3 || form.alunos.length > 7) {
-      alert('O grupo deve ter entre 3 e 7 alunos.');
+      alert("O grupo deve ter entre 3 e 7 alunos.");
       return;
     }
 
-    if (form.horarioInicio && form.horarioFim && new Date(form.horarioInicio) >= new Date(form.horarioFim)) {
-      alert('O horário de início deve ser anterior ao horário de fim.');
+    if (!form.horarioInicio || !form.horarioFim) {
+      alert("Informe o horário de início e fim.");
       return;
     }
 
-    onSave(form);
+    if (new Date(form.horarioInicio) >= new Date(form.horarioFim)) {
+      alert("O horário de início deve ser anterior ao horário de fim.");
+      return;
+    }
+
+    onSave({
+      ...form,
+      turmaId: Number(form.turmaId),
+      professorId: Number(form.professorId),
+      localId: Number(form.localId),
+      semestreId: turmaSelecionada?.semestreId,
+      alunos: form.alunos.map(Number),
+    });
   };
 
   return (
@@ -57,10 +125,22 @@ export default function GrupoForm({ initialData, turmas, professores, alunos, on
           <select
             className="form-input"
             value={form.turmaId}
-            onChange={(e) => setForm({ ...form, turmaId: Number(e.target.value) })}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                turmaId: e.target.value,
+                professorId: "",
+                alunos: [],
+              })
+            }
+            required
           >
+            <option value="">Selecione uma turma</option>
+
             {turmas.map((t) => (
-              <option key={t.id} value={t.id}>{t.curso} - {t.periodo}</option>
+              <option key={t.id} value={t.id}>
+                {getNomeTurma(t)}
+              </option>
             ))}
           </select>
         </div>
@@ -70,10 +150,15 @@ export default function GrupoForm({ initialData, turmas, professores, alunos, on
           <select
             className="form-input"
             value={form.professorId}
-            onChange={(e) => setForm({ ...form, professorId: Number(e.target.value) })}
+            onChange={(e) => setForm({ ...form, professorId: e.target.value })}
+            required
           >
-            {professores.map((p) => (
-              <option key={p.id} value={p.id}>{p.nome}</option>
+            <option value="">Selecione um professor</option>
+
+            {professoresDaTurma.map((p) => (
+              <option key={p.id} value={p.id}>
+                {getNomeUsuario(p)}
+              </option>
             ))}
           </select>
         </div>
@@ -84,17 +169,19 @@ export default function GrupoForm({ initialData, turmas, professores, alunos, on
         <select
           multiple
           className="form-input"
-          value={form.alunos}
+          value={form.alunos.map(String)}
           onChange={(e) =>
             setForm({
               ...form,
-              alunos: Array.from(e.target.selectedOptions, (option) => Number(option.value)),
+              alunos: Array.from(e.target.selectedOptions, (option) =>
+                Number(option.value)
+              ),
             })
           }
         >
-          {alunos.map((a) => (
+          {alunosDaTurma.map((a) => (
             <option key={a.id} value={a.id}>
-              {a.nome} ({a.matricula})
+              {getNomeUsuario(a)}
             </option>
           ))}
         </select>
@@ -102,12 +189,30 @@ export default function GrupoForm({ initialData, turmas, professores, alunos, on
 
       <div className="form-group">
         <label className="form-label">Local de Apresentação</label>
-        <input
+        <select
           className="form-input"
-          value={form.localApresentacao}
-          onChange={(e) => setForm({ ...form, localApresentacao: e.target.value })}
-          placeholder="Auditório, Sala 305, etc."
-        />
+          value={form.localId}
+          onChange={(e) => {
+            const localSelecionado = locais.find(
+              (local) => Number(local.id) === Number(e.target.value)
+            );
+
+            setForm({
+              ...form,
+              localId: e.target.value,
+              localApresentacao: localSelecionado?.numero || "",
+            });
+          }}
+          required
+        >
+          <option value="">Selecione um local</option>
+
+          {locais.map((local) => (
+            <option key={local.id} value={local.id}>
+              {local.numero}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="grid grid-cols-2 gap-6">
@@ -118,8 +223,10 @@ export default function GrupoForm({ initialData, turmas, professores, alunos, on
             className="form-input"
             value={form.horarioInicio}
             onChange={(e) => setForm({ ...form, horarioInicio: e.target.value })}
+            required
           />
         </div>
+
         <div className="form-group">
           <label className="form-label">Horário de Fim</label>
           <input
@@ -127,13 +234,19 @@ export default function GrupoForm({ initialData, turmas, professores, alunos, on
             className="form-input"
             value={form.horarioFim}
             onChange={(e) => setForm({ ...form, horarioFim: e.target.value })}
+            required
           />
         </div>
       </div>
 
       <div className="form-actions">
-        <Button type="submit" variant="success">Salvar Grupo</Button>
-        <Button type="button" variant="danger" onClick={onClose}>Cancelar</Button>
+        <Button type="submit" variant="success">
+          Salvar Grupo
+        </Button>
+
+        <Button type="button" variant="danger" onClick={onClose}>
+          Cancelar
+        </Button>
       </div>
     </form>
   );
