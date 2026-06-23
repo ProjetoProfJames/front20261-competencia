@@ -15,8 +15,25 @@ import {
   editarAvaliacao,
   deletarAvaliacao,
 } from "@/services/projetoService";
-import { listarTurmas } from "@/services/turmaService";
-import { listarSemestres } from "@/services/semestreService";
+
+import {
+  listarCursos,
+  criarCurso,
+  editarCurso,
+  deletarCurso,
+} from "@/services/cursoService";
+import {
+  listarSemestres,
+  criarSemestre,
+  editarSemestre,
+  deletarSemestre,
+} from "@/services/semestreService";
+import {
+  listarTurmas,
+  criarTurma,
+  editarTurma,
+  deletarTurma,
+} from "@/services/turmaService";
 
 const roleLabels = {
   ADMIN: "Administrador",
@@ -65,8 +82,6 @@ export default function AppWorkspace({ session, onLogout }) {
 
   const [projetos, setProjetos] = useState([]);
   const [loadingProjetos, setLoadingProjetos] = useState(false);
-  const [turmas, setTurmas] = useState([]);
-  const [semestres, setSemestres] = useState([]);
   const [projetoForm, setProjetoForm] = useState(projetoFormInicial);
   const [editandoProjetoId, setEditandoProjetoId] = useState(null);
   const [projetoAvaliacaoId, setProjetoAvaliacaoId] = useState(null);
@@ -74,6 +89,20 @@ export default function AppWorkspace({ session, onLogout }) {
   const [avaliacoes, setAvaliacoes] = useState([]);
   const [avaliacaoForm, setAvaliacaoForm] = useState({ nota: "", comentario: "" });
   const [editandoAvaliacaoId, setEditandoAvaliacaoId] = useState(null);
+
+  const [cursos, setCursos] = useState([]);
+  const [cursoForm, setCursoForm] = useState({ nome: "", coordenadorId: null, professorIds: [] });
+  const [editingCursoId, setEditingCursoId] = useState(null);
+
+  const [semestres, setSemestres] = useState([]);
+  const [semestreForm, setSemestreForm] = useState({ nome: "", dataInicio: "", dataFim: "" });
+  const [editingSemestreId, setEditingSemestreId] = useState(null);
+
+  const [turmas, setTurmas] = useState([]);
+  const [turmaForm, setTurmaForm] = useState({ nome: "", cursoIds: [], disciplinaId: null, semestreId: null, professorIds: [] });
+  const [editingTurmaId, setEditingTurmaId] = useState(null);
+
+  const [disciplinas, setDisciplinas] = useState([]);
 
   const profile = session?.user?.profile;
   const userName = session?.user?.username || "Usuário";
@@ -92,13 +121,7 @@ export default function AppWorkspace({ session, onLogout }) {
   }, []);
 
   async function refreshData() {
-    await Promise.all([
-      loadUsers(),
-      loadLocais(),
-      loadProjetos(),
-      loadTurmas(),
-      loadSemestres(),
-    ]);
+    await Promise.all([loadUsers(), loadLocais(), loadProjetos(), loadCursos(), loadSemestres(), loadTurmas(), loadDisciplinas()]);
   }
 
   async function loadUsers() {
@@ -162,6 +185,24 @@ export default function AppWorkspace({ session, onLogout }) {
       setAvaliacoes(Array.isArray(data) ? data : []);
     } catch (error) {
       setNotice(error.message || "Erro ao carregar avaliações");
+    }
+  }
+
+  async function loadCursos() {
+    try {
+      const data = await listarCursos();
+      setCursos(Array.isArray(data) ? data : []);
+    } catch (error) {
+      setNotice(error.message || "Erro ao carregar cursos");
+    }
+  }
+
+  async function loadDisciplinas() {
+    try {
+      const response = await apiRequest('/api/disciplinas', { token: session?.token });
+      setDisciplinas(Array.isArray(response) ? response : []);
+    } catch (error) {
+      setNotice(error.message || "Erro ao carregar disciplinas");
     }
   }
 
@@ -432,6 +473,207 @@ export default function AppWorkspace({ session, onLogout }) {
     setAvaliacaoForm({ nota: "", comentario: "" });
   }
 
+  // Cursos handlers
+  async function handleCursoSubmit(event) {
+    event.preventDefault();
+    if (!cursoForm.nome.trim()) {
+      setNotice("Informe o nome do curso");
+      return;
+    }
+    if (!cursoForm.coordenadorId) {
+      setNotice("Selecione um coordenador");
+      return;
+    }
+    if (!cursoForm.professorIds || cursoForm.professorIds.length === 0) {
+      setNotice("Selecione pelo menos um professor");
+      return;
+    }
+    try {
+      const payload = {
+        nome: cursoForm.nome.trim(),
+        coordenadorId: cursoForm.coordenadorId,
+        professorIds: cursoForm.professorIds,
+      };
+      if (editingCursoId) {
+        await editarCurso(editingCursoId, payload);
+        setNotice("Curso atualizado com sucesso");
+      } else {
+        await criarCurso(payload);
+        setNotice("Curso criado com sucesso");
+      }
+      setEditingCursoId(null);
+      setCursoForm({ nome: "", coordenadorId: null, professorIds: [] });
+      await loadCursos();
+      setActiveSection("cursos");
+    } catch (error) {
+      setNotice(error.message || "Não foi possível salvar o curso");
+    }
+  }
+
+  function editCurso(curso) {
+    setEditingCursoId(curso.id);
+    setCursoForm({
+      nome: curso.nome || "",
+      coordenadorId: curso.coordenadorId || null,
+      professorIds: curso.professorIds || [],
+    });
+    setActiveSection("cursos");
+  }
+
+  async function deleteCurso(cursoId) {
+    if (!window.confirm("Deseja excluir este curso?")) return;
+    try {
+      await deletarCurso(cursoId);
+      setNotice("Curso excluído com sucesso");
+      await loadCursos();
+    } catch (error) {
+      setNotice(error.message || "Não foi possível excluir o curso");
+    }
+  }
+
+  function resetCursoForm() {
+    setEditingCursoId(null);
+    setCursoForm({ nome: "", coordenadorId: null, professorIds: [] });
+  }
+
+  // Semestres handlers
+  async function handleSemestreSubmit(event) {
+    event.preventDefault();
+    if (!semestreForm.nome.trim()) {
+      setNotice("Informe o nome do período letivo");
+      return;
+    }
+    if (!semestreForm.dataInicio) {
+      setNotice("Informe a data de início");
+      return;
+    }
+    if (!semestreForm.dataFim) {
+      setNotice("Informe a data de fim");
+      return;
+    }
+    try {
+      const payload = {
+        nome: semestreForm.nome.trim(),
+        dataInicio: semestreForm.dataInicio,
+        dataFim: semestreForm.dataFim,
+      };
+      if (editingSemestreId) {
+        await editarSemestre(editingSemestreId, payload);
+        setNotice("Período atualizado com sucesso");
+      } else {
+        await criarSemestre(payload);
+        setNotice("Período criado com sucesso");
+      }
+      setEditingSemestreId(null);
+      setSemestreForm({ nome: "", dataInicio: "", dataFim: "" });
+      await loadSemestres();
+      setActiveSection("semestres");
+    } catch (error) {
+      setNotice(error.message || "Não foi possível salvar o período");
+    }
+  }
+
+  function editSemestre(semestre) {
+    setEditingSemestreId(semestre.id);
+    setSemestreForm({
+      nome: semestre.nome || "",
+      dataInicio: semestre.dataInicio || "",
+      dataFim: semestre.dataFim || "",
+    });
+    setActiveSection("semestres");
+  }
+
+  async function deleteSemestre(semestreId) {
+    if (!window.confirm("Deseja excluir este período?")) return;
+    try {
+      await deletarSemestre(semestreId);
+      setNotice("Período excluído com sucesso");
+      await loadSemestres();
+    } catch (error) {
+      setNotice(error.message || "Não foi possível excluir o período");
+    }
+  }
+
+  function resetSemestreForm() {
+    setEditingSemestreId(null);
+    setSemestreForm({ nome: "", dataInicio: "", dataFim: "" });
+  }
+
+  // Turmas handlers
+  async function handleTurmaSubmit(event) {
+    event.preventDefault();
+    if (!turmaForm.nome.trim()) {
+      setNotice("Informe o nome da turma");
+      return;
+    }
+    if (!turmaForm.cursoIds || turmaForm.cursoIds.length === 0) {
+      setNotice("Selecione pelo menos um curso");
+      return;
+    }
+    if (!turmaForm.disciplinaId) {
+      setNotice("Selecione uma disciplina");
+      return;
+    }
+    if (!turmaForm.semestreId) {
+      setNotice("Selecione um semestre");
+      return;
+    }
+    if (!turmaForm.professorIds || turmaForm.professorIds.length === 0) {
+      setNotice("Selecione pelo menos um professor");
+      return;
+    }
+    try {
+      const payload = {
+        nome: turmaForm.nome.trim(),
+        cursoIds: turmaForm.cursoIds,
+        disciplinaId: turmaForm.disciplinaId,
+        semestreId: turmaForm.semestreId,
+        professorIds: turmaForm.professorIds,
+      };
+      if (editingTurmaId) {
+        await editarTurma(editingTurmaId, payload);
+        setNotice("Turma atualizada com sucesso");
+      } else {
+        await criarTurma(payload);
+        setNotice("Turma criada com sucesso");
+      }
+      setEditingTurmaId(null);
+      setTurmaForm({ nome: "", cursoIds: [], disciplinaId: null, semestreId: null, professorIds: [] });
+      await loadTurmas();
+      setActiveSection("turmas");
+    } catch (error) {
+      setNotice(error.message || "Não foi possível salvar a turma");
+    }
+  }
+
+  function editTurma(turma) {
+    setEditingTurmaId(turma.id);
+    setTurmaForm({
+      nome: turma.nome || "",
+      cursoIds: turma.cursoIds || [],
+      disciplinaId: turma.disciplinaId || null,
+      semestreId: turma.semestreId || null,
+      professorIds: turma.professorIds || [],
+    });
+    setActiveSection("turmas");
+  }
+
+  async function deleteTurma(turmaId) {
+    if (!window.confirm("Deseja excluir esta turma?")) return;
+    try {
+      await deletarTurma(turmaId);
+      setNotice("Turma excluída com sucesso");
+      await loadTurmas();
+    } catch (error) {
+      setNotice(error.message || "Não foi possível excluir a turma");
+    }
+  }
+
+  function resetTurmaForm() {
+    setEditingTurmaId(null);
+    setTurmaForm({ nome: "", cursoIds: [], disciplinaId: null, semestreId: null, professorIds: [] });
+  }
+
   function renderDashboard() {
     return (
       <section className="workspace-grid">
@@ -572,6 +814,222 @@ export default function AppWorkspace({ session, onLogout }) {
                   <div className="row-actions">
                     <Button type="button" variant="ghost" onClick={() => editLocal(local)}>Editar</Button>
                     {canManageLocais ? <Button type="button" variant="danger" onClick={() => deleteLocal(local.id)}>Excluir</Button> : null}
+                  </div>
+                </td>
+              </tr>
+            )}
+          />
+        </article>
+      </section>
+    );
+  }
+
+  function renderCursos() {
+    const coordenadores = users.filter(u => u.profile === "COORDENADOR" || u.profile === "ADMIN");
+    const professores = users.filter(u => u.profile === "PROFESSOR");
+
+    return (
+      <section className="content-stack">
+        <article className="panel">
+          <div className="panel__header">
+            <div>
+              <span className="panel__eyebrow">CRUD</span>
+              <h2>Cursos</h2>
+            </div>
+            <Button type="button" variant="secondary" onClick={resetCursoForm}>
+              Novo curso
+            </Button>
+          </div>
+          <form className="form-grid" onSubmit={handleCursoSubmit}>
+            <FormInput label="Nome do curso" name="nome" value={cursoForm.nome} onChange={(e) => setCursoForm({ ...cursoForm, nome: e.target.value })} placeholder="Ex.: Engenharia de Software" required />
+            <div>
+              <label htmlFor="coordenador">Coordenador</label>
+              <select id="coordenador" value={cursoForm.coordenadorId || ""} onChange={(e) => setCursoForm({ ...cursoForm, coordenadorId: e.target.value ? Number(e.target.value) : null })} required>
+                <option value="">Selecione um coordenador</option>
+                {coordenadores.map(c => (
+                  <option key={c.id} value={c.id}>{c.username}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="professores">Professores</label>
+              <select id="professores" multiple value={cursoForm.professorIds} onChange={(e) => setCursoForm({ ...cursoForm, professorIds: Array.from(e.target.selectedOptions).map(o => Number(o.value)) })} required>
+                {professores.map(p => (
+                  <option key={p.id} value={p.id}>{p.username}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-actions">
+              <Button type="submit">Salvar curso</Button>
+              {editingCursoId ? <Button type="button" variant="secondary" onClick={resetCursoForm}>Cancelar edição</Button> : null}
+            </div>
+          </form>
+        </article>
+
+        <article className="panel">
+          <div className="panel__header">
+            <div>
+              <span className="panel__eyebrow">Listagem</span>
+              <h3>Cursos cadastrados</h3>
+            </div>
+          </div>
+          <Table
+            columns={["Nome", "Ações"]}
+            rows={cursos}
+            emptyMessage="Nenhum curso encontrado."
+            renderRow={(curso) => (
+              <tr key={curso.id}>
+                <td>{curso.nome}</td>
+                <td>
+                  <div className="row-actions">
+                    <Button type="button" variant="ghost" onClick={() => editCurso(curso)}>Editar</Button>
+                    <Button type="button" variant="danger" onClick={() => deleteCurso(curso.id)}>Excluir</Button>
+                  </div>
+                </td>
+              </tr>
+            )}
+          />
+        </article>
+      </section>
+    );
+  }
+
+  function renderSemestres() {
+    return (
+      <section className="content-stack">
+        <article className="panel">
+          <div className="panel__header">
+            <div>
+              <span className="panel__eyebrow">CRUD</span>
+              <h2>Períodos Letivos</h2>
+            </div>
+            <Button type="button" variant="secondary" onClick={resetSemestreForm}>
+              Novo período
+            </Button>
+          </div>
+          <form className="form-grid" onSubmit={handleSemestreSubmit}>
+            <FormInput label="Identificação" name="nome" value={semestreForm.nome} onChange={(e) => setSemestreForm({ ...semestreForm, nome: e.target.value })} placeholder="Ex.: 2026/1" required />
+            <div>
+              <label htmlFor="dataInicio">Data de Início</label>
+              <input type="date" id="dataInicio" value={semestreForm.dataInicio} onChange={(e) => setSemestreForm({ ...semestreForm, dataInicio: e.target.value })} required />
+            </div>
+            <div>
+              <label htmlFor="dataFim">Data de Fim</label>
+              <input type="date" id="dataFim" value={semestreForm.dataFim} onChange={(e) => setSemestreForm({ ...semestreForm, dataFim: e.target.value })} required />
+            </div>
+            <div className="form-actions">
+              <Button type="submit">Salvar período</Button>
+              {editingSemestreId ? <Button type="button" variant="secondary" onClick={resetSemestreForm}>Cancelar edição</Button> : null}
+            </div>
+          </form>
+        </article>
+
+        <article className="panel">
+          <div className="panel__header">
+            <div>
+              <span className="panel__eyebrow">Listagem</span>
+              <h3>Períodos cadastrados</h3>
+            </div>
+          </div>
+          <Table
+            columns={["Nome", "Ações"]}
+            rows={semestres}
+            emptyMessage="Nenhum período encontrado."
+            renderRow={(s) => (
+              <tr key={s.id}>
+                <td>{s.nome}</td>
+                <td>
+                  <div className="row-actions">
+                    <Button type="button" variant="ghost" onClick={() => editSemestre(s)}>Editar</Button>
+                    <Button type="button" variant="danger" onClick={() => deleteSemestre(s.id)}>Excluir</Button>
+                  </div>
+                </td>
+              </tr>
+            )}
+          />
+        </article>
+      </section>
+    );
+  }
+
+  function renderTurmas() {
+    const professores = users.filter(u => u.profile === "PROFESSOR");
+
+    return (
+      <section className="content-stack">
+        <article className="panel">
+          <div className="panel__header">
+            <div>
+              <span className="panel__eyebrow">CRUD</span>
+              <h2>Turmas</h2>
+            </div>
+            <Button type="button" variant="secondary" onClick={resetTurmaForm}>
+              Nova turma
+            </Button>
+          </div>
+          <form className="form-grid" onSubmit={handleTurmaSubmit}>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <FormInput label="Nome da turma" name="nome" value={turmaForm.nome} onChange={(e) => setTurmaForm({ ...turmaForm, nome: e.target.value })} placeholder="Ex.: T1-Estatistica" required />
+            </div>
+            <div>
+              <label htmlFor="disciplina" style={{ display: "block", marginBottom: "0.5rem" }}>Disciplina</label>
+              <select id="disciplina" value={turmaForm.disciplinaId || ""} onChange={(e) => setTurmaForm({ ...turmaForm, disciplinaId: e.target.value ? Number(e.target.value) : null })} required style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid var(--color-border)" }}>
+                <option value="">Selecione uma disciplina</option>
+                {disciplinas.map(d => (
+                  <option key={d.id} value={d.id}>{d.nome}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="semestre" style={{ display: "block", marginBottom: "0.5rem" }}>Semestre</label>
+              <select id="semestre" value={turmaForm.semestreId || ""} onChange={(e) => setTurmaForm({ ...turmaForm, semestreId: e.target.value ? Number(e.target.value) : null })} required style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid var(--color-border)" }}>
+                <option value="">Selecione um semestre</option>
+                {semestres.map(s => (
+                  <option key={s.id} value={s.id}>{s.nome}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label htmlFor="cursos" style={{ display: "block", marginBottom: "0.5rem" }}>Cursos (selecione um ou mais)</label>
+              <select id="cursos" multiple value={turmaForm.cursoIds} onChange={(e) => setTurmaForm({ ...turmaForm, cursoIds: Array.from(e.target.selectedOptions).map(o => Number(o.value)) })} required style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid var(--color-border)", minHeight: "120px" }}>
+                {cursos.map(c => (
+                  <option key={c.id} value={c.id}>{c.nome}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label htmlFor="professores" style={{ display: "block", marginBottom: "0.5rem" }}>Professores (selecione um ou mais)</label>
+              <select id="professores" multiple value={turmaForm.professorIds} onChange={(e) => setTurmaForm({ ...turmaForm, professorIds: Array.from(e.target.selectedOptions).map(o => Number(o.value)) })} required style={{ width: "100%", padding: "0.5rem", borderRadius: "0.375rem", border: "1px solid var(--color-border)", minHeight: "100px" }}>
+                {professores.map(p => (
+                  <option key={p.id} value={p.id}>{p.username}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-actions" style={{ gridColumn: "1 / -1" }}>
+              <Button type="submit">Salvar turma</Button>
+              {editingTurmaId ? <Button type="button" variant="secondary" onClick={resetTurmaForm}>Cancelar edição</Button> : null}
+            </div>
+          </form>
+        </article>
+
+        <article className="panel">
+          <div className="panel__header">
+            <div>
+              <span className="panel__eyebrow">Listagem</span>
+              <h3>Turmas cadastradas</h3>
+            </div>
+          </div>
+          <Table
+            columns={["Nome", "Ações"]}
+            rows={turmas}
+            emptyMessage="Nenhuma turma encontrada."
+            renderRow={(t) => (
+              <tr key={t.id}>
+                <td>{t.nome}</td>
+                <td>
+                  <div className="row-actions">
+                    <Button type="button" variant="ghost" onClick={() => editTurma(t)}>Editar</Button>
+                    <Button type="button" variant="danger" onClick={() => deleteTurma(t.id)}>Excluir</Button>
                   </div>
                 </td>
               </tr>
@@ -881,7 +1339,7 @@ export default function AppWorkspace({ session, onLogout }) {
           {sections.map((section) => (
             <button key={section.id} className={activeSection === section.id || (section.id === "projetos" && ["projetos-form", "projetos-avaliacoes"].includes(activeSection)) ? "nav-item nav-item--active" : "nav-item"} onClick={() => setActiveSection(section.id)}>
               <span>{section.label}</span>
-              <small>{section.id === "usuarios" || section.id === "locais" || section.id === "projetos" ? "" : "Em breve"}</small>
+              <small>{["dashboard", "usuarios", "locais", "projetos", "cursos", "semestres", "turmas"].includes(section.id) ? "" : "Em breve"}</small>
             </button>
           ))}
         </nav>
@@ -914,10 +1372,13 @@ export default function AppWorkspace({ session, onLogout }) {
         {activeSection === "dashboard" ? renderDashboard() : null}
         {activeSection === "usuarios" ? renderUsers() : null}
         {activeSection === "locais" ? renderLocais() : null}
+        {activeSection === "cursos" ? renderCursos() : null}
+        {activeSection === "semestres" ? renderSemestres() : null}
+        {activeSection === "turmas" ? renderTurmas() : null}
         {activeSection === "projetos" ? renderProjetos() : null}
         {activeSection === "projetos-form" ? renderProjetoForm() : null}
         {activeSection === "projetos-avaliacoes" ? renderAvaliacoes() : null}
-        {activeSection !== "dashboard" && activeSection !== "usuarios" && activeSection !== "locais" && activeSection !== "projetos" && activeSection !== "projetos-form" && activeSection !== "projetos-avaliacoes" ? renderPlaceholder(currentSection?.label || "Seção") : null}
+        {activeSection !== "dashboard" && activeSection !== "usuarios" && activeSection !== "locais" && activeSection !== "cursos" && activeSection !== "semestres" && activeSection !== "turmas" && activeSection !== "projetos" && activeSection !== "projetos-form" && activeSection !== "projetos-avaliacoes" ? renderPlaceholder(currentSection?.label || "Seção") : null}
       </section>
     </main>
   );

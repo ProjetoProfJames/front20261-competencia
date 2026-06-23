@@ -532,3 +532,8 @@ a {
 	font-weight: 800;
 	margin: 0;
 }
+
+.field__control option {
+	background-color: #161f2a;
+	color: #f5efe6;
+  }
