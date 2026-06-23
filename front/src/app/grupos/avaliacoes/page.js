@@ -17,17 +17,18 @@ function TelaAvaliacaoConteudo() {
   const [enviando, setEnviando] = useState(false);
 
   const carregarDados = async () => {
-    if (!projetoId) return;
-    try {
-      const dadosProjeto = await API.get(`/projetos/${projetoId}`);
-      setProjeto(dadosProjeto);
-      setListaAvaliacoes(dadosProjeto.avaliacoes || []);
-    } catch (erro) {
-      console.error("Erro ao carregar projeto:", erro.message);
-    } finally {
-      setCarregando(false);
-    }
-  };
+  if (!projetoId) return;
+  try {
+    const dadosProjeto = await API.get(`/projetos/${projetoId}`);
+    const projeto = dadosProjeto.data ?? dadosProjeto;
+    setProjeto(projeto);
+    setListaAvaliacoes(Array.isArray(projeto.avaliacoes) ? projeto.avaliacoes : []);
+  } catch (erro) {
+    console.error("Erro ao carregar projeto:", erro.message);
+  } finally {
+    setCarregando(false);
+  }
+};
 
   useEffect(() => {
     carregarDados();
