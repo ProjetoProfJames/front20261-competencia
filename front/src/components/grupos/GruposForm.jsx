@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { listarTurmas, listarLocais } from "@/app/services/gruposService";
+import { listarTurmas, listarLocais, listarSemestres, buscarTurma } from "@/app/services/gruposService";
 
 export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
   const [turmas, setTurmas] = useState([]);
   const [locais, setLocais] = useState([]);
   const [professores, setProfessores] = useState([]);
   const [alunos, setAlunos] = useState([]);
+  const [semestres, setSemestres] = useState([]);
   const [carregando, setCarregando] = useState(true);
 
   const [formData, setFormData] = useState({
@@ -27,7 +28,6 @@ export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
     integranteIds: grupo?.integrantes?.map((i) => i.id) || [],
   });
 
-  // Converte ISO string para o formato aceito pelo input datetime-local
   function toDatetimeLocal(isoString) {
     return new Date(isoString).toISOString().slice(0, 16);
   }
@@ -35,16 +35,18 @@ export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
   useEffect(() => {
     async function carregar() {
       try {
-        const [resTurmas, resLocais] = await Promise.all([
+        const [resTurmas, resLocais, resSemestres] = await Promise.all([
           listarTurmas(),
           listarLocais(),
+          listarSemestres(),
         ]);
         setTurmas(resTurmas);
         setLocais(resLocais);
+        setSemestres(resSemestres);
 
-        // Se estiver editando, popula professores e alunos da turma atual
         if (grupo?.turma?.id) {
-          const turma = resTurmas.find((t) => t.id === grupo.turma.id);
+          const turma = await buscarTurma(grupo.turma.id);
+          console.log("turma:", turma);
           if (turma) {
             setProfessores(turma.professores || []);
             setAlunos(turma.alunos || []);
@@ -61,25 +63,50 @@ export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  }
 
-  // Ao trocar de turma, atualiza semestre, professores e alunos automaticamente
-  function handleTurmaChange(e) {
-    const turmaId = Number(e.target.value);
-    const turma = turmas.find((t) => t.id === turmaId);
+    const numberFields = [
+      "turmaId",
+      "semestreId",
+      "localId",
+      "professorOrientadorId",
+    ];
 
     setFormData((prev) => ({
       ...prev,
-      turmaId: turmaId || "",
+      [name]: numberFields.includes(name) ? Number(value) : value,
+    }));
+  }
+
+  async function handleTurmaChange(e) {
+    const turmaId = Number(e.target.value);
+
+    if (!turmaId) {
+      setProfessores([]);
+      setAlunos([]);
+      setFormData((prev) => ({
+        ...prev,
+        turmaId: "",
+        semestreId: "",
+        semestreNome: "",
+        professorOrientadorId: "",
+        integranteIds: [],
+      }));
+      return;
+    }
+
+    const turma = await buscarTurma(turmaId);
+
+    setProfessores(turma?.professores || []);
+    setAlunos(turma?.alunos || []);
+
+    setFormData((prev) => ({
+      ...prev,
+      turmaId,
       semestreId: turma?.semestre?.id || "",
       semestreNome: turma?.semestre?.nome || "",
       professorOrientadorId: "",
       integranteIds: [],
     }));
-
-    setProfessores(turma?.professores || []);
-    setAlunos(turma?.alunos || []);
   }
 
   function handleIntegrantesChange(e) {
@@ -163,12 +190,19 @@ export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
 
           <div className="form-group">
             <label>Semestre</label>
-            <input
-              type="text"
-              value={formData.semestreNome || "Selecione uma turma"}
-              readOnly
-              style={{ background: "#f3f4f6", cursor: "not-allowed" }}
-            />
+            <select
+              name="semestreId"
+              value={formData.semestreId}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Selecione</option>
+              {semestres.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.nome}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -178,9 +212,12 @@ export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
             <select
               name="professorOrientadorId"
               value={formData.professorOrientadorId}
-              onChange={handleChange}
-              required
-              disabled={!formData.turmaId}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  professorOrientadorId: Number(e.target.value),
+                }))
+              }
             >
               <option value="">Selecione</option>
               {professores.map((p) => (

@@ -8,6 +8,16 @@ export async function listarTurmas() {
   return res?.data ?? [];
 }
 
+export async function buscarTurma(id) {
+  const res = await request(`${TURMAS_URL}/${id}`);
+  return res?.data ?? null;
+}
+
+export async function listarSemestres() {
+  const res = await request(SEMESTRES_URL);
+  return res?.data ?? [];
+}
+
 export async function listarLocais() {
   const res = await request(LOCAIS_URL);
   return res?.data ?? [];
