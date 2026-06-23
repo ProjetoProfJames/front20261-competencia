@@ -1,11 +1,24 @@
 'use client'
 import LayoutComponent from '@/components/Layout'
 import FormInput from '@/components/FormInput'
-import Button from '@/components/Button'
 import { api } from '@/services/api'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+
+const STATUS_STORAGE_KEY = 'periodosLetivosStatus'
+
+function savePeriodoStatus(id, ativo) {
+  if (typeof window === 'undefined' || !id) return
+
+  try {
+    const statuses = JSON.parse(localStorage.getItem(STATUS_STORAGE_KEY) || '{}')
+    statuses[String(id)] = ativo
+    localStorage.setItem(STATUS_STORAGE_KEY, JSON.stringify(statuses))
+  } catch {
+    localStorage.setItem(STATUS_STORAGE_KEY, JSON.stringify({ [String(id)]: ativo }))
+  }
+}
 
 export default function NovoPeriodoLetivoPage() {
   const router = useRouter()
@@ -30,35 +43,35 @@ export default function NovoPeriodoLetivoPage() {
     e.preventDefault()
     setError('')
 
-    if (!form.nome || !form.dataInicio || !form.dataFim) {
-      setError('Nome, data de início e data de fim são obrigatórios')
+    if (!form.nome.trim() || !form.dataInicio || !form.dataFim) {
+      setError('Nome, data de inicio e data de fim sao obrigatorios')
       return
     }
 
     if (form.nome.trim().length < 3) {
-      setError('Nome deve ter no mínimo 3 caracteres')
+      setError('Nome deve ter no minimo 3 caracteres')
       return
     }
 
     if (new Date(form.dataInicio) >= new Date(form.dataFim)) {
-      setError('Data de início deve ser anterior à data de fim')
+      setError('Data de inicio deve ser anterior a data de fim')
       return
     }
 
     try {
       setLoading(true)
-      await api.post('/api/periodos-letivos', {
+      const response = await api.post('/api/semestres', {
         nome: form.nome.trim(),
         dataInicio: form.dataInicio,
-        dataFim: form.dataFim,
-        ativo: form.ativo
+        dataFim: form.dataFim
       })
-      alert('Período letivo criado com sucesso!')
+
+      savePeriodoStatus(response.data?.id, form.ativo)
+      alert('Periodo letivo criado com sucesso!')
       router.push('/periodos-letivos')
     } catch (err) {
-      const errorMsg = err.message || 'Erro ao criar período letivo'
-      console.error('Erro ao criar período letivo:', err)
-      setError(errorMsg)
+      console.error('Erro ao criar periodo letivo:', err)
+      setError(err.message || 'Erro ao criar periodo letivo')
     } finally {
       setLoading(false)
     }
@@ -68,11 +81,11 @@ export default function NovoPeriodoLetivoPage() {
     <LayoutComponent>
       <div style={{ maxWidth: '500px', margin: '32px auto' }}>
         <Link href="/periodos-letivos" style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '16px', display: 'inline-block' }}>
-          ← Voltar para Períodos Letivos
+          Voltar para Periodos Letivos
         </Link>
 
         <div className="form-container">
-          <h1>Novo Período Letivo</h1>
+          <h1>Novo Periodo Letivo</h1>
 
           {error && <div className="alert alert-error">{error}</div>}
 
@@ -83,11 +96,10 @@ export default function NovoPeriodoLetivoPage() {
               name="nome"
               value={form.nome}
               onChange={handleChange}
-              placeholder="Ex: 2024/1"
             />
 
             <FormInput
-              label="Data de Início"
+              label="Data de Inicio"
               type="date"
               name="dataInicio"
               value={form.dataInicio}
@@ -116,13 +128,13 @@ export default function NovoPeriodoLetivoPage() {
             </div>
 
             <div className="btn-group">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Salvando...' : 'Criar Período Letivo'}
-              </Button>
-              <Link href="/periodos-letivos">
-                <Button type="button" className="btn btn-secondary" style={{ width: '100%' }}>
+              <button type="submit" disabled={loading}>
+                {loading ? 'Salvando...' : 'Criar Periodo Letivo'}
+              </button>
+              <Link href="/periodos-letivos" style={{ flex: 1 }}>
+                <button type="button" className="btn btn-secondary" style={{ width: '100%' }}>
                   Cancelar
-                </Button>
+                </button>
               </Link>
             </div>
           </form>

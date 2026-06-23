@@ -5,6 +5,21 @@ import { authService } from '@/services/authService'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+function userLabel(user) {
+  if (!user) return '-'
+  return user.username || user.email || '-'
+}
+
+function userListLabel(users) {
+  if (!Array.isArray(users) || users.length === 0) return '-'
+  return users.map(userLabel).join(', ')
+}
+
+function formatDate(value) {
+  if (!value) return '-'
+  return new Date(value).toLocaleDateString('pt-BR')
+}
+
 export default function CursosPage() {
   const [cursos, setCursos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -19,12 +34,10 @@ export default function CursosPage() {
       setLoading(true)
       setError('')
       const data = await api.get('/api/cursos')
-      console.log('Resposta da API:', data)
       setCursos(data.data || [])
     } catch (err) {
       console.error('Erro ao carregar cursos:', err)
-      const errorMsg = err.message || 'Erro ao carregar cursos'
-      setError(errorMsg)
+      setError(err.message || 'Erro ao carregar cursos')
     } finally {
       setLoading(false)
     }
@@ -35,15 +48,15 @@ export default function CursosPage() {
 
     try {
       await api.delete(`/api/cursos/${id}`)
-      setCursos(cursos.filter(c => c.id !== id))
+      setCursos(cursos.filter(curso => curso.id !== id))
       alert('Curso deletado com sucesso!')
     } catch (err) {
       alert(err.message || 'Erro ao deletar curso')
     }
   }
 
-  const canEdit = authService.hasPermission(['ADMIN', 'COORDENADOR'])
-  const canDelete = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const canEdit = authService.hasPermission(['ADMIN'])
+  const canDelete = authService.hasPermission(['ADMIN'])
 
   return (
     <LayoutComponent>
@@ -71,10 +84,10 @@ export default function CursosPage() {
             <tr>
               <th>ID</th>
               <th>Nome</th>
-              <th>Código</th>
-              <th>Carga Horária</th>
+              <th>Coordenador</th>
+              <th>Professores</th>
               <th>Criado em</th>
-              <th>Ações</th>
+              <th>Acoes</th>
             </tr>
           </thead>
           <tbody>
@@ -82,38 +95,24 @@ export default function CursosPage() {
               <tr key={curso.id}>
                 <td>{curso.id}</td>
                 <td>{curso.nome}</td>
-                <td>{curso.codigo}</td>
-                <td>{curso.cargaHoraria || 'N/A'}</td>
-                <td>{new Date(curso.createdAt).toLocaleDateString('pt-BR')}</td>
+                <td>{userLabel(curso.coordenador)}</td>
+                <td>{userListLabel(curso.professores)}</td>
+                <td>{formatDate(curso.createdAt)}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {canEdit && (
                       <Link href={`/cursos/${curso.id}`}>
-                        <button style={{
-                          padding: '6px 12px',
-                          backgroundColor: 'var(--primary)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '0.85rem'
-                        }}>
+                        <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>
                           Editar
                         </button>
                       </Link>
                     )}
                     {canDelete && (
                       <button
+                        className="btn btn-danger"
+                        style={{ padding: '6px 12px', fontSize: '0.85rem' }}
                         onClick={() => handleDelete(curso.id)}
-                        style={{
-                          padding: '6px 12px',
-                          backgroundColor: '#dc2626',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '0.85rem'
-                        }}>
+                      >
                         Deletar
                       </button>
                     )}

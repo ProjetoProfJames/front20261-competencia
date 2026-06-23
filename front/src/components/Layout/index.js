@@ -29,6 +29,9 @@ export default function LayoutComponent({ children }) {
 
   const showUsers = authService.hasPermission(['ADMIN', 'PROFESSOR'])
   const showLocals = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
+  const showCourses = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const showPeriods = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const showClasses = authService.hasPermission(['PROFESSOR'])
   const showProjects = true
 
   return (
@@ -40,6 +43,9 @@ export default function LayoutComponent({ children }) {
             {showProjects && <Link href="/projetos">Projetos</Link>}
             {showLocals && <Link href="/locais">Locais</Link>}
             {showUsers && <Link href="/usuarios">Usuários</Link>}
+            {showCourses && <Link href="/cursos">Cursos</Link>}
+            {showPeriods && <Link href="/periodos-letivos">Periodos</Link>}
+            {showClasses && <Link href="/turmas">Turmas</Link>}
           </nav>
           <div className="user-info">
             <span className="user-name">{user?.username}</span>

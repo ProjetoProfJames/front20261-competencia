@@ -5,6 +5,22 @@ import { authService } from '@/services/authService'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+function nameLabel(value) {
+  if (!value) return '-'
+  if (typeof value === 'string') return value
+  return value.nome || value.username || value.email || '-'
+}
+
+function listLabel(values) {
+  if (!Array.isArray(values) || values.length === 0) return '-'
+  return values.map(nameLabel).join(', ')
+}
+
+function formatDate(value) {
+  if (!value) return '-'
+  return new Date(value).toLocaleDateString('pt-BR')
+}
+
 export default function TurmasPage() {
   const [turmas, setTurmas] = useState([])
   const [loading, setLoading] = useState(true)
@@ -19,12 +35,10 @@ export default function TurmasPage() {
       setLoading(true)
       setError('')
       const data = await api.get('/api/turmas')
-      console.log('Resposta da API:', data)
       setTurmas(data.data || [])
     } catch (err) {
       console.error('Erro ao carregar turmas:', err)
-      const errorMsg = err.message || 'Erro ao carregar turmas'
-      setError(errorMsg)
+      setError(err.message || 'Erro ao carregar turmas')
     } finally {
       setLoading(false)
     }
@@ -35,15 +49,15 @@ export default function TurmasPage() {
 
     try {
       await api.delete(`/api/turmas/${id}`)
-      setTurmas(turmas.filter(t => t.id !== id))
+      setTurmas(turmas.filter(turma => turma.id !== id))
       alert('Turma deletada com sucesso!')
     } catch (err) {
       alert(err.message || 'Erro ao deletar turma')
     }
   }
 
-  const canEdit = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
-  const canDelete = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const canEdit = authService.hasPermission(['PROFESSOR'])
+  const canDelete = authService.hasPermission(['PROFESSOR'])
 
   return (
     <LayoutComponent>
@@ -71,12 +85,13 @@ export default function TurmasPage() {
             <tr>
               <th>ID</th>
               <th>Nome</th>
-              <th>Código</th>
-              <th>Curso</th>
-              <th>Período Letivo</th>
+              <th>Cursos</th>
+              <th>Disciplina</th>
               <th>Semestre</th>
+              <th>Professores</th>
+              <th>Alunos</th>
               <th>Criado em</th>
-              <th>Ações</th>
+              <th>Acoes</th>
             </tr>
           </thead>
           <tbody>
@@ -84,40 +99,27 @@ export default function TurmasPage() {
               <tr key={turma.id}>
                 <td>{turma.id}</td>
                 <td>{turma.nome}</td>
-                <td>{turma.codigo}</td>
-                <td>{turma.cursoNome || 'N/A'}</td>
-                <td>{turma.periodoLetivoNome || 'N/A'}</td>
-                <td>{turma.semestre}</td>
-                <td>{new Date(turma.createdAt).toLocaleDateString('pt-BR')}</td>
+                <td>{listLabel(turma.cursos)}</td>
+                <td>{nameLabel(turma.disciplina)}</td>
+                <td>{nameLabel(turma.semestre)}</td>
+                <td>{listLabel(turma.professores)}</td>
+                <td>{listLabel(turma.alunos)}</td>
+                <td>{formatDate(turma.createdAt)}</td>
                 <td>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     {canEdit && (
                       <Link href={`/turmas/${turma.id}`}>
-                        <button style={{
-                          padding: '6px 12px',
-                          backgroundColor: 'var(--primary)',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '0.85rem'
-                        }}>
+                        <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>
                           Editar
                         </button>
                       </Link>
                     )}
                     {canDelete && (
                       <button
+                        className="btn btn-danger"
+                        style={{ padding: '6px 12px', fontSize: '0.85rem' }}
                         onClick={() => handleDelete(turma.id)}
-                        style={{
-                          padding: '6px 12px',
-                          backgroundColor: '#dc2626',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontSize: '0.85rem'
-                        }}>
+                      >
                         Deletar
                       </button>
                     )}

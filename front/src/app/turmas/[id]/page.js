@@ -1,11 +1,14 @@
 'use client'
 import LayoutComponent from '@/components/Layout'
 import FormInput from '@/components/FormInput'
-import Button from '@/components/Button'
 import { api } from '@/services/api'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+
+function userLabel(user) {
+  return user?.username || user?.email || `Usuario ${user?.id}`
+}
 
 export default function EditarTurmaPage() {
   const router = useRouter()
@@ -15,13 +18,15 @@ export default function EditarTurmaPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cursos, setCursos] = useState([])
-  const [periodos, setPeriodos] = useState([])
+  const [disciplinas, setDisciplinas] = useState([])
+  const [semestres, setSemestres] = useState([])
+  const [professores, setProfessores] = useState([])
   const [form, setForm] = useState({
     nome: '',
-    codigo: '',
-    cursoId: '',
-    periodoLetivoId: '',
-    semestre: '1'
+    cursoIds: [],
+    disciplinaId: '',
+    semestreId: '',
+    professorIds: []
   })
 
   useEffect(() => {
@@ -31,23 +36,30 @@ export default function EditarTurmaPage() {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [turmaData, cursosData, periodosData] = await Promise.all([
+      setError('')
+      const [turmaData, cursosData, disciplinasData, semestresData, usuariosData] = await Promise.all([
         api.get(`/api/turmas/${turmaId}`),
         api.get('/api/cursos'),
-        api.get('/api/periodos-letivos')
+        api.get('/api/disciplinas'),
+        api.get('/api/semestres'),
+        api.get('/api/users')
       ])
-      
+
+      const turma = turmaData.data || {}
+
       setCursos(cursosData.data || [])
-      setPeriodos(periodosData.data || [])
-      
+      setDisciplinas(disciplinasData.data || [])
+      setSemestres(semestresData.data || [])
+      setProfessores((usuariosData.data || []).filter(user => user.profile === 'PROFESSOR'))
       setForm({
-        nome: turmaData.data.nome,
-        codigo: turmaData.data.codigo,
-        cursoId: turmaData.data.cursoId.toString(),
-        periodoLetivoId: turmaData.data.periodoLetivoId.toString(),
-        semestre: turmaData.data.semestre.toString()
+        nome: turma.nome || '',
+        cursoIds: Array.isArray(turma.cursos) ? turma.cursos.map(curso => String(curso.id)) : [],
+        disciplinaId: turma.disciplina?.id ? String(turma.disciplina.id) : '',
+        semestreId: turma.semestre?.id ? String(turma.semestre.id) : '',
+        professorIds: Array.isArray(turma.professores) ? turma.professores.map(professor => String(professor.id)) : []
       })
     } catch (err) {
+      console.error('Erro ao carregar turma:', err)
       setError(err.message || 'Erro ao carregar turma')
     } finally {
       setLoading(false)
@@ -55,7 +67,16 @@ export default function EditarTurmaPage() {
   }
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value, selectedOptions } = e.target
+
+    if (name === 'cursoIds' || name === 'professorIds') {
+      setForm(prev => ({
+        ...prev,
+        [name]: Array.from(selectedOptions, option => option.value)
+      }))
+      return
+    }
+
     setForm(prev => ({ ...prev, [name]: value }))
   }
 
@@ -63,18 +84,13 @@ export default function EditarTurmaPage() {
     e.preventDefault()
     setError('')
 
-    if (!form.nome || !form.codigo || !form.cursoId || !form.periodoLetivoId) {
-      setError('Nome, código, curso e período letivo são obrigatórios')
+    if (!form.nome.trim() || form.cursoIds.length === 0 || !form.disciplinaId || !form.semestreId || form.professorIds.length === 0) {
+      setError('Nome, curso, disciplina, semestre e professor sao obrigatorios')
       return
     }
 
     if (form.nome.trim().length < 3) {
-      setError('Nome deve ter no mínimo 3 caracteres')
-      return
-    }
-
-    if (form.codigo.trim().length < 1) {
-      setError('Código é obrigatório')
+      setError('Nome deve ter no minimo 3 caracteres')
       return
     }
 
@@ -82,17 +98,16 @@ export default function EditarTurmaPage() {
       setLoading(true)
       await api.put(`/api/turmas/${turmaId}`, {
         nome: form.nome.trim(),
-        codigo: form.codigo.trim().toUpperCase(),
-        cursoId: parseInt(form.cursoId),
-        periodoLetivoId: parseInt(form.periodoLetivoId),
-        semestre: parseInt(form.semestre)
+        cursoIds: form.cursoIds.map(Number),
+        disciplinaId: Number(form.disciplinaId),
+        semestreId: Number(form.semestreId),
+        professorIds: form.professorIds.map(Number)
       })
       alert('Turma atualizada com sucesso!')
       router.push('/turmas')
     } catch (err) {
-      const errorMsg = err.message || 'Erro ao atualizar turma'
       console.error('Erro ao atualizar turma:', err)
-      setError(errorMsg)
+      setError(err.message || 'Erro ao atualizar turma')
     } finally {
       setLoading(false)
     }
@@ -110,7 +125,7 @@ export default function EditarTurmaPage() {
     <LayoutComponent>
       <div style={{ maxWidth: '500px', margin: '32px auto' }}>
         <Link href="/turmas" style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '16px', display: 'inline-block' }}>
-          ← Voltar para Turmas
+          Voltar para Turmas
         </Link>
 
         <div className="form-container">
@@ -125,22 +140,17 @@ export default function EditarTurmaPage() {
               name="nome"
               value={form.nome}
               onChange={handleChange}
-              placeholder="Ex: Turma A"
-            />
-
-            <FormInput
-              label="Código"
-              type="text"
-              name="codigo"
-              value={form.codigo}
-              onChange={handleChange}
-              placeholder="Ex: TUR001"
             />
 
             <div className="form-group">
-              <label>Curso</label>
-              <select name="cursoId" value={form.cursoId} onChange={handleChange}>
-                <option value="">Selecione um curso</option>
+              <label>Cursos</label>
+              <select
+                name="cursoIds"
+                multiple
+                value={form.cursoIds}
+                onChange={handleChange}
+                style={{ minHeight: '100px' }}
+              >
                 {cursos.map(curso => (
                   <option key={curso.id} value={curso.id}>
                     {curso.nome}
@@ -150,12 +160,12 @@ export default function EditarTurmaPage() {
             </div>
 
             <div className="form-group">
-              <label>Período Letivo</label>
-              <select name="periodoLetivoId" value={form.periodoLetivoId} onChange={handleChange}>
-                <option value="">Selecione um período letivo</option>
-                {periodos.map(periodo => (
-                  <option key={periodo.id} value={periodo.id}>
-                    {periodo.nome}
+              <label>Disciplina</label>
+              <select name="disciplinaId" value={form.disciplinaId} onChange={handleChange}>
+                <option value="">Selecione uma disciplina</option>
+                {disciplinas.map(disciplina => (
+                  <option key={disciplina.id} value={disciplina.id}>
+                    {disciplina.nome}
                   </option>
                 ))}
               </select>
@@ -163,26 +173,41 @@ export default function EditarTurmaPage() {
 
             <div className="form-group">
               <label>Semestre</label>
-              <select name="semestre" value={form.semestre} onChange={handleChange}>
-                <option value="1">1º Semestre</option>
-                <option value="2">2º Semestre</option>
-                <option value="3">3º Semestre</option>
-                <option value="4">4º Semestre</option>
-                <option value="5">5º Semestre</option>
-                <option value="6">6º Semestre</option>
-                <option value="7">7º Semestre</option>
-                <option value="8">8º Semestre</option>
+              <select name="semestreId" value={form.semestreId} onChange={handleChange}>
+                <option value="">Selecione um semestre</option>
+                {semestres.map(semestre => (
+                  <option key={semestre.id} value={semestre.id}>
+                    {semestre.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Professores</label>
+              <select
+                name="professorIds"
+                multiple
+                value={form.professorIds}
+                onChange={handleChange}
+                style={{ minHeight: '120px' }}
+              >
+                {professores.map(professor => (
+                  <option key={professor.id} value={professor.id}>
+                    {userLabel(professor)}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div className="btn-group">
-              <Button type="submit" disabled={loading}>
+              <button type="submit" disabled={loading}>
                 {loading ? 'Salvando...' : 'Atualizar Turma'}
-              </Button>
-              <Link href="/turmas">
-                <Button type="button" className="btn btn-secondary" style={{ width: '100%' }}>
+              </button>
+              <Link href="/turmas" style={{ flex: 1 }}>
+                <button type="button" className="btn btn-secondary" style={{ width: '100%' }}>
                   Cancelar
-                </Button>
+                </button>
               </Link>
             </div>
           </form>
