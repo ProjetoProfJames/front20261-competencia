@@ -39,9 +39,11 @@ export default function LoginPage() {
       if (response.ok) {
         const token = resBody.accessToken || resBody.data?.accessToken;
         const username = resBody.user?.username || resBody.data?.user?.username || extractedName;
+        const profile = resBody.user?.profile || resBody.data?.user?.profile || "ALUNO";
 
         localStorage.setItem("token", token);
         localStorage.setItem("user_display_name", username);
+        localStorage.setItem("user_profile", profile);
         window.location.href = "/"; 
       } else {
         setError(resBody.message || "Credenciais inválidas.");

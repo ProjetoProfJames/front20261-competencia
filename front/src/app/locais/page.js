@@ -8,6 +8,8 @@ export default function LocaisPage() {
   const [form, setForm] = useState({ id: null, numero: "" });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
+  const [userRole, setUserRole] = useState("ALUNO");
 
   const fetchLocais = async () => {
     try {
@@ -32,10 +34,29 @@ export default function LocaisPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const savedRole = localStorage.getItem("user_profile");
+    
     if (!token) {
       window.location.href = "/login";
       return;
     }
+
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      
+      const payload = JSON.parse(jsonPayload);
+      if (payload && payload.sub) {
+        setCurrentUserEmail(payload.sub);
+      }
+    } catch (e) {
+      setCurrentUserEmail("");
+    }
+
+    if (savedRole) setUserRole(savedRole);
     fetchLocais();
   }, []);
 
@@ -48,6 +69,11 @@ export default function LocaisPage() {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
+
+    if (userRole === "ALUNO") {
+      setError("Permissão negada: Alunos não podem inserir ou modificar locais.");
+      return;
+    }
 
     if (!form.numero) {
       setError("Por favor, preencha o campo Número do Local.");
@@ -78,7 +104,7 @@ export default function LocaisPage() {
         fetchLocais();
         setTimeout(() => setSuccessMessage(""), 4000);
       } else {
-        const resBody = await response.json();
+        const resBody = await response.json().catch(() => ({}));
         setError(resBody.message || "Erro ao salvar o registro no servidor.");
       }
     } catch (err) {
@@ -87,6 +113,18 @@ export default function LocaisPage() {
   };
 
   const handleEditar = (local) => {
+    setError("");
+    
+    if (userRole === "ALUNO") {
+      setError("Permissão negada: Alunos não possuem permissão de edição.");
+      return;
+    }
+
+    if (userRole !== "ADMIN" && local.createdBy && local.createdBy !== currentUserEmail) {
+      setError("Permissão negada: Você só pode editar registros que você mesmo inseriu.");
+      return;
+    }
+
     setForm({
       id: local.id,
       numero: local.numero || ""
@@ -96,6 +134,16 @@ export default function LocaisPage() {
   const handleExcluir = async (local) => {
     setError("");
     setSuccessMessage("");
+
+    if (userRole === "ALUNO") {
+      setError("Permissão negada: Alunos não possuem permissão de exclusão.");
+      return;
+    }
+
+    if (userRole !== "ADMIN" && local.createdBy && local.createdBy !== currentUserEmail) {
+      setError("Permissão negada: Você só pode excluir registros que você mesmo inseriu.");
+      return;
+    }
 
     const nomeExibicao = local.numero || `ID ${local.id}`;
     const confirmacao = window.confirm(`Deseja realmente excluir o local ${nomeExibicao}?`);
@@ -113,7 +161,7 @@ export default function LocaisPage() {
         fetchLocais();
         setTimeout(() => setSuccessMessage(""), 4000);
       } else {
-        const resBody = await response.json();
+        const resBody = await response.json().catch(() => ({}));
         setError(resBody.message || "Não é possível excluir: registro possui vínculos ativos.");
       }
     } catch (err) {
@@ -125,15 +173,19 @@ export default function LocaisPage() {
     <div className="container container-flex-layout" style={{ maxWidth: "1000px", width: "100%" }}>
       <h1>Gerenciamento de Locais de Apresentação</h1>
       
-      <form onSubmit={handleSalvar} className="card form-full-width" style={{ minHeight: "365px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-        <h2>{form.id ? "Editar Local" : "Novo Local"}</h2>
-        {error && <div className="alert-message error-box">{error}</div>}
-        {successMessage && <div className="alert-message success-box">{successMessage}</div>}
-        
-        <FormInput label="Número ou Identificação do Local (ex: Sala 102 - Bloco A)" type="text" name="numero" value={form.numero} onChange={handleChange} />
-        
-        <Button type="submit">Salvar</Button>
-      </form>
+      {userRole !== "ALUNO" && (
+        <form onSubmit={handleSalvar} className="card form-full-width" style={{ minHeight: "365px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <h2>{form.id ? "Editar Local" : "Novo Local"}</h2>
+          {error && <div className="alert-message error-box">{error}</div>}
+          {successMessage && <div className="alert-message success-box">{successMessage}</div>}
+          
+          <FormInput label="Número ou Identificação do Local (ex: Sala 102 - Bloco A)" type="text" name="numero" value={form.numero} onChange={handleChange} />
+          
+          <Button type="submit">Salvar</Button>
+        </form>
+      )}
+
+      {userRole === "ALUNO" && error && <div className="alert-message error-box" style={{ marginBottom: "1rem" }}>{error}</div>}
 
       <div className="table-scroll-container" style={{ maxHeight: "315px", overflowY: "auto", width: "100%" }}>
         <table className="data-table" style={{ width: "100%" }}>
@@ -141,23 +193,30 @@ export default function LocaisPage() {
             <tr>
               <th style={{ width: "80px" }}>ID</th>
               <th>Local / Número</th>
-              <th style={{ width: "200px" }}>Ações</th>
+              {userRole !== "ALUNO" && <th style={{ width: "200px" }}>Ações</th>}
             </tr>
           </thead>
           <tbody>
             {locais.map((l) => {
               const nomeTabela = l.numero || "Não informado";
+              const podeModificar = userRole === "ADMIN" || !l.createdBy || l.createdBy === currentUserEmail;
 
               return (
                 <tr key={l.id}>
                   <td>{l.id}</td>
                   <td>{nomeTabela}</td>
-                  <td>
-                    <div className="actions-cell">
-                      <button onClick={() => handleEditar(l)} className="btn-action edit">Editar</button>
-                      <button onClick={() => handleExcluir(l)} className="btn-action delete">Excluir</button>
-                    </div>
-                  </td>
+                  {userRole !== "ALUNO" && (
+                    <td>
+                      <div className="actions-cell">
+                        {podeModificar && (
+                          <>
+                            <button onClick={() => handleEditar(l)} className="btn-action edit">Editar</button>
+                            <button onClick={() => handleExcluir(l)} className="btn-action delete">Excluir</button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}

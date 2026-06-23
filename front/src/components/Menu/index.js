@@ -24,6 +24,7 @@ export default function Menu() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user_display_name");
+    localStorage.removeItem("user_profile");
     window.location.href = "/login";
   };
 
