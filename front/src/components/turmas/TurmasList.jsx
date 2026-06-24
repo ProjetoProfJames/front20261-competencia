@@ -7,17 +7,17 @@ export default function TurmasList() {
   const [turmas, setTurmas] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const carregarTurmas = async () => {
-    try {
-      const dados = await turmasService.listar();
-      setTurmas(dados);
-    } catch (error) {
-      console.error('Erro ao carregar turmas:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+ const carregarTurmas = async () => {
+  try {
+    const dados = await turmasService.listar();
+    setTurmas(dados || []);
+  } catch (error) {
+    console.log('Backend offline, exibindo interface estática:', error);
+    setTurmas([]); 
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     carregarTurmas();
   }, []);

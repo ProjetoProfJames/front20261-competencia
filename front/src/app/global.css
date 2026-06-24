@@ -1,0 +1,165 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #f4f7f6; 
+  color: #333;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+
+.cursos-container {
+  background-color: #fff;
+  width: 100%;
+  max-width: 900px; /* Largura máxima confortável */
+  padding: 40px;
+  border-radius: 12px; /* Cantos arredondados */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Sombra suave */
+}
+
+/* === Títulos === */
+h1 {
+  color: #2c3e50; /* Azul escuro profissional */
+  border-bottom: 2px solid #3498db; /* Linha azul embaixo */
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+p {
+  color: #7f8c8d;
+  margin-bottom: 30px;
+}
+
+h2 {
+  color: #2c3e50;
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+
+.cursos-content {
+  display: flex;
+  flex-direction: column; 
+  gap: 30px; 
+}
+
+
+.cursos-content form {
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+}
+
+
+.cursos-content label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #555;
+}
+
+.cursos-content input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.cursos-content input:focus {
+  border-color: #3498db; 
+  outline: none;
+}
+
+
+button {
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 15px;
+  transition: all 0.2s;
+  border: none;
+}
+
+
+.btn-save, button[type="submit"] {
+  background-color: #27ae60;
+  color: white;
+  width: 100%; 
+  padding: 15px;
+}
+
+.btn-save:hover, button[type="submit"]:hover {
+  background-color: #219150;
+}
+
+
+.btn-edit {
+  background-color: #f39c12;
+  color: white;
+  margin-right: 5px;
+}
+
+.btn-edit:hover {
+  background-color: #e67e22;
+}
+
+.btn-del {
+  background-color: #c0392b; 
+  color: white;
+}
+
+.btn-del:hover {
+  background-color: #a93226;
+}
+
+
+table {
+  width: 100%;
+  border-collapse: collapse; 
+  margin-top: 10px;
+  background-color: white;
+}
+
+table th, table td {
+  text-align: left;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+table th {
+  background-color: #ecf0f1;
+  color: #2c3e50;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #fbfbfb;
+}
+
+table tbody tr:hover {
+  background-color: #f1f8ff;
+}
+
+.listagem-dados p {
+  text-align: center;
+  color: #95a5a6;
+  font-style: italic;
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
