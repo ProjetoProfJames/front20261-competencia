@@ -10,11 +10,13 @@ export default function CursosList() {
   const carregarCursos = async () => {
     try {
       const dados = await cursosService.listar();
-      setCursos(dados);
+      
+      setCursos(dados || []);
     } catch (error) {
-      console.error('Erro ao carregar cursos:', error);
+      console.log('Backend offline, exibindo interface estática:', error);
+      setCursos([]); 
     } finally {
-      setLoading(false);
+      setLoading(false); 
     }
   };
 
@@ -27,7 +29,7 @@ export default function CursosList() {
       try {
         await cursosService.excluir(id);
         alert('Curso excluído com sucesso!');
-        carregarCursos(); // Recarrega a lista atualizada
+        carregarCursos(); 
       } catch (error) {
         alert('Erro ao excluir curso.');
       }

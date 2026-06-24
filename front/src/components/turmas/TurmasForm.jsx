@@ -10,21 +10,22 @@ export default function TurmasForm() {
   const [cursoSelecionado, setCursoSelecionado] = useState('');
   const [periodoSelecionado, setPeriodoSelecionado] = useState('');
   
-  // Estados para popular os dropdowns com dados dinâmicos do banco
   const [cursos, setCursos] = useState([]);
   const [periodos, setPeriodos] = useState([]);
 
   useEffect(() => {
     const buscarDadosFiltros = async () => {
       try {
-        const [listaCursos, listaPeriodos] = await Promise.all([
-          cursosService.listar(),
-          periodosService.listar()
-        ]);
-        setCursos(listaCursos);
-        setPeriodos(listaPeriodos);
+        // Buscando os dados de forma segura individualmente para não quebrar o Promise.all
+        const listaCursos = await cursosService.listar().catch(() => []);
+        const listaPeriodos = await periodosService.listar().catch(() => []);
+        
+        setCursos(listaCursos || []);
+        setPeriodos(listaPeriodos || []);
       } catch (e) {
-        console.error('Erro ao carregar os seletores do formulário', e);
+        console.log('Backend offline, os seletores do formulário iniciarão vazios.');
+        setCursos([]);
+        setPeriodos([]);
       }
     };
     buscarDadosFiltros();
