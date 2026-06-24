@@ -5,6 +5,7 @@ export async function listarAvaliadores() {
   const res = await request(USERS_URL);
   const todos = res?.data ?? [];
 
+  
   return todos.filter(
     (u) => u.profile === "PROFESSOR" || u.profile === "AVALIADOR_EXTERNO",
   );
