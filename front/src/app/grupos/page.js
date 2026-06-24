@@ -13,7 +13,24 @@ export default function TelaListagemGrupos() {
   const carregarDadosDoBackend = async () => {
     try {
       const dados = await API.get("/projetos");
-      setListaDeGrupos(Array.isArray(dados) ? dados : []);
+      const grupos = Array.isArray(dados) ? dados : [];
+
+      // O GET /projetos não traz as avaliações junto. Buscamos todas
+      // separadamente e anexamos a cada grupo pelo id do projeto.
+      let todasAvaliacoes = [];
+      try {
+        const respostaAvaliacoes = await API.get("/avaliacoes");
+        todasAvaliacoes = Array.isArray(respostaAvaliacoes) ? respostaAvaliacoes : [];
+      } catch (erro) {
+        console.warn("Não foi possível carregar as avaliações.");
+      }
+
+      const gruposComAvaliacoes = grupos.map((grupo) => ({
+        ...grupo,
+        avaliacoes: todasAvaliacoes.filter((av) => av.projeto?.id === grupo.id),
+      }));
+
+      setListaDeGrupos(gruposComAvaliacoes);
     } catch (erro) {
       console.warn("Nenhuns dados de grupos foram encontrados no servidor.");
       setListaDeGrupos([]);

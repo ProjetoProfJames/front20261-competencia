@@ -4,9 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import API from "@/utils/api";
 
-// O backend não tem rota de listagem por projeto (/projetos/{id}/avaliacoes),
-// mas tem uma rota global "/avaliacoes" que retorna todas as avaliações de
-// todos os projetos. Por isso buscamos todas e filtramos pelo projeto aqui.
+
 async function listarAvaliacoesPorProjeto(projetoId) {
   const resposta = await API.get(`/avaliacoes`);
   const todas = resposta.data ?? resposta;
@@ -25,6 +23,7 @@ function TelaAvaliacaoConteudo() {
   const [nota, setNota] = useState("");
   const [comentario, setComentario] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [editandoId, setEditandoId] = useState(null);
 
   const carregarDados = async () => {
     if (!projetoId) return;
@@ -57,12 +56,21 @@ function TelaAvaliacaoConteudo() {
 
     setEnviando(true);
     try {
-      await API.post(`/projetos/${projetoId}/avaliacoes`, {
-        nota: notaNum,
-        comentario: comentario.trim(),
-      });
+      if (editandoId) {
+        await API.put(`/projetos/${projetoId}/avaliacoes/${editandoId}`, {
+          nota: notaNum,
+          comentario: comentario.trim(),
+        });
+        alert("Avaliação atualizada com sucesso!");
+      } else {
+        await API.post(`/projetos/${projetoId}/avaliacoes`, {
+          nota: notaNum,
+          comentario: comentario.trim(),
+        });
+        alert("Avaliação registrada com sucesso!");
+      }
 
-      alert("Avaliação registrada com sucesso!");
+      setEditandoId(null);
       setNota("");
       setComentario("");
       carregarDados();
@@ -73,10 +81,23 @@ function TelaAvaliacaoConteudo() {
     }
   };
 
+  const iniciarEdicao = (avaliacao) => {
+    setEditandoId(avaliacao.id);
+    setNota(String(avaliacao.nota));
+    setComentario(avaliacao.comentario ?? "");
+  };
+
+  const cancelarEdicao = () => {
+    setEditandoId(null);
+    setNota("");
+    setComentario("");
+  };
+
   const excluirAvaliacao = async (avaliacaoId) => {
     if (!confirm("Confirma a exclusão desta avaliação?")) return;
     try {
       await API.del(`/projetos/${projetoId}/avaliacoes/${avaliacaoId}`);
+      if (editandoId === avaliacaoId) cancelarEdicao();
       carregarDados();
     } catch (erro) {
       alert(erro.message || "Não foi possível excluir a avaliação.");
@@ -98,6 +119,12 @@ function TelaAvaliacaoConteudo() {
       </div>
 
       <form onSubmit={enviarAvaliacao} style={{ display: "flex", flexDirection: "column", gap: "15px", marginTop: "20px" }}>
+        {editandoId && (
+          <p style={{ margin: 0, color: "#b8860b", fontWeight: "bold" }}>
+            Editando avaliação #{editandoId}
+          </p>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label style={{ marginBottom: "5px", fontWeight: "bold" }}>Nota (0 a 10):</label>
           <input
@@ -132,15 +159,25 @@ function TelaAvaliacaoConteudo() {
             disabled={enviando}
             style={{ padding: "12px 20px", backgroundColor: "#0070f3", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
           >
-            {enviando ? "Salvando..." : "Confirmar Avaliação"}
+            {enviando ? "Salvando..." : editandoId ? "Salvar Alterações" : "Confirmar Avaliação"}
           </button>
-          <button
-            type="button"
-            onClick={() => navegador.push("/grupos")}
-            style={{ padding: "12px 20px", backgroundColor: "#ccc", color: "#333", border: "none", borderRadius: "4px", cursor: "pointer" }}
-          >
-            Cancelar
-          </button>
+          {editandoId ? (
+            <button
+              type="button"
+              onClick={cancelarEdicao}
+              style={{ padding: "12px 20px", backgroundColor: "#ccc", color: "#333", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Cancelar Edição
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navegador.push("/grupos")}
+              style={{ padding: "12px 20px", backgroundColor: "#ccc", color: "#333", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Cancelar
+            </button>
+          )}
         </div>
       </form>
 
@@ -164,12 +201,20 @@ function TelaAvaliacaoConteudo() {
                 <td style={{ textAlign: "center" }}>{av.nota}</td>
                 <td>{av.comentario}</td>
                 <td>
-                  <button
-                    onClick={() => excluirAvaliacao(av.id)}
-                    style={{ color: "red", cursor: "pointer", background: "none", border: "none", textDecoration: "underline" }}
-                  >
-                    Remover
-                  </button>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <button
+                      onClick={() => iniciarEdicao(av)}
+                      style={{ color: "#0070f3", cursor: "pointer", background: "none", border: "none", textDecoration: "underline" }}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => excluirAvaliacao(av.id)}
+                      style={{ color: "red", cursor: "pointer", background: "none", border: "none", textDecoration: "underline" }}
+                    >
+                      Remover
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
