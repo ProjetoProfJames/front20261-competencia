@@ -20,7 +20,7 @@ const availableSections = [
   { id: "locais", label: "Locais", roles: ["ADMIN", "COORDENADOR", "PROFESSOR"] },
   { id: "cursos", label: "Cursos", roles: ["ADMIN", "COORDENADOR", "PROFESSOR"] },
   { id: "semestres", label: "Períodos Letivos", roles: ["ADMIN", "COORDENADOR", "PROFESSOR"] },
-  { id: "turmas", label: "Turmas", roles: ["ADMIN", "COORDENADOR", "PROFESSOR"] },
+  { id: "turmas", label: "Turmas", roles: ["COORDENADOR", "PROFESSOR"] },
 ];
 
 const profileOptions = ["ADMIN", "COORDENADOR", "PROFESSOR", "ALUNO", "AVALIADOR_EXTERNO"];
