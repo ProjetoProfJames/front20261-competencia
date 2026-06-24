@@ -1,36 +1,98 @@
 'use client';
-import { useState } from "react";
-import  Button  from "@/components/Button";
-import FormInput from "@/components/FormInput";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { api, saveSession } from '@/lib/api';
+import styles from './login.module.css';
 
 export default function LoginPage() {
-  const [user, setUser] = useState({ email: "", password: "" });
+  const router = useRouter();
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUser((prevUser) => ({ ...prevUser, [name]: value }));
-  };
+  function handleChange(e) {
+    setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+    setError('');
+  }
 
-  const authenticate = () => {
-    // Lógica de autenticação aqui
-    console.log("Autenticando usuário:", user);
-  };
-
-    const loadBootstrap = () => {
-        fetch("http://localhost:8080/api/public/bootstrap")
-            .then((response) => response.json())
-            .then((data) => console.log("Bootstrap carregado:", data))
-            .catch((error) => console.error("Erro ao carregar Bootstrap:", error));
-    };
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.email || !form.password) {
+      setError('Preencha e-mail e senha.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await api.post('/auth/login', form);
+      saveSession(data.accessToken, data.user);
+      router.push('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Credenciais inválidas.');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div>
-      <h1>Login</h1>
-      <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-      <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
-      <Button type="submit" onClick={authenticate}>Login</Button>
-      <Button type="button" onClick={() => console.log("Redirecionar para cadastro")}>Cadastrar</Button>
-      <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
+    <div className={styles.page}>
+      <div className={styles.left}>
+        <div className={styles.leftInner}>
+          <div className={styles.logoMark}>⬡</div>
+          <h1 className={styles.heading}>PIE Manager</h1>
+          <p className={styles.sub}>Gestão de Projetos Integradores de Extensão</p>
+        </div>
+      </div>
+
+      <div className={styles.right}>
+        <form className={styles.card} onSubmit={handleSubmit}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Entrar</h2>
+            <p className={styles.cardSub}>Acesse com suas credenciais</p>
+          </div>
+
+          <div className={styles.fields}>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>E-mail</label>
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="seu@email.com"
+                className={styles.input}
+                autoComplete="email"
+              />
+            </div>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label}>Senha</label>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className={styles.input}
+                autoComplete="current-password"
+              />
+            </div>
+          </div>
+
+          {error && <div className={styles.errorBox}>{error}</div>}
+
+          <button type="submit" className={styles.submitBtn} disabled={loading}>
+            {loading ? <span className={styles.spinner} /> : null}
+            {loading ? 'Entrando...' : 'Entrar'}
+          </button>
+
+          <p style={{ marginTop: 16, fontSize: 13, color: 'var(--text3)', textAlign: 'center' }}>
+            Não tem uma conta?{' '}
+            <Link href="/register" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              Criar conta
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

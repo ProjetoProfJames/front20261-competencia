@@ -35,6 +35,12 @@ public class UserService {
         user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setProfile(request.getProfile());
+        if (request.getMatricula() != null && !request.getMatricula().isBlank()) {
+            if (userRepository.existsByMatricula(request.getMatricula())) {
+                throw new BusinessException("Matricula already exists");
+            }
+            user.setMatricula(request.getMatricula());
+        }
         user.setCreatedBy(defaultActor(actor));
         user.setUpdatedBy(defaultActor(actor));
 
@@ -70,6 +76,19 @@ public class UserService {
         if (request.getProfile() != null) {
             user.setProfile(request.getProfile());
         }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            String norm = request.getEmail().trim().toLowerCase();
+            if (!norm.equals(user.getEmail()) && userRepository.existsByEmail(norm)) {
+                throw new BusinessException("Email already exists");
+            }
+            user.setEmail(norm);
+        }
+        if (request.getCurso() != null) user.setCurso(request.getCurso());
+        if (request.getPeriodo() != null) user.setPeriodo(request.getPeriodo());
+        if (request.getProjeto() != null) user.setProjeto(request.getProjeto());
+        if (request.getHorarioApresentacao() != null) user.setHorarioApresentacao(request.getHorarioApresentacao());
+        if (request.getLocalApresentacao() != null) user.setLocalApresentacao(request.getLocalApresentacao());
+        if (request.getMesaApresentacao() != null) user.setMesaApresentacao(request.getMesaApresentacao());
 
         user.setUpdatedBy(defaultActor(actor));
         return toResponse(userRepository.save(user));
@@ -99,6 +118,13 @@ public class UserService {
         response.setUpdatedAt(user.getUpdatedAt());
         response.setUpdatedBy(user.getUpdatedBy());
         response.setProfile(user.getProfile());
+        response.setMatricula(user.getMatricula());
+        response.setCurso(user.getCurso());
+        response.setPeriodo(user.getPeriodo());
+        response.setProjeto(user.getProjeto());
+        response.setHorarioApresentacao(user.getHorarioApresentacao());
+        response.setLocalApresentacao(user.getLocalApresentacao());
+        response.setMesaApresentacao(user.getMesaApresentacao());
         return response;
     }
 

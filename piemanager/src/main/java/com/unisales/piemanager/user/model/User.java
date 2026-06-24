@@ -29,6 +29,27 @@ public class User {
     @Column(nullable = false, length = 120)
     private String password;
 
+    @Column(nullable = true, unique = true, length = 10)
+    private String matricula;
+
+    @Column(nullable = true, length = 120)
+    private String curso;
+
+    @Column(nullable = true)
+    private Integer periodo;
+
+    @Column(nullable = true, length = 240)
+    private String projeto;
+
+    @Column(nullable = true, length = 120)
+    private String horarioApresentacao;
+
+    @Column(nullable = true, length = 120)
+    private String localApresentacao;
+
+    @Column(nullable = true, length = 20)
+    private String mesaApresentacao;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -128,4 +149,31 @@ public class User {
     public void setProfile(Profile profile) {
         this.profile = profile;
     }
+
+    public String getMatricula() {
+        return matricula;
+    }
+
+    public void setMatricula(String matricula) {
+        this.matricula = matricula;
+    }
+
+    public String getCurso() { return curso; }
+    public void setCurso(String curso) { this.curso = curso; }
+
+    public Integer getPeriodo() { return periodo; }
+    public void setPeriodo(Integer periodo) { this.periodo = periodo; }
+
+    public String getProjeto() { return projeto; }
+    public void setProjeto(String projeto) { this.projeto = projeto; }
+
+    public String getHorarioApresentacao() { return horarioApresentacao; }
+    public void setHorarioApresentacao(String h) { this.horarioApresentacao = h; }
+
+    public String getLocalApresentacao() { return localApresentacao; }
+    public void setLocalApresentacao(String l) { this.localApresentacao = l; }
+
+    public String getMesaApresentacao() { return mesaApresentacao; }
+    public void setMesaApresentacao(String m) { this.mesaApresentacao = m; }
+
 }

@@ -1,13 +1,11 @@
-package com.unisales.piemanager.user.dto;
+package com.unisales.piemanager.auth.dto;
 
-import com.unisales.piemanager.user.model.Profile;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class UserCreateRequest {
+public class RegisterRequest {
 
     @NotBlank(message = "username is required")
     @Size(max = 120, message = "username must have up to 120 chars")
@@ -22,9 +20,7 @@ public class UserCreateRequest {
     @Size(min = 6, max = 120, message = "password must be between 6 and 120 chars")
     private String password;
 
-    @NotNull(message = "profile is required")
-    private Profile profile;
-
+    // Opcional no cadastro público. Quando informado, deve ter exatamente 10 dígitos.
     @Pattern(regexp = "\\d{10}", message = "matricula must be exactly 10 digits")
     private String matricula;
 
@@ -50,14 +46,6 @@ public class UserCreateRequest {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Profile getProfile() {
-        return profile;
-    }
-
-    public void setProfile(Profile profile) {
-        this.profile = profile;
     }
 
     public String getMatricula() {
