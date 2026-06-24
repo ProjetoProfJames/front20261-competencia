@@ -1,30 +1,19 @@
 const API_URL = 'http://localhost:8080/periodos';
 
 export const periodosService = {
- 
-  listar: async () => {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error('Erro ao buscar períodos letivos');
-    return response.json();
-  },
-
- 
-  salvar: async (dadosPeriodo) => {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dadosPeriodo),
-    });
-    if (!response.ok) throw new Error('Erro ao salvar período letivo');
-    return response.json();
-  },
-
   
+  listar: async () => {
+    return [
+      { id: 1, ano: '2026', semestre: '1', status: 'CONCLUÍDO' },
+      { id: 2, ano: '2026', semestre: '2', status: 'EM ANDAMENTO' }
+    ];
+  },
+
+  salvar: async (dadosPeriodo) => {
+    return { id: Math.random(), ...dadosPeriodo };
+  },
+
   excluir: async (id) => {
-    const response = await fetch(`${API_URL}?id=${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Erro ao excluir período');
     return true;
   }
 };

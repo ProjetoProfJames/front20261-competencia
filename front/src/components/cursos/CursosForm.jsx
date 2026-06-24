@@ -21,14 +21,16 @@ export default function CursosForm() {
         codigo: codigoCurso
       };
 
-      await cursosService.salvar(novoCurso);
-      alert(`Curso "${nomeCurso}" salvo com sucesso no banco!`);
       
+      await cursosService.salvar(novoCurso);
+      
+      alert(`Curso "${nomeCurso}" salvo com sucesso no banco!`);
       
       setNomeCurso('');
       setCodigoCurso('');
       
       window.location.reload();
+      
     } catch (error) {
       alert('Erro ao salvar o curso no servidor.');
     }
