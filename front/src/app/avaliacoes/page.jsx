@@ -78,6 +78,7 @@ export default function AvaliacoesPage() {
             console.error(err);
         }
     }
+    
     async function excluir(id) {
         if (!confirm("Deseja excluir esta avaliação?")) return;
 

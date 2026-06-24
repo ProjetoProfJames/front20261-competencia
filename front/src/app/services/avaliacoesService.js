@@ -10,6 +10,15 @@ export async function listarAvaliadores() {
   );
 }
 
+export async function listarAvaliacoes({ projetoId, avaliadorId } = {}) {
+  const params = new URLSearchParams();
+  if (projetoId) params.append("projetoId", projetoId);
+  if (avaliadorId) params.append("avaliadorId", avaliadorId);
+
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return request(`${BASE_URL}${query}`);
+}
+
 function getToken() {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("token");
@@ -32,15 +41,6 @@ async function request(url, options = {}) {
   }
 
   return data;
-}
-
-export async function listarAvaliacoes({ projetoId, avaliadorId } = {}) {
-  const params = new URLSearchParams();
-  if (projetoId) params.append("projetoId", projetoId);
-  if (avaliadorId) params.append("avaliadorId", avaliadorId);
-
-  const query = params.toString() ? `?${params.toString()}` : "";
-  return request(`${BASE_URL}${query}`);
 }
 
 export async function buscarAvaliacao(id) {

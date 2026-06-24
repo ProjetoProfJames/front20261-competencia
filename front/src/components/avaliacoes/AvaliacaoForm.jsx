@@ -2,13 +2,6 @@
 
 import { useState } from "react";
 
-import {
-  listarTurmas,
-  listarLocais,
-  listarSemestres,
-  buscarTurma,
-} from "@/app/services/gruposService";
-
 export default function AvaliacaoForm({
   avaliacao,
   onVoltar,

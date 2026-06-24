@@ -23,6 +23,7 @@ export default function AvaliacaoList({
           <thead>
             <tr>
               <th>Projeto</th>
+              <th>Avaliador</th> 
               <th>Nota</th>
               <th>Comentário</th>
               <th>Ações</th>
@@ -32,6 +33,7 @@ export default function AvaliacaoList({
             {avaliacoes.map((a) => (
               <tr key={a.id}>
                 <td>{a.projeto?.nome || "-"}</td>
+                <td>{a.avaliador?.username || "-"}</td>
                 <td>{a.nota}</td>
                 <td>{a.comentario || "-"}</td>
                 <td>
