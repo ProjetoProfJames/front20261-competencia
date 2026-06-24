@@ -194,3 +194,71 @@
   .periodoBtn { width: 44px; height: 44px; font-size: 13px; }
   .main { padding: 24px 20px; }
 }
+
+/* ── Tipo de usuário ─────────────────────────── */
+.tipoGrid {
+  display: flex; flex-wrap: wrap; gap: 12px;
+}
+.tipoBtn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 16px 20px; background: var(--bg3);
+  border: 2px solid var(--border); border-radius: var(--radius);
+  color: var(--text2); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; min-width: 100px;
+}
+.tipoBtn:hover { border-color: var(--accent); color: var(--accent2); }
+.tipoBtnSelected { border-color: var(--accent); background: var(--accent-dim); color: var(--accent2); font-weight: 700; }
+.tipoIcon { font-size: 28px; }
+
+/* ── Extra form ──────────────────────────────── */
+.extraForm { display: flex; flex-direction: column; gap: 20px; padding-top: 8px; }
+.extraFormTitle { font-size: 13px; font-weight: 700; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── Pills (cursos, horários) ────────────────── */
+.cursoGrid, .horarioGrid { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill {
+  padding: 7px 14px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 20px;
+  color: var(--text2); font-size: 13px; cursor: pointer; transition: all 0.15s;
+}
+.pill:hover { border-color: var(--accent); color: var(--accent2); }
+.pillSelected { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); font-weight: 600; }
+
+/* ── Período ─────────────────────────────────── */
+.periodoGrid { display: flex; flex-wrap: wrap; gap: 8px; }
+.periodoBtn {
+  width: 52px; height: 52px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text2); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.periodoBtn:hover { border-color: var(--accent); color: var(--accent2); }
+.periodoBtnSelected { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); }
+
+/* ── Locais e mesas ──────────────────────────── */
+.localBlockMini { margin-top: 8px; }
+.localNomeMini { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+.mesasGrid { display: flex; flex-wrap: wrap; gap: 6px; }
+.mesaBtn {
+  width: 44px; height: 44px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text2); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.mesaBtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
+.mesaOcupada { background: rgba(255,77,109,0.15); border-color: var(--danger); color: var(--danger); cursor: not-allowed; }
+.mesaMinha { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); }
+.selectionInfo { font-size: 13px; color: var(--success); margin-top: 8px; font-weight: 500; }
+.hintText { font-size: 13px; color: var(--text3); font-style: italic; }
+
+/* ── Zona de perigo ──────────────────────────── */
+.dangerSection { border-color: rgba(255,77,109,0.3) !important; }
+.sectionTitleDanger { font-size: 15px; font-weight: 700; color: var(--danger); margin: 0; padding-bottom: 16px; border-bottom: 1px solid rgba(255,77,109,0.2); }
+.dangerText { font-size: 13px; color: var(--text3); line-height: 1.5; }
+.deleteAccountBtn {
+  padding: 10px 20px; background: none;
+  border: 1px solid var(--danger); border-radius: var(--radius-sm);
+  color: var(--danger); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; align-self: flex-start;
+}
+.deleteAccountBtn:hover { background: var(--danger-dim); }

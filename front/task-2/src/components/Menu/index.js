@@ -1,33 +1,25 @@
 'use client';
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { clearSession, canDo } from '@/lib/api';
+import { clearSession } from '@/lib/api';
 import styles from './Menu.module.css';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: '⊞', always: true },
-  { href: '/usuarios',  label: 'Usuários',  icon: '👤', action: 'viewUsers' },
-  { href: '/locais',    label: 'Locais',    icon: '📍', always: true },
-  { href: '/cursos',    label: 'Cursos',    icon: '🎓', always: true },
-  { href: '/semestres', label: 'Semestres', icon: '📅', always: true },
-  { href: '/turmas',    label: 'Turmas',    icon: '🏫', always: true },
+  { href: '/dashboard', label: 'Dashboard', icon: '⊞' },
+  { href: '/usuarios',  label: 'Usuários',  icon: '👥' },
+  { href: '/locais',    label: 'Locais',    icon: '📍' },
+  { href: '/cursos',    label: 'Cursos',    icon: '🎓' },
 ];
 
 export default function Menu({ user }) {
-  const router = useRouter();
+  const router   = useRouter();
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
-  function handleLogout() {
-    clearSession();
-    router.push('/login');
-  }
+  function handleLogout() { clearSession(); router.push('/login'); }
 
-  const visible = navItems.filter(item => item.always || canDo(user, item.action));
-
-  // Informações de curso/período salvas na sessão
   const cursoInfo = user?.curso
-    ? `${user.curso}${user.periodo ? ` · ${user.periodo}º período` : ''}`
+    ? `${user.curso}${user.periodo ? ` · ${user.periodo}º` : ''}`
     : null;
 
   return (
@@ -37,18 +29,16 @@ export default function Menu({ user }) {
           <span className={styles.brandIcon}>⬡</span>
           {!collapsed && <span className={styles.brandText}>PIE Manager</span>}
         </div>
-        <button className={styles.toggle} onClick={() => setCollapsed(c => !c)} title={collapsed ? 'Expandir' : 'Recolher'}>
+        <button className={styles.toggle} onClick={() => setCollapsed(c => !c)}
+          title={collapsed ? 'Expandir' : 'Recolher'}>
           {collapsed ? '→' : '←'}
         </button>
       </div>
 
       <nav className={styles.nav}>
-        {visible.map(item => (
-          <a
-            key={item.href}
-            href={item.href}
-            className={`${styles.navItem} ${pathname === item.href ? styles.active : ''}`}
-          >
+        {navItems.map(item => (
+          <a key={item.href} href={item.href}
+            className={`${styles.navItem} ${pathname === item.href ? styles.active : ''}`}>
             <span className={styles.navIcon}>{item.icon}</span>
             {!collapsed && <span className={styles.navLabel}>{item.label}</span>}
           </a>
@@ -60,22 +50,15 @@ export default function Menu({ user }) {
           <div className={styles.userInfo}>
             <div className={styles.userName}>{user?.username}</div>
             <div className={styles.userProfile}>{user?.profile}</div>
-            {cursoInfo && (
-              <div className={styles.userCurso} title={cursoInfo}>{cursoInfo}</div>
-            )}
+            {cursoInfo && <div className={styles.userCurso} title={cursoInfo}>{cursoInfo}</div>}
           </div>
         )}
-
-        {/* Botão Meu cadastro */}
-        <a
-          href="/meu-cadastro"
-          className={`${styles.cadastroBtn} ${pathname === '/meu-cadastro' ? styles.active : ''}`}
-          title="Meu cadastro"
-        >
+        <a href="/meu-cadastro"
+          className={`${styles.bottomLink} ${pathname === '/meu-cadastro' ? styles.active : ''}`}
+          title="Meu cadastro">
           <span className={styles.navIcon}>✏️</span>
           {!collapsed && <span>Meu cadastro</span>}
         </a>
-
         <button className={styles.logoutBtn} onClick={handleLogout} title="Sair">
           <span>⏻</span>
           {!collapsed && <span>Sair</span>}

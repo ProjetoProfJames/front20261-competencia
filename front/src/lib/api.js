@@ -1,56 +1,36 @@
+'use client';
+
 const BASE_URL = 'http://localhost:8080/api';
 
-// Wrapper seguro para localStorage. Em alguns ambientes Node (com a flag
-// experimental --localstorage-file ativada via NODE_OPTIONS), o Node cria um
-// `globalThis.localStorage` que existe mas não é funcional do lado do
-// servidor, fazendo `typeof window === 'undefined'` não ser suficiente para
-// detectar o ambiente. Por isso, em vez de checar `window`, testamos se as
-// funções de localStorage realmente funcionam antes de usá-las.
 const safeStorage = {
   getItem(key) {
     try {
-      if (typeof localStorage === 'undefined' || typeof localStorage.getItem !== 'function') {
-        return null;
-      }
+      if (typeof localStorage === 'undefined' || typeof localStorage.getItem !== 'function') return null;
       return localStorage.getItem(key);
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   },
   setItem(key, value) {
     try {
-      if (typeof localStorage === 'undefined' || typeof localStorage.setItem !== 'function') {
-        return;
-      }
+      if (typeof localStorage === 'undefined' || typeof localStorage.setItem !== 'function') return;
       localStorage.setItem(key, value);
-    } catch {
-      // ignora ambientes sem localStorage funcional (ex.: SSR)
-    }
+    } catch {}
   },
   removeItem(key) {
     try {
-      if (typeof localStorage === 'undefined' || typeof localStorage.removeItem !== 'function') {
-        return;
-      }
+      if (typeof localStorage === 'undefined' || typeof localStorage.removeItem !== 'function') return;
       localStorage.removeItem(key);
-    } catch {
-      // ignora ambientes sem localStorage funcional (ex.: SSR)
-    }
+    } catch {}
   },
 };
 
-function getToken() {
-  return safeStorage.getItem('token');
-}
+function getToken() { return safeStorage.getItem('token'); }
 
 async function request(path, options = {}) {
   const token = getToken();
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers['Authorization'] = `Bearer ${token}`;
-
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
   const data = await res.json();
-
   if (!res.ok) {
     const msg = data?.message || data?.error || 'Erro na requisição';
     throw new Error(msg);
@@ -59,10 +39,10 @@ async function request(path, options = {}) {
 }
 
 export const api = {
-  post: (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) }),
-  get: (path) => request(path),
-  put: (path, body) => request(path, { method: 'PUT', body: JSON.stringify(body) }),
-  delete: (path) => request(path, { method: 'DELETE' }),
+  post:   (path, body) => request(path, { method: 'POST',   body: JSON.stringify(body) }),
+  get:    (path)       => request(path),
+  put:    (path, body) => request(path, { method: 'PUT',    body: JSON.stringify(body) }),
+  delete: (path)       => request(path, { method: 'DELETE' }),
 };
 
 export function saveSession(token, user) {
@@ -72,7 +52,7 @@ export function saveSession(token, user) {
 
 export function getSession() {
   const token = safeStorage.getItem('token');
-  const user = safeStorage.getItem('user');
+  const user  = safeStorage.getItem('user');
   if (!token || !user) return null;
   return { token, user: JSON.parse(user) };
 }
@@ -82,25 +62,20 @@ export function clearSession() {
   safeStorage.removeItem('user');
 }
 
-/**
- * Confirma com o backend se a sessão salva localmente ainda é válida
- * (token não expirado/revogado, usuário ainda existe). Deve ser usada
- * antes de redirecionar para uma área protegida só com base no que está
- * salvo no localStorage, já que um token salvo localmente pode estar
- * expirado ou pertencer a um usuário removido.
- *
- * Retorna a sessão atualizada (com os dados de usuário mais recentes) em
- * caso de sucesso, ou null se a sessão não for válida — limpando o
- * armazenamento local nesse caso.
- */
 export async function validateSession() {
   const session = getSession();
   if (!session) return null;
   try {
     const backendUser = await api.get('/auth/me');
-    // Preserva campos que só existem localmente (curso, periodo)
-    // mesclando com os dados atualizados do backend
-    const merged = { ...session.user, ...backendUser, curso: session.user.curso, periodo: session.user.periodo };
+    // Deriva tipoCadastro do profile do backend se não estiver salvo localmente
+    const profileToTipo = {
+      ALUNO: 'ALUNO', PROFESSOR: 'PROFESSOR',
+      COORDENADOR: 'COORDENADOR', AVALIADOR_EXTERNO: 'VISITANTE',
+    };
+    const tipoCadastro = session.user.tipoCadastro
+      || profileToTipo[backendUser.profile]
+      || '';
+    const merged = { ...session.user, ...backendUser, tipoCadastro };
     saveSession(session.token, merged);
     return { token: session.token, user: merged };
   } catch {
@@ -109,26 +84,47 @@ export async function validateSession() {
   }
 }
 
-export const PROFILES = ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO', 'AVALIADOR_EXTERNO'];
-
+export const PROFILES = ['ADMIN','COORDENADOR','PROFESSOR','ALUNO','AVALIADOR_EXTERNO'];
 export const PROFILE_LABELS = {
-  ADMIN: 'Administrador',
-  COORDENADOR: 'Coordenador',
-  PROFESSOR: 'Professor',
-  ALUNO: 'Aluno',
+  ADMIN: 'Administrador', COORDENADOR: 'Coordenador',
+  PROFESSOR: 'Professor', ALUNO: 'Aluno',
   AVALIADOR_EXTERNO: 'Avaliador Externo',
 };
+
+export const TIPO_CADASTRO = ['ALUNO','PROFESSOR','COORDENADOR','VISITANTE'];
+export const TIPO_CADASTRO_LABELS = {
+  ALUNO: 'Aluno', PROFESSOR: 'Professor',
+  COORDENADOR: 'Coordenador', VISITANTE: 'Visitante',
+};
+export const TIPO_TO_PROFILE = {
+  ALUNO: 'ALUNO', PROFESSOR: 'PROFESSOR',
+  COORDENADOR: 'COORDENADOR', VISITANTE: 'AVALIADOR_EXTERNO',
+};
+
+export const CURSOS_DISPONIVEIS = [
+  'Biomedicina','Ciências Biológicas','Enfermagem','Farmácia','Fisioterapia',
+  'Nutrição','Psicologia','Arquitetura e Urbanismo','Engenharia Civil',
+  'Engenharia de Software','Engenharia de Produção','Sistemas de Informação',
+  'Administração','Ciências Contábeis','Direito','Educação Física','Filosofia',
+  'Serviço Social',
+];
+
+export const PERIODOS = Array.from({ length: 12 }, (_, i) => i + 1);
+export const HORARIOS = ['19:00 – 20:00','20:00 – 21:00','21:00 – 22:00'];
+export const HORARIOS_VISITA = ['19:00 – 20:00','20:00 – 21:00','21:00 – 22:00'];
 
 export function canDo(user, action) {
   if (!user) return false;
   const p = user.profile;
   const rules = {
-    manageUsers: ['ADMIN'],
-    manageLocais: ['ADMIN', 'COORDENADOR'],
-    manageCursos: ['ADMIN'],
+    manageUsers:     ['ADMIN'],
+    manageLocais:    ['ADMIN','COORDENADOR'],
+    addLocais:       ['COORDENADOR'],
+    manageCursos:    ['ADMIN'],
     manageSemestres: ['ADMIN'],
-    manageTurmas: ['PROFESSOR', 'ADMIN'],
-    viewUsers: ['ADMIN', 'PROFESSOR'],
+    manageTurmas:    ['PROFESSOR','ADMIN'],
+    viewUsers:       ['ADMIN','PROFESSOR','COORDENADOR','ALUNO','AVALIADOR_EXTERNO'],
+    viewAllLocais:   ['ADMIN','COORDENADOR','PROFESSOR','ALUNO','AVALIADOR_EXTERNO'],
   };
   return (rules[action] || []).includes(p);
 }

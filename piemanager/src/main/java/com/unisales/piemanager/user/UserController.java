@@ -36,9 +36,26 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','PROFESSOR')")
     public ApiResponse<List<UserResponse>> findAll() {
         return ApiResponse.success("Users fetched", userService.findAll());
+    }
+
+    @GetMapping("/ocupacao")
+    public ApiResponse<List<java.util.Map<String, String>>> getOcupacao() {
+        // Retorna apenas os dados de ocupação de mesas sem expor dados pessoais
+        List<java.util.Map<String, String>> ocupacao = userService.findAll().stream()
+            .filter(u -> u.getLocalApresentacao() != null && !u.getLocalApresentacao().isBlank()
+                      && u.getMesaApresentacao() != null && !u.getMesaApresentacao().isBlank()
+                      && u.getHorarioApresentacao() != null && !u.getHorarioApresentacao().isBlank())
+            .map(u -> {
+                java.util.Map<String, String> m = new java.util.HashMap<>();
+                m.put("local", u.getLocalApresentacao());
+                m.put("mesa", u.getMesaApresentacao());
+                m.put("horario", u.getHorarioApresentacao());
+                return m;
+            })
+            .toList();
+        return ApiResponse.success("Ocupacao fetched", ocupacao);
     }
 
     @GetMapping("/{id}")

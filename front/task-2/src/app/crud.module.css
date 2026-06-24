@@ -123,32 +123,131 @@
   margin-top: 2px;
 }
 
-.infoCard {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+/* ── Cursos page ─────────────────────────── */
+.cursoListGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.cursoCard {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px;
+  display: flex; align-items: center; gap: 12px;
+  transition: border-color 0.2s;
+}
+.cursoCard:hover { border-color: var(--border2); }
+.cursoCardMine { border-color: var(--accent); background: var(--accent-dim); }
+.cursoCardIcon { font-size: 22px; flex-shrink: 0; }
+.cursoCardName { font-size: 14px; font-weight: 500; color: var(--text); flex: 1; }
+.cursoCardBadge {
+  font-size: 10px; font-weight: 700; color: var(--accent2);
+  background: var(--accent-dim); border: 1px solid var(--accent);
+  border-radius: 99px; padding: 2px 8px; white-space: nowrap;
 }
 
-.infoRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
+/* ── Locais page ─────────────────────────── */
+.locaisContainer { display: flex; flex-direction: column; gap: 32px; }
+.localBlock {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px 28px;
+  display: flex; flex-direction: column; gap: 16px;
 }
+.localHeader { display: flex; justify-content: space-between; align-items: flex-start; }
+.localNome { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.localInfo { font-size: 13px; color: var(--text3); }
+.localActions { display: flex; gap: 8px; }
+.editBtn, .deleteBtn {
+  background: none; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 6px 10px;
+  cursor: pointer; font-size: 14px; transition: all 0.15s;
+}
+.editBtn:hover { border-color: var(--accent); }
+.deleteBtn:hover { border-color: var(--danger); background: var(--danger-dim); }
+.mesasGrid { display: flex; flex-wrap: wrap; gap: 6px; }
+.mesaBtn {
+  width: 44px; height: 44px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text2); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.mesaBtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
+.mesaOcupada { background: rgba(255,77,109,0.15); border-color: var(--danger); color: var(--danger); cursor: not-allowed; }
+.mesaMinha { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); }
+.mesasLegenda { display: flex; gap: 20px; flex-wrap: wrap; }
+.legendaItem { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); }
+.legendaDot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.legendaLivre { background: var(--bg3); border: 1px solid var(--border); }
+.legendaOcupada { background: rgba(255,77,109,0.3); border: 1px solid var(--danger); }
+.legendaMinha { background: var(--accent-dim); border: 1px solid var(--accent); }
+.emptyState { text-align: center; padding: 60px 20px; color: var(--text3); }
+.emptyState p { margin-bottom: 8px; }
 
-.infoLabel {
-  font-size: 13px;
-  color: var(--text3);
-  flex-shrink: 0;
+/* ── Usuários page ───────────────────────── */
+.userTablesWrap { display: flex; flex-direction: column; gap: 32px; }
+.userTableSection {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px 28px;
 }
+.userTableTitle {
+  font-size: 16px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.userTableCount {
+  background: var(--accent-dim); color: var(--accent2);
+  font-size: 12px; font-weight: 700; border-radius: 99px;
+  padding: 2px 10px; font-family: var(--font-mono);
+}
+.userTable { display: flex; flex-direction: column; gap: 2px; }
+.userTableHeader {
+  display: grid; grid-template-columns: 2fr 3fr 1.5fr;
+  padding: 8px 12px; font-size: 11px; font-weight: 700;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em;
+}
+.userTableRow {
+  display: grid; grid-template-columns: 2fr 3fr 1.5fr;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  transition: background 0.12s; align-items: center;
+}
+.userTableRow:hover { background: var(--bg3); }
+.userNameCell { font-size: 14px; font-weight: 500; color: var(--text); }
+.userEmailCell { font-size: 13px; color: var(--text2); }
+.userMatriculaCell { font-size: 13px; color: var(--text3); font-family: var(--font-mono); }
+.emptyMsg { font-size: 13px; color: var(--text3); font-style: italic; padding: 8px 0; }
 
-.infoValue {
-  font-size: 14px;
-  color: var(--text);
-  text-align: right;
-  word-break: break-all;
+/* ── Filtro de horário (locais) ──────────── */
+.horarioFiltroWrap {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap; margin-bottom: 24px;
+  padding: 12px 16px; background: var(--bg2);
+  border: 1px solid var(--border); border-radius: var(--radius);
 }
+.horarioFiltroLabel { font-size: 13px; font-weight: 600; color: var(--text2); white-space: nowrap; }
+.horarioFiltroGrid { display: flex; flex-wrap: wrap; gap: 8px; }
+.horarioFiltroBtn {
+  padding: 6px 14px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 20px;
+  color: var(--text2); font-size: 13px; cursor: pointer; transition: all 0.15s;
+}
+.horarioFiltroBtn:hover { border-color: var(--accent); color: var(--accent2); }
+.horarioFiltroBtnActive { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); font-weight: 600; }
+
+/* ── Alunos por curso (usuários) ─────────── */
+.cursoSections { display: flex; flex-direction: column; gap: 20px; }
+.cursoSection { display: flex; flex-direction: column; gap: 8px; }
+.cursoSectionHeader {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.cursoSectionNome { font-size: 14px; font-weight: 700; color: var(--accent2); }
+
+/* Colunas específicas */
+.colProf  { grid-template-columns: 2fr 3fr 1.5fr !important; }
+.colAluno { grid-template-columns: 1.5fr 2fr 1.5fr 2fr !important; }
+
+.userProjetoCell  { font-size: 13px; color: var(--text2); }
+.userHorarioCell  { font-size: 12px; color: var(--text3); font-family: var(--font-mono); }
+.userLocalCell    { font-size: 12px; color: var(--text3); }
+
+.colVisitante { grid-template-columns: 2fr 3fr !important; }
