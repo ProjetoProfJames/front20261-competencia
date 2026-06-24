@@ -4,6 +4,16 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import API from "@/utils/api";
 
+// O backend não tem rota de listagem por projeto (/projetos/{id}/avaliacoes),
+// mas tem uma rota global "/avaliacoes" que retorna todas as avaliações de
+// todos os projetos. Por isso buscamos todas e filtramos pelo projeto aqui.
+async function listarAvaliacoesPorProjeto(projetoId) {
+  const resposta = await API.get(`/avaliacoes`);
+  const todas = resposta.data ?? resposta;
+  const lista = Array.isArray(todas) ? todas : [];
+  return lista.filter((av) => av.projeto?.id === Number(projetoId));
+}
+
 function TelaAvaliacaoConteudo() {
   const navegador = useRouter();
   const params = useSearchParams();
@@ -17,18 +27,20 @@ function TelaAvaliacaoConteudo() {
   const [enviando, setEnviando] = useState(false);
 
   const carregarDados = async () => {
-  if (!projetoId) return;
-  try {
-    const dadosProjeto = await API.get(`/projetos/${projetoId}`);
-    const projeto = dadosProjeto.data ?? dadosProjeto;
-    setProjeto(projeto);
-    setListaAvaliacoes(Array.isArray(projeto.avaliacoes) ? projeto.avaliacoes : []);
-  } catch (erro) {
-    console.error("Erro ao carregar projeto:", erro.message);
-  } finally {
-    setCarregando(false);
-  }
-};
+    if (!projetoId) return;
+    try {
+      const dadosProjeto = await API.get(`/projetos/${projetoId}`);
+      const projeto = dadosProjeto.data ?? dadosProjeto;
+      setProjeto(projeto);
+
+      const lista = await listarAvaliacoesPorProjeto(projetoId);
+      setListaAvaliacoes(lista);
+    } catch (erro) {
+      console.error("Erro ao carregar projeto:", erro.message);
+    } finally {
+      setCarregando(false);
+    }
+  };
 
   useEffect(() => {
     carregarDados();
@@ -49,6 +61,7 @@ function TelaAvaliacaoConteudo() {
         nota: notaNum,
         comentario: comentario.trim(),
       });
+
       alert("Avaliação registrada com sucesso!");
       setNota("");
       setComentario("");
@@ -77,7 +90,6 @@ function TelaAvaliacaoConteudo() {
     <div style={{ padding: "30px", maxWidth: "600px", margin: "0 auto", fontFamily: "sans-serif" }}>
       <h2>Avaliar Grupo de Trabalho</h2>
 
-    
       <div style={{ marginBottom: "20px", marginTop: "10px" }}>
         <p style={{ margin: "4px 0" }}><strong>Projeto:</strong> {projeto.nome}</p>
         <p style={{ margin: "4px 0" }}><strong>Turma:</strong> {projeto.turma?.nome}</p>
@@ -85,9 +97,7 @@ function TelaAvaliacaoConteudo() {
         <p style={{ margin: "4px 0" }}><strong>Integrantes:</strong> {projeto.integrantes?.map((i) => i.username).join(", ")}</p>
       </div>
 
-     
       <form onSubmit={enviarAvaliacao} style={{ display: "flex", flexDirection: "column", gap: "15px", marginTop: "20px" }}>
-
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label style={{ marginBottom: "5px", fontWeight: "bold" }}>Nota (0 a 10):</label>
           <input
@@ -134,7 +144,6 @@ function TelaAvaliacaoConteudo() {
         </div>
       </form>
 
-     
       <h3 style={{ marginTop: "35px" }}>Avaliações Registradas</h3>
       {listaAvaliacoes.length === 0 ? (
         <p style={{ color: "#777" }}>Nenhuma avaliação registrada ainda.</p>
@@ -151,7 +160,7 @@ function TelaAvaliacaoConteudo() {
           <tbody>
             {listaAvaliacoes.map((av) => (
               <tr key={av.id}>
-                <td>{av.avaliador?.username}</td>
+                <td>{av.avaliador?.username ?? "Você"}</td>
                 <td style={{ textAlign: "center" }}>{av.nota}</td>
                 <td>{av.comentario}</td>
                 <td>
