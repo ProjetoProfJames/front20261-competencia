@@ -1,4 +1,4 @@
-const API_URL = '/api/cursos';
+const API_URL = 'http://localhost:8080/cursos';
 
 export const cursosService = {
   

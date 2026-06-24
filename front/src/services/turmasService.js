@@ -1,4 +1,4 @@
-const API_URL = '/api/turmas';
+const API_URL = 'http://localhost:8080/turmas';
 
 export const turmasService = {
   

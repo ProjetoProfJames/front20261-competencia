@@ -1,4 +1,4 @@
-const API_URL = '/api/periodos';
+const API_URL = 'http://localhost:8080/periodos';
 
 export const periodosService = {
  
