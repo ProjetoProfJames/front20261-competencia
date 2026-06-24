@@ -1,3 +1,11 @@
+# Node / Next.js (front)
+front/node_modules
+front/.next
+front/out
+front/.env*
+
+# Maven / Spring Boot (piemanager)
+piemanager/target
 piemanager/piemanager.db
 piemanager/tasks/plano1.md
 piemanager/tasks/task1.md
