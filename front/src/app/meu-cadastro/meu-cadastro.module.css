@@ -1,0 +1,264 @@
+/* ── Layout com menu (edição normal) ──────────────────── */
+.layout { display: flex; min-height: 100vh; }
+.main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+.pageHeader { margin-bottom: 32px; }
+.pageTitle { font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.pageSub { font-size: 14px; color: var(--text3); }
+
+/* ── Tela cheia (primeiro acesso, sem menu) ───────────── */
+.fullPage {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+/* ── Containers de conteúdo ───────────────────────────── */
+.firstAccessWrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px 44px;
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  animation: fadeIn 0.3s ease;
+}
+
+.editWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 680px;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ── Header (primeiro acesso) ─────────────────────────── */
+.header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.logoMark { font-size: 36px; color: var(--accent); }
+.title { font-size: 26px; font-weight: 700; color: var(--text); margin: 0; }
+.sub { font-size: 14px; color: var(--text3); margin: 0; max-width: 400px; line-height: 1.5; }
+
+/* ── Seção ────────────────────────────────────────────── */
+.section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.sectionTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Campo ────────────────────────────────────────────── */
+.fieldGroup { display: flex; flex-direction: column; gap: 10px; }
+.label { font-size: 13px; font-weight: 600; color: var(--text2); }
+.fieldError { font-size: 11px; color: #f87171; }
+
+/* ── Input texto ──────────────────────────────────────── */
+.formGrid { display: flex; flex-direction: column; gap: 16px; }
+
+.input {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  padding: 10px 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); outline: none; }
+.inputError { border-color: #f87171 !important; }
+
+.passwordHint { font-size: 12px; color: var(--text3); margin: 0; }
+
+/* ── Curso grid (pílulas) ─────────────────────────────── */
+.cursoGrid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.cursoBtn {
+  padding: 7px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.cursoBtn:hover { border-color: var(--accent); color: var(--accent); }
+.cursoBtnSelected {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent2);
+  font-weight: 600;
+}
+
+/* ── Período grid (botões numerados) ──────────────────── */
+.periodoGrid { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.periodoBtn {
+  width: 52px;
+  height: 52px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.periodoBtn:hover { border-color: var(--accent); color: var(--accent); }
+.periodoBtnSelected {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent2);
+}
+
+/* ── Ações ────────────────────────────────────────────── */
+.sectionActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.skipBtn {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 8px 4px;
+  transition: color 0.15s;
+}
+.skipBtn:hover { color: var(--text2); }
+
+.saveBtn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+.saveBtn:hover:not(:disabled) { background: var(--accent2); }
+.saveBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Feedback ─────────────────────────────────────────── */
+.toast {
+  background: var(--bg3);
+  border: 1px solid var(--accent);
+  color: var(--accent2);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.errorBox {
+  background: var(--danger-dim);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+}
+
+@media (max-width: 680px) {
+  .firstAccessWrap { padding: 28px 20px; }
+  .section { padding: 20px 16px; }
+  .periodoBtn { width: 44px; height: 44px; font-size: 13px; }
+  .main { padding: 24px 20px; }
+}
+
+/* ── Tipo de usuário ─────────────────────────── */
+.tipoGrid {
+  display: flex; flex-wrap: wrap; gap: 12px;
+}
+.tipoBtn {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 16px 20px; background: var(--bg3);
+  border: 2px solid var(--border); border-radius: var(--radius);
+  color: var(--text2); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.15s; min-width: 100px;
+}
+.tipoBtn:hover { border-color: var(--accent); color: var(--accent2); }
+.tipoBtnSelected { border-color: var(--accent); background: var(--accent-dim); color: var(--accent2); font-weight: 700; }
+.tipoIcon { font-size: 28px; }
+
+/* ── Extra form ──────────────────────────────── */
+.extraForm { display: flex; flex-direction: column; gap: 20px; padding-top: 8px; }
+.extraFormTitle { font-size: 13px; font-weight: 700; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── Pills (cursos, horários) ────────────────── */
+.cursoGrid, .horarioGrid { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill {
+  padding: 7px 14px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 20px;
+  color: var(--text2); font-size: 13px; cursor: pointer; transition: all 0.15s;
+}
+.pill:hover { border-color: var(--accent); color: var(--accent2); }
+.pillSelected { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); font-weight: 600; }
+
+/* ── Período ─────────────────────────────────── */
+.periodoGrid { display: flex; flex-wrap: wrap; gap: 8px; }
+.periodoBtn {
+  width: 52px; height: 52px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text2); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.periodoBtn:hover { border-color: var(--accent); color: var(--accent2); }
+.periodoBtnSelected { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); }
+
+/* ── Locais e mesas ──────────────────────────── */
+.localBlockMini { margin-top: 8px; }
+.localNomeMini { font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 8px; }
+.mesasGrid { display: flex; flex-wrap: wrap; gap: 6px; }
+.mesaBtn {
+  width: 44px; height: 44px; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text2); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.mesaBtn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent2); }
+.mesaOcupada { background: rgba(255,77,109,0.15); border-color: var(--danger); color: var(--danger); cursor: not-allowed; }
+.mesaMinha { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); }
+.selectionInfo { font-size: 13px; color: var(--success); margin-top: 8px; font-weight: 500; }
+.hintText { font-size: 13px; color: var(--text3); font-style: italic; }
+
+/* ── Zona de perigo ──────────────────────────── */
+.dangerSection { border-color: rgba(255,77,109,0.3) !important; }
+.sectionTitleDanger { font-size: 15px; font-weight: 700; color: var(--danger); margin: 0; padding-bottom: 16px; border-bottom: 1px solid rgba(255,77,109,0.2); }
+.dangerText { font-size: 13px; color: var(--text3); line-height: 1.5; }
+.deleteAccountBtn {
+  padding: 10px 20px; background: none;
+  border: 1px solid var(--danger); border-radius: var(--radius-sm);
+  color: var(--danger); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; align-self: flex-start;
+}
+.deleteAccountBtn:hover { background: var(--danger-dim); }
