@@ -14,9 +14,19 @@ const normalizarId = (valor) => {
 };
 
 const toIsoString = (valor) => {
-  if (!valor) return valor;
-  if (valor instanceof Date) return valor.toISOString();
-  return valor;
+  if (!valor) return null;
+
+  if (valor instanceof Date) {
+    return valor.toISOString();
+  }
+
+  const data = new Date(valor);
+
+  if (isNaN(data.getTime())) {
+    return null;
+  }
+
+  return data.toISOString();
 };
 
 const mapProjetoToGrupo = (projeto = {}) => ({
@@ -48,13 +58,14 @@ const mapGrupoToProjetoPayload = (grupo = {}) => ({
     grupo.localApresentacao ||
     `Projeto ${grupo.nome || 'sem nome'}`,
   turmaId: normalizarId(grupo.turmaId ?? grupo.turma?.id),
-  semestreId: normalizarId(grupo.semestreId) || 1,
+  semestreId: normalizarId(grupo.semestreId),
   professorOrientadorId:
     normalizarId(grupo.professorOrientadorId ?? grupo.professorId),
   integranteIds: Array.isArray(grupo.alunos)
     ? grupo.alunos.map((id) => normalizarId(id)).filter((id) => id !== null)
     : [],
-  localId: normalizarId(grupo.localId) || 1,
+  localId: normalizarId(grupo.localId),
+
   horarioInicio: toIsoString(grupo.horarioInicio),
   horarioFim: toIsoString(grupo.horarioFim),
 });
@@ -63,17 +74,26 @@ export const grupoService = {
   async getAll() {
     const response = await apiFetch('/api/projetos');
     const dados = unwrap(response);
-    return Array.isArray(dados) ? dados.map(mapProjetoToGrupo) : [];
+
+    return Array.isArray(dados)
+      ? dados.map(mapProjetoToGrupo)
+      : [];
   },
 
   async getById(id) {
     const response = await apiFetch(`/api/projetos/${id}`);
     const dados = unwrap(response);
+
     return dados ? mapProjetoToGrupo(dados) : null;
   },
 
   async save(grupo) {
     const grupoNormalizado = mapGrupoToProjetoPayload(grupo);
+
+    console.log("GRUPO RECEBIDO DO FORM:", grupo);
+
+    console.log("PAYLOAD ENVIADO PARA /api/projetos:", grupoNormalizado);
+
     const isUpdate = grupo?.id !== undefined && grupo?.id !== null;
 
     const response = await apiFetch(
