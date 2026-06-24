@@ -7,10 +7,10 @@
 }
 
 .label {
-  font-family: sans-serif;
+  font-family: inherit;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-main);
+  color: var(--text-color);
 }
 
 .input {
@@ -26,5 +26,5 @@
 
 .input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.15);
-}
+  box-shadow: 0 0 0 3px rgba(72, 32, 233, 0.15);
+}

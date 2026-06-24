@@ -18,10 +18,10 @@ export default function NaoAutorizadoPage() {
           Entre em contato com o administrador caso acredite que isso seja um erro.
         </p>
         <Row>
-          <Button type="azul" onClick={() => router.push('/menu')}>
+          <Button onClick={() => router.push('/menu')}>
             Voltar ao Menu
           </Button>
-          <Button type="laranja" onClick={() => router.push('/login')}>
+          <Button variant="secondary" onClick={() => router.push('/login')}>
             Fazer Login
           </Button>
         </Row>

@@ -17,19 +17,22 @@
 .table th{
     background-color: var(--background-color-white);
     font-weight: 600;
-    text-align: center;
+    text-align: left;
     padding: var(--spacing-md, 1rem);
-    border-bottom: 2px solid #dee2e6;
+    border-bottom: 2px solid rgba(72, 32, 233, 0.15);
+    color: var(--primary-color);
 }
 
 .table td{
     padding: var(--spacing-md, 1rem);
     border-bottom: 1px solid #e9ecef;
     vertical-align: middle;
+    text-align: left;
 }
 
 .table tbody tr:hover{
-    background-color: rgba(0,0,0, 0.02);
+    background-color: rgba(72, 32, 233, 0.03);
     cursor: default;
 }
+
 

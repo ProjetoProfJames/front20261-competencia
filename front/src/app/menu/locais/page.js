@@ -118,8 +118,8 @@ export default function Locais() {
     ...l,
     acoes: (
       <Row align="center" justify="evenly">
-        <Button type="laranja" onClick={() => abrirModalEditar(l)}>Editar</Button>
-        <Button type="vermelho" onClick={() => abrirModalExcluir(l)}>Excluir</Button>
+        <Button variant="secondary" onClick={() => abrirModalEditar(l)}>Editar</Button>
+        <Button variant="danger" onClick={() => abrirModalExcluir(l)}>Excluir</Button>
       </Row>
     ),
   }));
@@ -133,7 +133,7 @@ export default function Locais() {
           </Col>
           <Col>
             <Row align="center" justify="end">
-              <Button type="azul" onClick={abrirModalCriar}>+ Novo Local</Button>
+              <Button onClick={abrirModalCriar}>+ Novo Local</Button>
             </Row>
           </Col>
         </Row>
@@ -162,8 +162,8 @@ export default function Locais() {
             )}
 
             <Row align="center" justify="evenly">
-              <Button type="azul" onClick={salvarLocal}>Salvar</Button>
-              <Button type="vermelho" onClick={fecharModal}>Cancelar</Button>
+              <Button onClick={salvarLocal}>Salvar</Button>
+              <Button variant="danger" onClick={fecharModal}>Cancelar</Button>
             </Row>
           </Modal>
         )}
@@ -175,8 +175,8 @@ export default function Locais() {
               Tem certeza que deseja excluir o local <strong>{excluindo.numero}</strong>?
             </p>
             <Row align="center" justify="evenly">
-              <Button type="vermelho" onClick={confirmarExclusao}>Confirmar</Button>
-              <Button type="azul" onClick={fecharModalExcluir}>Cancelar</Button>
+              <Button variant="danger" onClick={confirmarExclusao}>Confirmar</Button>
+              <Button onClick={fecharModalExcluir}>Cancelar</Button>
             </Row>
           </Modal>
         )}
