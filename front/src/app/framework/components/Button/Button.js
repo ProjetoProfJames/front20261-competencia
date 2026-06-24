@@ -5,34 +5,21 @@ import styles from './button.module.css';
 export default function Button({
   children,
   onClick,
-  variant,
+  variant = "primary",
   type = "button",
   className = "",
   ...props
 }) {
   const htmlTypes = new Set(["button", "submit", "reset"]);
-  const legacyStyles = {
-    azul: styles.btnprimary,
-    laranja: styles.btnsecondary,
-    vermelho: styles.btntertiary,
-  };
-  const modernStyles = {
-    primary: "btn-primary",
-    success: "btn-success",
-    danger: "btn-danger",
-  };
 
-  const styleVariant =
-    variant && (legacyStyles[variant] || modernStyles[variant])
-      ? variant
-      : type && (legacyStyles[type] || modernStyles[type])
-        ? type
-        : "primary";
+  const variantStyles = {
+    primary: styles.btnprimary,
+    secondary: styles.btnsecondary,
+    danger: styles.btntertiary
+  };
 
   const resolvedType = htmlTypes.has(type) ? type : "button";
-  const resolvedClassName = legacyStyles[styleVariant]
-    ? `${legacyStyles[styleVariant]} ${className}`.trim()
-    : `${"btn px-8 py-3 text-base font-medium transition-all duration-300"} ${modernStyles[styleVariant] || modernStyles.primary} ${className}`.trim();
+  const resolvedClassName = `${variantStyles[variant] || styles.btnprimary} ${className}`.trim();
 
   return (
     <button

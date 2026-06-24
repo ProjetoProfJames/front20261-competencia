@@ -11,21 +11,21 @@ import Row from '../Layouts/Row';
 export default function Header() {
     const router = useRouter();
     const [estaAutenticado, setEstaAutenticado] = useState(false);
-    
+
     useEffect(() => {
         setEstaAutenticado(verificarToken())
     }, []);
 
-    function handleLogout(){
+    function handleLogout() {
         removerToken()
         setEstaAutenticado(false)
         router.push('/login')
     }
 
     function botoeMenu() {
-        const paginas = ['users', 'turmas', 'projetos', 'locais', 'cursos','periodos-letivos']
-        return( paginas.map( pagina => (
-            <Button key={pagina} type={'azul'} onClick={() => router.push(`/menu/${pagina}`)}>{pagina}</Button>
+        const paginas = ['users', 'turmas', 'projetos', 'locais', 'cursos', 'periodos-letivos']
+        return (paginas.map(pagina => (
+            <Button key={pagina} onClick={() => router.push(`/menu/${pagina}`)}>{pagina}</Button>
         )))
     }
 
@@ -39,7 +39,7 @@ export default function Header() {
                     <div>
                         <Row align={'center'} justify={'evenly'}>
                             {botoeMenu()}
-                            <Button type={'laranja'} onClick={() => router.push(`/menu`)}>Menu</Button>
+                            <Button variant="secondary" onClick={() => router.push(`/menu`)}>Menu</Button>
                         </Row>
                     </div>
                 ) : (
@@ -47,11 +47,11 @@ export default function Header() {
                 )}
                 {estaAutenticado ? (
                     <div>
-                        <Button type={'vermelho'} onClick={() => handleLogout()}>Log-out</Button>
+                        <Button variant="danger" onClick={() => handleLogout()}>Log-out</Button>
                     </div>
                 ) : (
                     <div>
-                        <Button type={'azul'} onClick={() => router.push('/login')}>Login</Button>
+                        <Button variant="success" onClick={() => router.push('/login')}>Login</Button>
                     </div>
                 )}
             </header>
