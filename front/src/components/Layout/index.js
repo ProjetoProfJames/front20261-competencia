@@ -29,10 +29,17 @@ export default function LayoutComponent({ children }) {
 
   const showUsers = authService.hasPermission(['ADMIN', 'PROFESSOR'])
   const showLocals = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
+<<<<<<< HEAD
+  const showCourses = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const showPeriods = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const showClasses = authService.hasPermission(['PROFESSOR'])
+  const showProjects = true
+=======
   const showProjects = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO', 'AVALIADOR_EXTERNO'])
   const showTurmas = authService.hasPermission(['PROFESSOR'])
   const showCursos = authService.hasPermission(['ADMIN'])
   const showPeriodos = authService.hasPermission(['ADMIN'])
+>>>>>>> origin/squad-5
 
   return (
     <>
@@ -43,9 +50,15 @@ export default function LayoutComponent({ children }) {
             {showProjects && <Link href="/projetos">Projetos</Link>}
             {showLocals && <Link href="/locais">Locais</Link>}
             {showUsers && <Link href="/usuarios">Usuários</Link>}
+<<<<<<< HEAD
+            {showCourses && <Link href="/cursos">Cursos</Link>}
+            {showPeriods && <Link href="/periodos">Periodos</Link>}
+            {showClasses && <Link href="/turmas">Turmas</Link>}
+=======
             {showTurmas && <Link href="/turmas">Turmas</Link>}
             {showCursos && <Link href="/cursos">Cursos</Link>}
             {showPeriodos && <Link href="/periodos">Periodos</Link>}
+>>>>>>> origin/squad-5
           </nav>
           <div className="user-info">
             <span className="user-name">{user?.username}</span>

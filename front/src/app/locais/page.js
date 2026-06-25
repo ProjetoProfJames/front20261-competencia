@@ -39,8 +39,8 @@ export default function LocaisPage() {
     }
   }
 
-  const canEdit = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
-  const canDelete = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
+  const canEdit = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const canDelete = authService.hasPermission(['ADMIN', 'COORDENADOR'])
 
   return (
     <LayoutComponent>
