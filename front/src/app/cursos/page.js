@@ -18,7 +18,7 @@ export default function CursosPage() {
   const fetchCursos = () => {
     setLoading(true);
     const token = localStorage.getItem("token");
-    
+
     fetch("http://localhost:8080/api/cursos", {
       method: "GET",
       headers: {
@@ -26,15 +26,16 @@ export default function CursosPage() {
         "Authorization": `Bearer ${token}`
       }
     })
-      .then((res) => res.json())
-      .then((data) => {
-        setCursos(data || []);
-        setLoading(false);
+      .then((response) => response.json())
+      .then((apiResponse) => {
+        if (apiResponse && apiResponse.data) {
+          setCursos(apiResponse.data);
+        } else {
+          setCursos(apiResponse || []);
+        }
       })
-      .catch((err) => {
-        console.error("Erro ao buscar cursos:", err);
-        setLoading(false);
-      });
+      .catch((error) => console.error(error))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -46,35 +47,33 @@ export default function CursosPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleEdit = (curso) => {
+  const handleEditClick = (curso) => {
     setEditingId(curso.id);
-    setFormData({ nome: curso.nome, sigla: curso.sigla });
+    setFormData({
+      nome: curso.nome || "",
+      sigla: curso.sigla || ""
+    });
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id) => {
-    if (!confirm("Deseja realmente excluir este curso?")) return;
-    const token = localStorage.getItem("token");
-
-    fetch(`http://localhost:8080/api/cursos/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    })
-      .then(() => fetchCursos())
-      .catch((err) => console.error("Erro ao deletar curso:", err));
+  const handleToggleForm = () => {
+    if (isFormOpen) {
+      setIsFormOpen(false);
+      setEditingId(null);
+      setFormData({ nome: "", sigla: "" });
+    } else {
+      setIsFormOpen(true);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    
-    const url = editingId 
-      ? `http://localhost:8080/api/cursos/${editingId}`
-      : "http://localhost:8080/api/cursos";
-      
+
     const method = editingId ? "PUT" : "POST";
+    const url = editingId 
+      ? `http://localhost:8080/api/cursos/${editingId}` 
+      : "http://localhost:8080/api/cursos";
 
     fetch(url, {
       method: method,
@@ -84,65 +83,92 @@ export default function CursosPage() {
       },
       body: JSON.stringify(formData)
     })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro na requisição.");
+        }
+        return response.json();
+      })
       .then(() => {
+        alert(editingId ? "Curso atualizado com sucesso!" : "Curso criado com sucesso!");
         setIsFormOpen(false);
         setEditingId(null);
         setFormData({ nome: "", sigla: "" });
         fetchCursos();
       })
-      .catch((err) => console.error("Erro ao salvar curso:", err));
+      .catch((error) => {
+        console.error("Erro no submit:", error);
+        alert("Erro ao processar a requisição.");
+      });
   };
 
-  const headers = ["ID", "Nome", "Sigla", "Ações"];
+  const handleDelete = (id) => {
+    if (!window.confirm("Tem certeza que deseja excluir este curso?")) return;
+    const token = localStorage.getItem("token");
 
-  const rows = cursos.map((curso) => [
-    curso.id,
-    curso.nome,
-    curso.sigla,
-    <div key={curso.id} className="flex gap-2">
-      <Button onClick={() => handleEdit(curso)}>Editar</Button>
-      <Button variant="danger" onClick={() => handleDelete(curso.id)}>Excluir</Button>
-    </div>
-  ]);
+    fetch(`http://localhost:8080/api/cursos/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro ao excluir curso.");
+        }
+        alert("Curso excluído com sucesso!");
+        fetchCursos();
+      })
+      .catch((error) => {
+        console.error("Erro na exclusão:", error);
+        alert("Erro ao excluir curso.");
+      });
+  };
+
+  const columns = [
+    { header: "Nome", accessor: "nome" },
+    { header: "Sigla", accessor: "sigla" },
+    { 
+      header: "Ações", 
+      render: (row) => (
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Button type="button" onClick={() => handleEditClick(row)}>Editar</Button>
+          <Button type="button" onClick={() => handleDelete(row.id)}>Excluir</Button>
+        </div>
+      )
+    }
+  ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Cadastro de Cursos</h1>
-        {!isFormOpen && (
-          <Button onClick={() => { setIsFormOpen(true); setEditingId(null); setFormData({ nome: "", sigla: "" }); }}>
-            Novo Curso
-          </Button>
-        )}
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
+        <h1 style={{ color: '#333', margin: 0 }}>Gestão de Cursos</h1>
+        
+        <Button type="button" onClick={handleToggleForm}>
+          {isFormOpen ? "Voltar para Lista" : "+ Novo Curso"}
+        </Button>
       </div>
+      
+      {isFormOpen ? (
+        <div style={{ backgroundColor: "#f9f9f9", padding: "20px", marginTop: "20px", border: "1px solid #ddd", borderRadius: "5px" }}>
+          <h3 style={{ marginTop: 0, color: "#333" }}>
+            {editingId ? "Editar Curso" : "Cadastrar Novo Curso"}
+          </h3>
+          
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px", maxWidth: "400px" }}>
+            <FormInput label="Nome do Curso" type="text" name="nome" value={formData.nome} onChange={handleInputChange} />
+            <FormInput label="Sigla" type="text" name="sigla" value={formData.sigla} onChange={handleInputChange} />
 
-      {isFormOpen && (
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow mb-6 max-w-md">
-          <h2 className="text-xl mb-4 font-semibold">{editingId ? "Editar Curso" : "Novo Curso"}</h2>
-          <div className="flex flex-col gap-4">
-            <FormInput
-              label="Nome do Curso"
-              name="nome"
-              value={formData.nome}
-              onChange={handleInputChange}
-              required
-            />
-            <FormInput
-              label="Sigla"
-              name="sigla"
-              value={formData.sigla}
-              onChange={handleInputChange}
-              required
-            />
-            <div className="flex gap-2 mt-2">
-              <Button type="submit">Salvar</Button>
-              <Button type="button" variant="secondary" onClick={() => setIsFormOpen(false)}>Cancelar</Button>
-            </div>
-          </div>
-        </form>
+            <Button type="submit">{editingId ? "Atualizar Curso" : "Salvar Curso"}</Button>
+          </form>
+        </div>
+      ) : (
+        loading ? (
+          <p>Carregando cursos...</p>
+        ) : (
+          <Table columns={columns} data={cursos} />
+        )
       )}
-
-      {loading ? <p>Carregando...</p> : <Table headers={headers} rows={rows} />}
     </div>
   );
 }
