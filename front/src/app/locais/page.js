@@ -95,13 +95,13 @@ export default function LocaisPage() {
         fetchLocais();
       })
       .catch((error) => {
-        console.error("Erro no submit:", error);
+        console.error(error);
         alert("Erro ao processar a requisição.");
       });
   };
 
   const handleDelete = (id) => {
-    if (!window.confirm("Tem certeza que deseja excluir este local?")) return;
+    if (!confirm("Tem certeza que deseja excluir este local?")) return;
 
     const token = localStorage.getItem("token");
 
@@ -122,7 +122,7 @@ export default function LocaisPage() {
         fetchLocais();
       })
       .catch((error) => {
-        console.error("Erro na exclusão:", error);
+        console.error(error);
         alert("Erro ao excluir local.");
       });
   };
@@ -135,31 +135,29 @@ export default function LocaisPage() {
       render: (row) => (
         <div style={{ display: "flex", gap: "10px" }}>
           <Button type="button" onClick={() => handleEditClick(row)}>Editar</Button>
-          <Button type="button" onClick={() => handleDelete(row.id)}>Excluir</Button>
+          <Button type="button" variant="danger" onClick={() => handleDelete(row.id)}>Excluir</Button>
         </div>
       )
     }
   ];
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
-        <h1 style={{ color: '#333', margin: 0 }}>Gestão de Locais</h1>
-        
+    <div className="container" style={{ alignItems: "stretch", justifyContent: "flex-start" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h1 className="title">Gestão de Locais</h1>
         <Button type="button" onClick={handleToggleForm}>
           {isFormOpen ? "Voltar para Lista" : "+ Novo Local"}
         </Button>
       </div>
       
       {isFormOpen ? (
-        <div style={{ backgroundColor: "#f9f9f9", padding: "20px", marginTop: "20px", border: "1px solid #ddd", borderRadius: "5px" }}>
-          <h3 style={{ marginTop: 0, color: "#333" }}>
+        <div className="card" style={{ marginBottom: "20px", textAlign: "left", maxWidth: "400px", alignSelf: "center" }}>
+          <h2 className="subtitle">
             {editingId ? "Editar Local" : "Cadastrar Novo Local"}
-          </h3>
+          </h2>
           
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px", maxWidth: "400px" }}>
-            <FormInput label="Identificação do Local (Ex: Sala 204)" type="text" name="numero" value={formData.numero} onChange={handleInputChange} />
-
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            <FormInput label="Identificação do Local (Ex: Sala 204)" type="text" name="numero" value={formData.numero} onChange={handleInputChange} required />
             <Button type="submit">{editingId ? "Atualizar Local" : "Salvar Local"}</Button>
           </form>
         </div>

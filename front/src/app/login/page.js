@@ -20,8 +20,6 @@ export default function LoginPage() {
       return;
     }
 
-    console.log("Enviando credenciais para o banco...", user);
-
     fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
       headers: {
@@ -39,16 +37,13 @@ export default function LoginPage() {
         return response.json();
       })
       .then((apiResponse) => {
-        console.log("Resposta bruta da API:", apiResponse);
-
         if (apiResponse && apiResponse.data && apiResponse.data.accessToken) {
           const token = apiResponse.data.accessToken;
-          const user = apiResponse.data.user;
+          const userData = apiResponse.data.user;
           
           localStorage.setItem("token", token);
-          localStorage.setItem("user", JSON.stringify(user));
+          localStorage.setItem("user", JSON.stringify(userData));
           
-          console.log("Token JWT armazenado com sucesso!");
           alert("Login realizado com sucesso!");
           router.push("/");
         } else {
@@ -56,27 +51,22 @@ export default function LoginPage() {
         }
       })
       .catch((error) => {
-        console.error("Erro na autenticação:", error);
         alert(error.message || "Erro ao conectar com o servidor do backend.");
       });
   };
 
-  const loadBootstrap = () => {
-    fetch("http://localhost:8080/api/public/bootstrap", { method: "POST" })
-      .then((response) => response.json())
-      .then((data) => console.log("Bootstrap carregado:", data))
-      .catch((error) => console.error("Erro ao carregar Bootstrap:", error));
-  };
-
   return (
-    <div>
-      <h1>Login</h1>
-      <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
-      <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
-      
-      <Button type="button" onClick={authenticate}>Login</Button>
-      <Button type="button" onClick={() => console.log("Redirecionar para cadastro")}>Cadastrar</Button>
-      <Button type="button" onClick={loadBootstrap}>Carregar Bootstrap</Button>
+    <div className="container">
+      <div className="card" style={{ width: "100%", maxWidth: "400px", display: "flex", flexDirection: "column", gap: "20px", padding: "40px 30px" }}>
+        <h1 className="title" style={{ fontSize: "2rem", marginBottom: "10px", textAlign: "center" }}>Login</h1>
+        
+        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+          <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} />
+          <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange} />
+        </div>
+        
+        <Button type="button" onClick={authenticate} style={{ marginTop: "10px" }}>Entrar no Sistema</Button>
+      </div>
     </div>
   );
 }
