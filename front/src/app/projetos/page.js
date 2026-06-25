@@ -42,9 +42,17 @@ export default function ProjetosPage() {
 
   return (
     <LayoutComponent>
-      <div className="pagina-cabecalho">
+      {/* CABEÇALHO ATUALIZADO COM O BOTÃO */}
+      <div className="pagina-cabecalho" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1>Projetos</h1>
+        <button 
+          onClick={() => router.push('/projetos/novo')}
+          style={{ padding: '8px 16px', cursor: 'pointer' }}
+        >
+          Novo Projeto
+        </button>
       </div>
+
       <table>
         <thead>
           <tr>
