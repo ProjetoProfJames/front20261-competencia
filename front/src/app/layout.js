@@ -1,4 +1,3 @@
-import Menu from "@/components/Menu";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./global.css";
 
