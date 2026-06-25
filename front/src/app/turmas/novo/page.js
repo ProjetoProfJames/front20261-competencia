@@ -19,12 +19,15 @@ export default function NovaTurmaPage() {
   const [disciplinas, setDisciplinas] = useState([])
   const [semestres, setSemestres] = useState([])
   const [professores, setProfessores] = useState([])
+  const [alunos, setAlunos] = useState([])
+
   const [form, setForm] = useState({
     nome: '',
     cursoIds: [],
     disciplinaId: '',
     semestreId: '',
-    professorIds: []
+    professorIds: [],
+    alunoIds: []
   })
 
   useEffect(() => {
@@ -45,7 +48,11 @@ export default function NovaTurmaPage() {
       setCursos(cursosData.data || [])
       setDisciplinas(disciplinasData.data || [])
       setSemestres(semestresData.data || [])
-      setProfessores((usuariosData.data || []).filter(user => user.profile === 'PROFESSOR'))
+      
+      const usuarios = usuariosData.data || []
+      setProfessores(usuarios.filter(user => user.profile === 'PROFESSOR'))
+      setAlunos(usuarios.filter(user => user.profile === 'ALUNO'))
+      
     } catch (err) {
       console.error('Erro ao carregar dados:', err)
       setError(err.message || 'Erro ao carregar dados do formulario')
@@ -68,6 +75,15 @@ export default function NovaTurmaPage() {
     setForm(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleAlunoCheckbox = (alunoId, checked) => {
+    setForm((prev) => ({
+      ...prev,
+      alunoIds: checked
+        ? [...prev.alunoIds, alunoId]
+        : prev.alunoIds.filter((id) => id !== alunoId),
+    }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -84,18 +100,35 @@ export default function NovaTurmaPage() {
 
     try {
       setLoading(true)
-      await api.post('/api/turmas', {
+      
+      const response = await api.post('/api/turmas', {
         nome: form.nome.trim(),
         cursoIds: form.cursoIds.map(Number),
         disciplinaId: Number(form.disciplinaId),
         semestreId: Number(form.semestreId),
         professorIds: form.professorIds.map(Number)
       })
-      alert('Turma criada com sucesso!')
+
+      const turmaCriada = response.data?.data || response.data
+      const turmaCriadaId = turmaCriada?.id
+
+      if (!turmaCriadaId) {
+        throw new Error("A turma foi criada, mas não foi possível recuperar o ID para adicionar os alunos.")
+      }
+
+      if (form.alunoIds && form.alunoIds.length > 0) {
+        for (const alunoId of form.alunoIds) {
+          await api.post(`/api/turmas/${turmaCriadaId}/alunos`, {
+            alunoId: Number(alunoId) 
+          })
+        }
+      }
+
+      alert('Turma criada e alunos vinculados com sucesso!')
       router.push('/turmas')
     } catch (err) {
-      console.error('Erro ao criar turma:', err)
-      setError(err.message || 'Erro ao criar turma')
+      console.error('Erro ao criar turma ou vincular alunos:', err)
+      setError(err.response?.data?.message || err.message || 'Erro ao processar a requisição')
     } finally {
       setLoading(false)
     }
@@ -188,7 +221,40 @@ export default function NovaTurmaPage() {
               </select>
             </div>
 
-            <div className="btn-group">
+            <div className="form-group">
+              <label>Alunos</label>
+              {alunos.length === 0 && <p style={{ fontSize: '14px', color: '#666' }}>Nenhum aluno cadastrado.</p>}
+              
+              {alunos.map((a) => (
+                <label
+                  key={a.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: "6px",
+                    padding: "4px 0",
+                    width: "100%",
+                    cursor: "pointer"
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{userLabel(a)}</span>
+                  <input
+                    type="checkbox"
+                    checked={form.alunoIds.includes(a.id)}
+                    onChange={(e) => handleAlunoCheckbox(a.id, e.target.checked)}
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      padding: "0",
+                      margin: "0",
+                      cursor: "pointer"
+                    }}
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className="btn-group" style={{ marginTop: '24px' }}>
               <button type="submit" disabled={loading}>
                 {loading ? 'Salvando...' : 'Criar Turma'}
               </button>
