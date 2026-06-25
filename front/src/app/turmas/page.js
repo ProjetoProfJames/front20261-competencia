@@ -1,9 +1,4 @@
 'use client'
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
->>>>>>> 24ac3991845d4c5ce5f63db6a4b26d0b545cccd9
 import LayoutComponent from '@/components/Layout'
 import { api } from '@/services/api'
 import { authService } from '@/services/authService'
@@ -32,13 +27,6 @@ export default function TurmasPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const user = authService.getUser()
-
-    if (!user || user.profile !== 'PROFESSOR') {
-      window.location.href = '/'
-      return
-    }
-
     loadTurmas()
   }, [])
 
@@ -71,21 +59,6 @@ export default function TurmasPage() {
   const canEdit = authService.hasPermission(['PROFESSOR'])
   const canDelete = authService.hasPermission(['PROFESSOR'])
 
-=======
-
-import { useEffect } from 'react'
-import LayoutComponent from '@/components/Layout'
-import { authService } from '@/services/authService'
-
-export default function TurmasPage() {
-  useEffect(() => {
-    const user = authService.getUser()
-    if (!user || user.profile !== 'PROFESSOR') {
-      window.location.href = '/'
-    }
-  }, [])
-
->>>>>>> origin/squad-5
   return (
     <LayoutComponent>
       <div className="pagina-cabecalho">
