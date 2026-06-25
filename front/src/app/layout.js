@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import "./global.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,15 +13,13 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "PIE Manager",
-  description: "Controle de Projeto Integrador de Extensão",
+  description: "Controle de Projeto Integrador de Extensao",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
-      </body>
+    <html lang="pt-BR">
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
     </html>
   );
 }
