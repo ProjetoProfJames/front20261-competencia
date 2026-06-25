@@ -34,7 +34,6 @@ export default function UsuariosPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    const savedRole = localStorage.getItem("user_profile");
     
     if (!token) {
       window.location.href = "/login";
@@ -43,7 +42,10 @@ export default function UsuariosPage() {
 
     try {
       const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      while (base64.length % 4) {
+        base64 += '=';
+      }
       const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join(''));
@@ -52,11 +54,15 @@ export default function UsuariosPage() {
       if (payload && payload.sub) {
         setCurrentUserEmail(payload.sub);
       }
+      if (payload) {
+        const roleExtraida = payload.profile || payload.role || payload.roles || localStorage.getItem("user_profile") || "ALUNO";
+        setUserRole(Array.isArray(roleExtraida) ? roleExtraida[0] : roleExtraida);
+      }
     } catch (e) {
       setCurrentUserEmail("");
+      setUserRole("ALUNO");
     }
 
-    if (savedRole) setUserRole(savedRole);
     fetchUsuarios();
   }, []);
 
@@ -90,15 +96,14 @@ export default function UsuariosPage() {
       return;
     }
 
-    if (!form.id) {
-      if (userRole === "COORDENADOR" && form.tipo !== "PROFESSOR" && form.tipo !== "ALUNO") {
-        setError("Permissão negada: Coordenadores só podem inserir novos Professores ou Alunos.");
-        return;
-      }
-      if (userRole === "PROFESSOR" && form.tipo !== "ALUNO") {
-        setError("Permissão negada: Professores só podem inserir novos Alunos.");
-        return;
-      }
+    if (userRole === "COORDENADOR" && form.tipo !== "PROFESSOR" && form.tipo !== "ALUNO" && form.tipo !== "AVALIADOR_EXTERNO") {
+      setError("Permissão negada: Coordenadores só podem gerenciar Professores, Alunos ou Avaliadores Externos.");
+      return;
+    }
+    
+    if (userRole === "PROFESSOR" && form.tipo !== "ALUNO") {
+      setError("Permissão negada: Professores só podem gerenciar Alunos.");
+      return;
     }
 
     try {
@@ -107,11 +112,9 @@ export default function UsuariosPage() {
       const method = form.id ? "PUT" : "POST";
 
       const payload = {
-        name: form.nome,
         username: form.nome,
         email: form.email,
         profile: form.tipo,
-        tipo: form.tipo,
         ...(form.id ? {} : { password: form.senha })
       };
 
@@ -146,18 +149,13 @@ export default function UsuariosPage() {
       return;
     }
 
-    if (userRole !== "ADMIN" && usuario.createdBy && usuario.createdBy !== currentUserEmail) {
-      setError("Permissão negada: Você só pode editar registros que você mesmo inseriu.");
-      return;
-    }
-
     setForm({ 
       id: usuario.id, 
-      nome: usuario.username || usuario.name || "", 
+      nome: usuario.username || "", 
       email: usuario.email || "", 
       senha: "", 
       confirmarSenha: "",
-      tipo: usuario.profile || usuario.tipo || "ALUNO" 
+      tipo: usuario.profile || "ALUNO" 
     });
   };
 
@@ -174,11 +172,6 @@ export default function UsuariosPage() {
 
     if (userRole === "ALUNO") {
       setError("Permissão negada: Alunos não possuem permissão de exclusão.");
-      return;
-    }
-
-    if (userRole !== "ADMIN" && usuario.createdBy && usuario.createdBy !== currentUserEmail) {
-      setError("Permissão negada: Você só pode excluir registros que você mesmo inseriu.");
       return;
     }
 
@@ -227,6 +220,7 @@ export default function UsuariosPage() {
               <option value="ALUNO">Aluno</option>
               <option value="PROFESSOR">Professor</option>
               <option value="COORDENADOR">Coordenador</option>
+              <option value="AVALIADOR_EXTERNO">Avaliador Externo</option>
               <option value="ADMIN">Administrador</option>
             </select>
           </div>
@@ -250,24 +244,19 @@ export default function UsuariosPage() {
           <tbody>
             {usuarios.map((u) => {
               const emailTabela = u.email || "";
-              const nomeTabela = u.username || u.name || "Não informado";
-              const podeModificar = userRole === "ADMIN" || !u.createdBy || u.createdBy === currentUserEmail;
+              const nomeTabela = u.username || "Não informado";
 
               return (
                 <tr key={u.id}>
                   <td>{u.id}</td>
                   <td>{nomeTabela}</td>
                   <td>{emailTabela}</td>
-                  <td>{u.profile || u.tipo}</td>
+                  <td>{u.profile}</td>
                   {userRole !== "ALUNO" && (
                     <td>
                       <div className="actions-cell">
-                        {podeModificar && (
-                          <>
-                            <button onClick={() => handleEditar(u)} className="btn-action edit">Editar</button>
-                            <button onClick={() => handleExcluir(u)} className="btn-action delete">Excluir</button>
-                          </>
-                        )}
+                        <button onClick={() => handleEditar(u)} className="btn-action edit">Editar</button>
+                        <button onClick={() => handleExcluir(u)} className="btn-action delete">Excluir</button>
                       </div>
                     </td>
                   )}
