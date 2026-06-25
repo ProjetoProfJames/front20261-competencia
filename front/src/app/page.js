@@ -2,27 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [perfil, setPerfil] = useState("");
-  const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const storedUser = localStorage.getItem("user");
-
-    if (!token || !storedUser) {
-      router.push("/login");
-      return;
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      const userProfile = parsedUser.profile || parsedUser.perfil || parsedUser.role || "";
+      setPerfil(userProfile.toUpperCase());
     }
-
-    const parsedUser = JSON.parse(storedUser);
-    const userProfile = parsedUser.profile || parsedUser.perfil || parsedUser.role || "";
-    setPerfil(userProfile.toUpperCase());
-  }, [router]);
-
-  if (!perfil) return null;
+  }, []);
 
   const podeAvaliar = perfil === "PROFESSOR" || perfil === "ROLE_PROFESSOR" || perfil === "AVALIADOR_EXTERNO";
 

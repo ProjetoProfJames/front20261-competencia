@@ -1,5 +1,6 @@
 package com.unisales.piemanager.projeto;
 
+import com.unisales.piemanager.avaliacao.AvaliacaoRepository;
 import com.unisales.piemanager.common.exception.BusinessException;
 import com.unisales.piemanager.common.exception.ResourceNotFoundException;
 import com.unisales.piemanager.local.LocalService;
@@ -32,19 +33,22 @@ public class ProjetoService {
     private final LocalService localService;
     private final UserRepository userRepository;
     private final TurmaRepository turmaRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
 
     public ProjetoService(ProjetoRepository projetoRepository,
-                          TurmaService turmaService,
-                          SemestreService semestreService,
-                          LocalService localService,
-                          UserRepository userRepository,
-                          TurmaRepository turmaRepository) {
+            TurmaService turmaService,
+            SemestreService semestreService,
+            LocalService localService,
+            UserRepository userRepository,
+            TurmaRepository turmaRepository,
+            AvaliacaoRepository avaliacaoRepository) {
         this.projetoRepository = projetoRepository;
         this.turmaService = turmaService;
         this.semestreService = semestreService;
         this.localService = localService;
         this.userRepository = userRepository;
         this.turmaRepository = turmaRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
     }
 
     @Transactional
@@ -79,17 +83,10 @@ public class ProjetoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjetoResponse> findAll(Long turmaId, Long semestreId, Long localId) {
-        if (turmaId != null) {
-            return projetoRepository.findByTurmaId(turmaId).stream().map(this::toResponse).toList();
-        }
-        if (semestreId != null) {
-            return projetoRepository.findBySemestreId(semestreId).stream().map(this::toResponse).toList();
-        }
-        if (localId != null) {
-            return projetoRepository.findByLocalId(localId).stream().map(this::toResponse).toList();
-        }
-        return projetoRepository.findAll().stream().map(this::toResponse).toList();
+    public List<ProjetoResponse> findAll(Long turmaId, Long semestreId, Long localId,
+            String componente, String professor, String turmaNome, String cursoNome) {
+        return projetoRepository.findAllComFiltros(turmaId, semestreId, localId, componente, professor, turmaNome, cursoNome)
+                .stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
@@ -159,9 +156,19 @@ public class ProjetoService {
         return toResponse(projetoRepository.save(projeto));
     }
 
+    /**
+     * Exclui um grupo de projeto.
+     * Regra de negócio: não é permitido excluir um grupo que possua avaliações vinculadas.
+     */
     @Transactional
     public void delete(Long id) {
         Projeto projeto = getEntityById(id);
+
+        if (avaliacaoRepository.existsByProjetoId(projeto.getId())) {
+            throw new BusinessException(
+                "Não é possível excluir este grupo pois ele possui avaliações vinculadas.");
+        }
+
         projetoRepository.delete(projeto);
     }
 
@@ -342,10 +349,10 @@ public class ProjetoService {
     }
 
     private void applyAlunoAutoInclusaoSeNecessario(String actorEmail,
-                                                    Turma turma,
-                                                    Semestre semestre,
-                                                    Set<User> integrantes,
-                                                    Long projetoId) {
+            Turma turma,
+            Semestre semestre,
+            Set<User> integrantes,
+            Long projetoId) {
         if (actorEmail == null || actorEmail.isBlank()) {
             return;
         }
