@@ -4,10 +4,26 @@ import { useState, useEffect } from "react";
 import Button from "@/app/framework/components/Button/Button";
 import Modal from "@/app/framework/components/Modal/Modal";
 import FormInput from "@/app/framework/components/FormInput/index";
-import { grupoService } from "@/utils/api/api";
-import { listarTurmas } from "@/utils/services/turmaService";
-import { listarUsuarios } from "@/utils/services/userService";
-import { apiFetch } from "@/utils/services/api";
+import Table from "@/app/framework/components/Table/index";
+
+import { carregarDadosPage } from "./actions/carregarDados";
+import {
+  salvarGrupo,
+  validarSubmitGrupo,
+  excluirGrupo,
+} from "./actions/grupoActions";
+import {
+  avaliarGrupo,
+  validarSubmitAvaliacao,
+} from "./actions/avaliacaoActions";
+
+import {
+  getNomeUsuario,
+  getNomeTurma,
+  normalizarTurma,
+} from'@/utils/projeto/grupoHelper';
+import { filtrarGrupos } from "@/utils/projeto/grupoFilter";
+import { columns, montarTableData } from "@/utils/projeto/grupoTable";
 
 export default function ProjetosPage() {
   const [grupos, setGrupos] = useState([]);
@@ -33,69 +49,15 @@ export default function ProjetosPage() {
     horarioFim: "",
   });
 
-  function getNomeUsuario(usuario) {
-    return usuario?.username || usuario?.nome || usuario?.name || usuario?.email || "Sem nome";
-  }
-
-  function getCursoTurma(turma) {
-    if (Array.isArray(turma?.cursos) && turma.cursos.length > 0) {
-      return turma.cursos.map((curso) => curso.nome).join(", ");
-    }
-
-    return turma?.curso?.nome || turma?.cursoNome || turma?.nome || "Curso não informado";
-  }
-
-  function getPeriodoTurma(turma) {
-    return turma?.semestre?.nome || turma?.periodoLetivo?.nome || turma?.periodo || "Período não informado";
-  }
-
-  function getSemestreIdTurma(turma) {
-    return turma?.semestre?.id || turma?.semestreId || turma?.periodoLetivo?.id || null;
-  }
-
-  function getNomeTurma(turma) {
-    return `${turma?.cursoFormatado || "Curso não informado"} - ${
-      turma?.periodoFormatado || "Período não informado"
-    }`;
-  }
-
-  function normalizarTurma(turma) {
-    return {
-      ...turma,
-      id: Number(turma.id),
-      cursoFormatado: getCursoTurma(turma),
-      periodoFormatado: getPeriodoTurma(turma),
-      semestreId: getSemestreIdTurma(turma),
-      professores: Array.isArray(turma.professores) ? turma.professores : [],
-      alunos: Array.isArray(turma.alunos) ? turma.alunos : [],
-    };
-  }
-
   async function carregarDados() {
-    try {
-      const [gruposRes, turmasRes, usuariosRes, locaisRes] = await Promise.all([
-        grupoService.getAll(),
-        listarTurmas(),
-        listarUsuarios(),
-        apiFetch("/api/locais"),
-      ]);
-
-      const turmasNormalizadas = Array.isArray(turmasRes)
-        ? turmasRes.map(normalizarTurma)
-        : [];
-
-      const usuarios = Array.isArray(usuariosRes) ? usuariosRes : [];
-
-      setGrupos(gruposRes || []);
-      setTurmas(turmasNormalizadas);
-      setLocais(Array.isArray(locaisRes) ? locaisRes : []);
-
-      setProfessores(usuarios.filter((usuario) => usuario.profile === "PROFESSOR"));
-      setAlunosDisponiveis(usuarios.filter((usuario) => usuario.profile === "ALUNO"));
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Erro ao carregar dados.");
-    }
+    await carregarDadosPage({
+      setGrupos,
+      setTurmas,
+      setLocais,
+      setProfessores,
+      setAlunosDisponiveis,
+      normalizarTurma,
+    });
   }
 
   useEffect(() => {
@@ -125,28 +87,25 @@ export default function ProjetosPage() {
     ? turmaSelecionada.alunos
     : [];
 
-  const filteredGrupos = grupos.filter((grupo) => {
-    const turma = getTurma(grupo.turmaId);
-    const professor = getProfessor(grupo.professorId);
-    const alunosGrupo = getAlunosPorIds(grupo.alunos || []);
-    const termo = search.trim().toLowerCase();
+  const filteredGrupos = filtrarGrupos({
+    grupos,
+    search,
+    getTurma,
+    getProfessor,
+    getAlunosPorIds,
+    getNomeUsuario,
+  });
 
-    if (!termo) return true;
-
-    const campos = [
-      grupo.nome,
-      turma?.cursoFormatado,
-      turma?.periodoFormatado,
-      getNomeUsuario(professor),
-      grupo.localApresentacao,
-      grupo.horarioInicio,
-      grupo.horarioFim,
-      ...alunosGrupo.map((aluno) => getNomeUsuario(aluno)),
-    ];
-
-    return campos.some((valor) =>
-      String(valor || "").toLowerCase().includes(termo)
-    );
+  const tableData = montarTableData({
+    grupos: filteredGrupos,
+    getTurma,
+    getProfessor,
+    getAlunosPorIds,
+    getNomeUsuario,
+    abrirModalEditarGrupo,
+    setGrupoParaAvaliar,
+    setNotaAvaliacao,
+    handleDelete,
   });
 
   function limparForm() {
@@ -166,6 +125,11 @@ export default function ProjetosPage() {
     setShowModal(false);
     setEditingGrupo(null);
     limparForm();
+  }
+
+  function fecharModalAvaliacao() {
+    setGrupoParaAvaliar(null);
+    setNotaAvaliacao("");
   }
 
   function abrirModalNovoGrupo() {
@@ -203,258 +167,83 @@ export default function ProjetosPage() {
   }
 
   async function handleSave(newGrupo) {
-    try {
-      const turmaSelecionadaSave = getTurma(newGrupo.turmaId);
-
-      if (!turmaSelecionadaSave) {
-        alert("Turma selecionada não encontrada.");
-        return;
-      }
-
-      const professoresDaTurmaSave = turmaSelecionadaSave.professores || [];
-      const alunosDaTurmaSave = turmaSelecionadaSave.alunos || [];
-
-      const professorPertenceTurma = professoresDaTurmaSave.some(
-        (professor) => Number(professor.id) === Number(newGrupo.professorId)
-      );
-
-      if (!professorPertenceTurma) {
-        alert("O professor selecionado não pertence à turma escolhida.");
-        return;
-      }
-
-      const alunosInvalidos = newGrupo.alunos.filter(
-        (alunoId) =>
-          !alunosDaTurmaSave.some((aluno) => Number(aluno.id) === Number(alunoId))
-      );
-
-      if (alunosInvalidos.length > 0) {
-        alert("Um ou mais alunos selecionados não pertencem à turma escolhida.");
-        return;
-      }
-
-      const payload = {
-        ...newGrupo,
-        id: editingGrupo?.id,
-        semestreId: turmaSelecionadaSave.semestreId,
-      };
-
-      await grupoService.save(payload);
-
-      fecharModalGrupo();
-      await carregarDados();
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Erro ao salvar grupo.");
-    }
+    await salvarGrupo({
+      newGrupo,
+      editingGrupo,
+      getTurma,
+      fecharModalGrupo,
+      carregarDados,
+    });
   }
 
   function handleSubmitGrupo(e) {
     e.preventDefault();
 
-    if (!form.turmaId) {
-      alert("Selecione uma turma.");
-      return;
-    }
-
-    if (!form.professorId) {
-      alert("Selecione um professor orientador.");
-      return;
-    }
-
-    if (!form.localId) {
-      alert("Selecione um local de apresentação.");
-      return;
-    }
-
-    if (form.alunos.length < 3 || form.alunos.length > 7) {
-      alert("O grupo deve ter entre 3 e 7 alunos.");
-      return;
-    }
-
-    if (!form.horarioInicio || !form.horarioFim) {
-      alert("Informe o horário de início e fim.");
-      return;
-    }
-
-    if (new Date(form.horarioInicio) >= new Date(form.horarioFim)) {
-      alert("O horário de início deve ser anterior ao horário de fim.");
-      return;
-    }
-
-    handleSave({
-      ...form,
-      turmaId: Number(form.turmaId),
-      professorId: Number(form.professorId),
-      localId: Number(form.localId),
-      semestreId: turmaSelecionada?.semestreId,
-      alunos: form.alunos.map(Number),
+    validarSubmitGrupo({
+      form,
+      turmaSelecionada,
+      handleSave,
     });
   }
 
   async function handleAvaliar(id, nota) {
-    try {
-      await grupoService.evaluate(id, nota);
-      setGrupoParaAvaliar(null);
-      setNotaAvaliacao("");
-      await carregarDados();
-    } catch (error) {
-      alert(error.message || "Erro ao avaliar grupo.");
-    }
+    await avaliarGrupo({
+      id,
+      nota,
+      setGrupoParaAvaliar,
+      setNotaAvaliacao,
+      carregarDados,
+    });
   }
 
   function handleSubmitAvaliacao(e) {
     e.preventDefault();
 
-    const notaNum = parseFloat(notaAvaliacao);
-
-    if (isNaN(notaNum) || notaNum < 0 || notaNum > 10) {
-      alert("A nota deve estar entre 0 e 10!");
-      return;
-    }
-
-    handleAvaliar(grupoParaAvaliar.id, notaNum);
+    validarSubmitAvaliacao({
+      notaAvaliacao,
+      grupoParaAvaliar,
+      handleAvaliar,
+    });
   }
 
   async function handleDelete(id) {
-    const grupo = grupos.find((g) => Number(g.id) === Number(id));
-
-    if (grupo?.nota !== undefined && grupo?.nota !== null) {
-      alert("Não é possível excluir grupo já avaliado!");
-      return;
-    }
-
-    if (confirm("Excluir este grupo?")) {
-      try {
-        await grupoService.delete(id);
-        await carregarDados();
-      } catch (error) {
-        alert(error.message || "Erro ao excluir grupo.");
-      }
-    }
+    await excluirGrupo({
+      id,
+      grupos,
+      carregarDados,
+    });
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-7xl">
-        <h1>Gestão de Projetos e Avaliações Acadêmicas</h1>
+    <div>
+      <h1>Projetos</h1>
 
-        <div className="flex justify-between items-center mb-8">
-          <FormInput
-            type="input"
-            name="search"
-            placeholder="Pesquisar por componente, professor, turma, curso, semestre ou grupo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <p>
+        Gerencie grupos, orientadores, componentes, horários e avaliações dos projetos.
+      </p>
 
-          <Button onClick={abrirModalNovoGrupo}>
-            + Novo Grupo
-          </Button>
-        </div>
+      <Button onClick={abrirModalNovoGrupo}>Novo Projeto</Button>
 
-        <div className="bg-white rounded-2xl shadow overflow-hidden">
-          <table className="table w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th>Grupo</th>
-                <th>Turma</th>
-                <th>Orientador</th>
-                <th>Componentes</th>
-                <th>Apresentação</th>
-                <th>Nota</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredGrupos.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="text-center py-12 text-gray-500">
-                    Nenhum grupo cadastrado ainda.
-                  </td>
-                </tr>
-              ) : (
-                filteredGrupos.map((grupo) => {
-                  const turma = getTurma(grupo.turmaId);
-                  const professor = getProfessor(grupo.professorId);
-                  const alunosGrupo = getAlunosPorIds(grupo.alunos || []);
-
-                  return (
-                    <tr key={grupo.id} className="border-t">
-                      <td className="font-medium">{grupo.nome}</td>
-
-                      <td>
-                        {turma
-                          ? `${turma.cursoFormatado} - ${turma.periodoFormatado}`
-                          : "-"}
-                      </td>
-
-                      <td>{getNomeUsuario(professor)}</td>
-
-                      <td>
-                        {alunosGrupo.length > 0
-                          ? alunosGrupo.map((aluno) => getNomeUsuario(aluno)).join(", ")
-                          : "-"}
-                      </td>
-
-                      <td className="text-sm">
-                        {grupo.localApresentacao || "-"}
-                        <br />
-                        {grupo.horarioInicio
-                          ? new Date(grupo.horarioInicio).toLocaleString("pt-BR")
-                          : ""}
-                        {grupo.horarioFim
-                          ? ` - ${new Date(grupo.horarioFim).toLocaleString("pt-BR")}`
-                          : ""}
-                      </td>
-
-                      <td className="font-bold text-lg">
-                        {grupo.nota !== undefined && grupo.nota !== null
-                          ? `${grupo.nota}/10`
-                          : "-"}
-                      </td>
-
-                      <td>
-                        <div className="space-x-4">
-                          <button
-                            onClick={() => abrirModalEditarGrupo(grupo)}
-                            className="text-blue-600"
-                          >
-                            Editar
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setGrupoParaAvaliar(grupo);
-                              setNotaAvaliacao(grupo.nota || "");
-                            }}
-                            className="text-green-600"
-                          >
-                            Avaliar
-                          </button>
-
-                          <button
-                            onClick={() => handleDelete(grupo.id)}
-                            className="text-red-600"
-                          >
-                            Excluir
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div style={{ marginTop: "8px", marginBottom: "8px" }}>
+        <FormInput
+          type="input"
+          name="search"
+          placeholder="Pesquisar projeto..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
       </div>
+
+      {filteredGrupos.length === 0 ? (
+        <p>Nenhum projeto cadastrado ainda.</p>
+      ) : (
+        <Table columns={columns} data={tableData} />
+      )}
 
       <Modal
         isOpen={showModal}
         onClose={fecharModalGrupo}
-        title={editingGrupo ? "Editar Grupo" : "Novo Grupo de Projeto"}
+        title={editingGrupo ? "Editar Projeto" : "Novo Projeto"}
       >
         <form onSubmit={handleSubmitGrupo}>
           <FormInput
@@ -497,7 +286,9 @@ export default function ProjetosPage() {
               <select
                 className="form-input"
                 value={form.professorId}
-                onChange={(e) => setForm({ ...form, professorId: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, professorId: e.target.value })
+                }
                 required
               >
                 <option value="">Selecione um professor</option>
@@ -592,7 +383,7 @@ export default function ProjetosPage() {
 
           <div className="form-actions">
             <Button type="submit" variant="success">
-              Salvar Grupo
+              Salvar Projeto
             </Button>
 
             <Button type="button" variant="danger" onClick={fecharModalGrupo}>
@@ -604,10 +395,7 @@ export default function ProjetosPage() {
 
       <Modal
         isOpen={!!grupoParaAvaliar}
-        onClose={() => {
-          setGrupoParaAvaliar(null);
-          setNotaAvaliacao("");
-        }}
+        onClose={fecharModalAvaliacao}
         title="Avaliação do Projeto"
       >
         {grupoParaAvaliar && (
@@ -640,10 +428,7 @@ export default function ProjetosPage() {
               <Button
                 type="button"
                 variant="danger"
-                onClick={() => {
-                  setGrupoParaAvaliar(null);
-                  setNotaAvaliacao("");
-                }}
+                onClick={fecharModalAvaliacao}
               >
                 Cancelar
               </Button>
