@@ -1,51 +1,56 @@
-import { apiRequest, readSession } from '@/lib/api'
-
-function getToken() {
-  const session = readSession()
-  return session?.token
-}
+import { api } from './api'
 
 export async function listarProjetos() {
-  return apiRequest('/api/projetos', { token: getToken() })
+  const response = await api.get('/api/projetos')
+  return response.data
 }
 
 export async function buscarProjeto(id) {
-  return apiRequest(`/api/projetos/${id}`, { token: getToken() })
+  const response = await api.get(`/api/projetos/${id}`)
+  return response.data
 }
 
 export async function criarProjeto(dados) {
-  return apiRequest('/api/projetos', { method: 'POST', body: dados, token: getToken() })
+  const response = await api.post('/api/projetos', dados)
+  return response.data
 }
 
 export async function editarProjeto(id, dados) {
-  return apiRequest(`/api/projetos/${id}`, { method: 'PUT', body: dados, token: getToken() })
+  const response = await api.put(`/api/projetos/${id}`, dados)
+  return response.data
 }
 
 export async function deletarProjeto(id) {
-  return apiRequest(`/api/projetos/${id}`, { method: 'DELETE', token: getToken() })
+  const response = await api.delete(`/api/projetos/${id}`)
+  return response.data
 }
 
 export async function adicionarIntegrante(projetoId, alunoId) {
-  return apiRequest(`/api/projetos/${projetoId}/integrantes`, { method: 'POST', body: { alunoId }, token: getToken() })
+  const response = await api.post(`/api/projetos/${projetoId}/integrantes`, { alunoId })
+  return response.data
 }
 
 export async function removerIntegrante(projetoId, alunoId) {
-  return apiRequest(`/api/projetos/${projetoId}/integrantes/${alunoId}`, { method: 'DELETE', token: getToken() })
+  const response = await api.delete(`/api/projetos/${projetoId}/integrantes/${alunoId}`)
+  return response.data
 }
 
 export async function criarAvaliacao(projetoId, dados) {
-  return apiRequest(`/api/projetos/${projetoId}/avaliacoes`, { method: 'POST', body: dados, token: getToken() })
+  const response = await api.post(`/api/projetos/${projetoId}/avaliacoes`, dados)
+  return response.data
 }
 
 export async function editarAvaliacao(projetoId, avaliacaoId, dados) {
-  return apiRequest(`/api/projetos/${projetoId}/avaliacoes/${avaliacaoId}`, { method: 'PUT', body: dados, token: getToken() })
+  const response = await api.put(`/api/projetos/${projetoId}/avaliacoes/${avaliacaoId}`, dados)
+  return response.data
 }
 
 export async function deletarAvaliacao(projetoId, avaliacaoId) {
-  return apiRequest(`/api/projetos/${projetoId}/avaliacoes/${avaliacaoId}`, { method: 'DELETE', token: getToken() })
+  const response = await api.delete(`/api/projetos/${projetoId}/avaliacoes/${avaliacaoId}`)
+  return response.data
 }
 
 export async function listarAvaliacoesPorProjeto(projetoId) {
-  const avaliacoes = await apiRequest('/api/avaliacoes', { token: getToken() })
-  return avaliacoes.filter((a) => a.projeto.id === Number(projetoId))
+  const response = await api.get('/api/avaliacoes')
+  return response.data.filter((a) => a.projeto.id === Number(projetoId))
 }

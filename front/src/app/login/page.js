@@ -1,99 +1,122 @@
-'use client';
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
-import FormInput from "@/components/FormInput";
-import { apiRequest, readSession, saveSession } from "@/lib/api";
+'use client'
+import { useState } from 'react'
+import Button from '@/components/Button'
+import FormInput from '@/components/FormInput'
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [user, setUser] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
-  const [bootstrapping, setBootstrapping] = useState(false);
-  const [notice, setNotice] = useState("");
+  const [user, setUser] = useState({ email: '', password: '' })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setUser((prevUser) => ({ ...prevUser, [name]: value }));
-  };
+    const { name, value } = e.target
+    setUser((prevUser) => ({ ...prevUser, [name]: value }))
+    setError('')
+  }
 
-  useEffect(() => {
-    const session = readSession();
-
-    if (session?.token) {
-      router.replace("/");
+  const authenticate = async (e) => {
+    e.preventDefault()
+    if (!user.email || !user.password) {
+      setError('Preencha o email e a senha.')
+      return
     }
-  }, [router]);
 
-  const authenticate = async (event) => {
-    event.preventDefault();
-    setLoading(true);
-    setNotice("");
-
+    setLoading(true)
     try {
-      const data = await apiRequest("/api/auth/login", {
-        method: "POST",
-        body: {
-          email: user.email.trim().toLowerCase(),
-          password: user.password,
-        },
-      });
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email: user.email.trim().toLowerCase(), 
+          password: user.password 
+        }),
+      })
 
-      saveSession({
-        tokenType: data.tokenType,
-        token: data.accessToken,
-        expiresIn: data.expiresIn,
-        user: data.user,
-      });
+      const data = await response.json()
 
-      router.replace("/");
-    } catch (error) {
-      setNotice(error.message || "Falha ao autenticar");
+      if (!response.ok) {
+        setError(data.message || 'Email ou senha inválidos.')
+        return
+      }
+
+      localStorage.setItem('token', data.data.accessToken)
+      localStorage.setItem('user', JSON.stringify(data.data.user))
+
+      window.location.href = '/'
+    } catch (e) {
+      console.error('Erro ao conectar:', e)
+      setError('Erro ao conectar com o servidor.')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const loadBootstrap = async () => {
-    setBootstrapping(true);
-    setNotice("");
-
     try {
-      const result = await apiRequest("/api/public/bootstrap", {
-        method: "POST",
-      });
-
-      setNotice(result?.adminCreated ? "Acesso de teste criado com sucesso" : "O acesso de teste já existia");
-    } catch (error) {
-      setNotice(error.message || "Erro ao carregar bootstrap");
+      setLoading(true)
+      const response = await fetch('http://localhost:8080/api/public/bootstrap', { method: 'POST' })
+      const data = await response.json()
+      alert(data.message || 'Dados carregados com sucesso!')
+    } catch (e) {
+      alert('Erro ao carregar dados.')
     } finally {
-      setBootstrapping(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <main className="auth-screen">
-      <section className="auth-card">
-        <div className="auth-card__brand">
-          <h1>PIE Manager</h1>
-        </div>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--gray-50)' }}>
+      <div className="form-container" style={{ maxWidth: '400px' }}>
+        <h1 style={{ textAlign: 'center', marginBottom: '32px' }}>PIE Manager</h1>
 
-        <form className="auth-form" onSubmit={authenticate}>
-          <FormInput label="Email" type="email" name="email" value={user.email} onChange={handleChange} placeholder="voce@exemplo.com" required />
-          <FormInput label="Senha" type="password" name="password" value={user.password} onChange={handleChange} placeholder="Sua senha" required />
+        {error && (
+          <div className="alert alert-error">{error}</div>
+        )}
 
-          {notice ? <div className="notice-box">{notice}</div> : null}
+        <form onSubmit={authenticate}>
+          <FormInput
+            label="Email"
+            type="email"
+            name="email"
+            value={user.email}
+            onChange={handleChange}
+          />
+          <FormInput
+            label="Senha"
+            type="password"
+            name="password"
+            value={user.password}
+            onChange={handleChange}
+          />
 
-          <div className="auth-actions">
-            <Button type="button" variant="secondary" onClick={loadBootstrap} disabled={loading || bootstrapping} fullWidth>
-              {bootstrapping ? "Criando acesso..." : "Criar acesso de teste"}
-            </Button>
-            <Button type="submit" disabled={loading} fullWidth>
-              {loading ? "Entrando..." : "Entrar"}
+          <div className="btn-group">
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </div>
         </form>
-      </section>
-    </main>
-  );
+
+        <hr style={{ margin: '24px 0', borderColor: 'var(--gray-200)' }} />
+
+        <p style={{ textAlign: 'center', marginBottom: '16px', color: 'var(--gray-600)', fontSize: '0.9rem' }}>
+          Primeira vez aqui?
+        </p>
+
+        <Button
+          type="button"
+          onClick={loadBootstrap}
+          disabled={loading}
+          style={{ width: '100%', backgroundColor: 'var(--success)' }}
+        >
+          {loading ? 'Carregando...' : 'Carregar Dados de Teste'}
+        </Button>
+
+        <p style={{ textAlign: 'center', marginTop: '16px', color: 'var(--gray-600)', fontSize: '0.85rem' }}>
+          Use este botão para popular o banco com dados de teste.
+          <br />
+          <strong>Credenciais:</strong> admin@unisales.br / admin@123
+        </p>
+      </div>
+    </div>
+  )
 }

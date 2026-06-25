@@ -1,26 +1,26 @@
-import { apiRequest, readSession } from '@/lib/api'
-
-function getToken() {
-  const session = readSession()
-  return session?.token
-}
+import { api } from './api'
 
 export async function listarCursos() {
-  return apiRequest('/api/cursos', { token: getToken() })
+  const response = await api.get('/api/cursos')
+  return response.data
 }
 
 export async function buscarCurso(id) {
-  return apiRequest(`/api/cursos/${id}`, { token: getToken() })
+  const response = await api.get(`/api/cursos/${id}`)
+  return response.data
 }
 
 export async function criarCurso(dados) {
-  return apiRequest('/api/cursos', { method: 'POST', body: dados, token: getToken() })
+  const response = await api.post('/api/cursos', dados)
+  return response.data
 }
 
 export async function editarCurso(id, dados) {
-  return apiRequest(`/api/cursos/${id}`, { method: 'PUT', body: dados, token: getToken() })
+  const response = await api.put(`/api/cursos/${id}`, dados)
+  return response.data
 }
 
 export async function deletarCurso(id) {
-  return apiRequest(`/api/cursos/${id}`, { method: 'DELETE', token: getToken() })
+  const response = await api.delete(`/api/cursos/${id}`)
+  return response.data
 }

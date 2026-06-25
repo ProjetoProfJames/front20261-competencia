@@ -1,26 +1,26 @@
-import { apiRequest, readSession } from '@/lib/api'
-
-function getToken() {
-  const session = readSession()
-  return session?.token
-}
+import { api } from './api'
 
 export async function listarTurmas() {
-  return apiRequest('/api/turmas', { token: getToken() })
+  const response = await api.get('/api/turmas')
+  return response.data
 }
 
 export async function buscarTurma(id) {
-  return apiRequest(`/api/turmas/${id}`, { token: getToken() })
+  const response = await api.get(`/api/turmas/${id}`)
+  return response.data
 }
 
 export async function criarTurma(dados) {
-  return apiRequest('/api/turmas', { method: 'POST', body: dados, token: getToken() })
+  const response = await api.post('/api/turmas', dados)
+  return response.data
 }
 
 export async function editarTurma(id, dados) {
-  return apiRequest(`/api/turmas/${id}`, { method: 'PUT', body: dados, token: getToken() })
+  const response = await api.put(`/api/turmas/${id}`, dados)
+  return response.data
 }
 
 export async function deletarTurma(id) {
-  return apiRequest(`/api/turmas/${id}`, { method: 'DELETE', token: getToken() })
+  const response = await api.delete(`/api/turmas/${id}`)
+  return response.data
 }
