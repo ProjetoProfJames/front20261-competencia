@@ -44,9 +44,11 @@ export default function TurmasPage() {
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [enrollingId, setEnrollingId] = useState(null);
 
   const canCreateEdit = currentUser?.profile === "PROFESSOR";
   const canDelete = hasAnyProfile(currentUser, ["PROFESSOR", "ADMIN"]);
+  const canEnroll = currentUser?.profile === "ALUNO";
 
   const professores = useMemo(() => {
     return users.filter((user) => user.profile === "PROFESSOR");
@@ -300,8 +302,49 @@ export default function TurmasPage() {
     }
   };
 
+  const isCurrentAlunoEnrolled = (turma) => {
+    return (turma.alunos || []).some((aluno) => (
+      aluno.id === currentUser?.id || aluno.email === currentUser?.email
+    ));
+  };
+
+  const handleEnroll = async (turma) => {
+    setEnrollingId(turma.id);
+    setStatus(null);
+
+    try {
+      await apiRequest(`/turmas/${turma.id}/matriculas`, { method: "POST" });
+      setStatus({ type: "success", message: "Matrícula realizada com sucesso." });
+      await loadTurmas();
+    } catch (error) {
+      setStatus({ type: "error", message: error.message });
+    } finally {
+      setEnrollingId(null);
+    }
+  };
+
   const renderActions = (turma) => {
     const actions = [];
+
+    if (canEnroll) {
+      if (isCurrentAlunoEnrolled(turma)) {
+        actions.push(
+          <span key="enrolled" className="badge">
+            Matriculado
+          </span>
+        );
+      } else {
+        actions.push(
+          <Button
+            key="enroll"
+            onClick={() => handleEnroll(turma)}
+            disabled={enrollingId === turma.id}
+          >
+            {enrollingId === turma.id ? "Matriculando..." : "Matricular"}
+          </Button>
+        );
+      }
+    }
 
     if (canCreateEdit) {
       actions.push(
@@ -466,7 +509,7 @@ export default function TurmasPage() {
             columns={columns}
             rows={turmas}
             emptyMessage="Nenhuma turma encontrada."
-            renderActions={canCreateEdit || canDelete ? renderActions : undefined}
+            renderActions={canCreateEdit || canDelete || canEnroll ? renderActions : undefined}
           />
         )}
       </section>
