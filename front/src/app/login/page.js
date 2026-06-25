@@ -67,7 +67,9 @@ export default function LoginPage() {
         return response.json();
       })
       .then((data) => console.log("Bootstrap carregado:", data))
-      .catch((requestError) => console.error("Erro ao carregar Bootstrap:", requestError));
+      .catch((requestError) =>
+        console.error("Erro ao carregar Bootstrap:", requestError)
+      );
   };
 
   return (
