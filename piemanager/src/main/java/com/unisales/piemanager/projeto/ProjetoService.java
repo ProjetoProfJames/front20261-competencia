@@ -1,5 +1,6 @@
 package com.unisales.piemanager.projeto;
 
+import com.unisales.piemanager.avaliacao.AvaliacaoRepository;
 import com.unisales.piemanager.common.exception.BusinessException;
 import com.unisales.piemanager.common.exception.ResourceNotFoundException;
 import com.unisales.piemanager.local.LocalService;
@@ -32,19 +33,22 @@ public class ProjetoService {
     private final LocalService localService;
     private final UserRepository userRepository;
     private final TurmaRepository turmaRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
 
     public ProjetoService(ProjetoRepository projetoRepository,
             TurmaService turmaService,
             SemestreService semestreService,
             LocalService localService,
             UserRepository userRepository,
-            TurmaRepository turmaRepository) {
+            TurmaRepository turmaRepository,
+            AvaliacaoRepository avaliacaoRepository) {
         this.projetoRepository = projetoRepository;
         this.turmaService = turmaService;
         this.semestreService = semestreService;
         this.localService = localService;
         this.userRepository = userRepository;
         this.turmaRepository = turmaRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
     }
 
     @Transactional
@@ -79,7 +83,7 @@ public class ProjetoService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjetoResponse> findAll(Long turmaId, Long semestreId, Long localId, 
+    public List<ProjetoResponse> findAll(Long turmaId, Long semestreId, Long localId,
             String componente, String professor, String turmaNome, String cursoNome) {
         return projetoRepository.findAllComFiltros(turmaId, semestreId, localId, componente, professor, turmaNome, cursoNome)
                 .stream().map(this::toResponse).toList();
@@ -152,9 +156,19 @@ public class ProjetoService {
         return toResponse(projetoRepository.save(projeto));
     }
 
+    /**
+     * Exclui um grupo de projeto.
+     * Regra de negócio: não é permitido excluir um grupo que possua avaliações vinculadas.
+     */
     @Transactional
     public void delete(Long id) {
         Projeto projeto = getEntityById(id);
+
+        if (avaliacaoRepository.existsByProjetoId(projeto.getId())) {
+            throw new BusinessException(
+                "Não é possível excluir este grupo pois ele possui avaliações vinculadas.");
+        }
+
         projetoRepository.delete(projeto);
     }
 

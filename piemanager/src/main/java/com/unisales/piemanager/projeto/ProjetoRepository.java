@@ -56,6 +56,22 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Long> {
       @Param("semestreId") Long semestreId,
       @Param("alunoId") Long alunoId);
 
+  // BUG CORRIGIDO: a query anterior estava com o corpo do findAllComFiltros por engano
+  @Query("""
+      select case when count(p) > 0 then true else false end
+      from Projeto p
+      join p.integrantes i
+      where p.turma.id = :turmaId
+        and p.semestre.id = :semestreId
+        and i.id = :alunoId
+        and p.id <> :projetoId
+      """)
+  boolean existsAlunoEmProjetoDaTurmaSemestreExcluindoProjeto(
+      @Param("turmaId") Long turmaId,
+      @Param("semestreId") Long semestreId,
+      @Param("alunoId") Long alunoId,
+      @Param("projetoId") Long projetoId);
+
   @Query("""
           select distinct p from Projeto p
           left join p.integrantes i
@@ -77,21 +93,6 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Long> {
       @Param("professor") String professor,
       @Param("turmaNome") String turmaNome,
       @Param("cursoNome") String cursoNome);
-
-  @Query("""
-          select distinct p from Projeto p
-          left join p.integrantes i
-          left join p.turma t
-          left join t.cursos c
-          where (:componente is null or lower(i.username) like lower(concat('%', :componente, '%')))
-            AND (:professor is null or lower(p.professorOrientador.username) like lower(concat('%', :professor, '%')))
-            AND (:turmaNome is null or lower(t.nome) like lower(concat('%', :turmaNome, '%')))
-            AND (:cursoNome is null or lower(c.nome) like lower(concat('%', :cursoNome, '%')))
-      """)
-  boolean existsAlunoEmProjetoDaTurmaSemestreExcluindoProjeto(@Param("turmaId") Long turmaId,
-      @Param("semestreId") Long semestreId,
-      @Param("alunoId") Long alunoId,
-      @Param("projetoId") Long projetoId);
 
   boolean existsByIdAndTurmaProfessoresEmailIgnoreCase(Long projetoId, String email);
 

@@ -1,9 +1,13 @@
-"use client";
-import { useEffect, useState, useCallback } from "react";
+'use client';
+
+import { useEffect, useState } from "react";
 import FormInput from "@/components/FormInput";
+import Table from "@/components/Table";
+import Button from "@/components/Button";
 
 export default function ListagemProjetos() {
   const [projetos, setProjetos] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [filtros, setFiltros] = useState({
     componente: "",
@@ -13,29 +17,38 @@ export default function ListagemProjetos() {
     semestre: "",
   });
 
-  const fetchProjetos = useCallback(async () => {
+  const carregarProjetos = async (parametrosBusca = {}) => {
+    setLoading(true);
+    const token = localStorage.getItem("token");
     const params = new URLSearchParams();
-    if (filtros.componente) params.append("componente", filtros.componente);
-    if (filtros.professor) params.append("professor", filtros.professor);
-    if (filtros.turma) params.append("turmaNome", filtros.turma);
-    if (filtros.curso) params.append("cursoNome", filtros.curso);
-    if (filtros.semestre) params.append("semestre", filtros.semestre);
+
+    if (parametrosBusca.componente) params.append("componente", parametrosBusca.componente);
+    if (parametrosBusca.professor) params.append("professor", parametrosBusca.professor);
+    if (parametrosBusca.turma) params.append("turmaNome", parametrosBusca.turma);
+    if (parametrosBusca.curso) params.append("cursoNome", parametrosBusca.curso);
+    if (parametrosBusca.semestre) params.append("semestre", parametrosBusca.semestre);
 
     try {
-      const res = await fetch(`/api/projetos?${params.toString()}`);
-      const data = await res.json();
+      const res = await fetch(`http://localhost:8080/api/projetos?${params.toString()}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
 
-      if (data.status === "SUCCESS") {
-        setProjetos(data.data);
-      }
+      const data = await res.json();
+      const extractedData = Array.isArray(data) ? data : data?.content || data?.data || [];
+      setProjetos(extractedData);
     } catch (error) {
-      console.error("Erro ao buscar projetos:", error);
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-  }, [filtros]);
+  };
 
   useEffect(() => {
-    fetchProjetos();
-  }, [fetchProjetos]);
+    carregarProjetos({});
+  }, []);
 
   const handleFiltroChange = (e) => {
     const { name, value } = e.target;
@@ -44,118 +57,91 @@ export default function ListagemProjetos() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchProjetos();
+    carregarProjetos(filtros);
   };
 
   const handleDelete = async (id) => {
-    if (confirm("Tem certeza que deseja excluir?")) {
-      await fetch(`/api/projetos/${id}`, { method: "DELETE" });
+    if (!confirm("Tem certeza que deseja excluir este projeto?")) return;
 
-      setProjetos(projetos.filter((p) => p.id !== id));
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/projetos/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        setProjetos(projetos.filter((p) => p.id !== id));
+      } else {
+        alert("Erro ao excluir. O seu perfil pode não ter permissão.");
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
-  return (
-    <div className="p-8 max-w-6xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold">Grupos de Projeto</h2>
+  const columns = [
+    {
+      header: "Turma",
+      render: (projeto) => projeto.turma?.nome || "Não informada"
+    },
+    {
+      header: "Semestre",
+      render: (projeto) => projeto.semestre?.nome || projeto.semestre?.periodo || "Não informado"
+    },
+    {
+      header: "Professor Orientador",
+      render: (projeto) => projeto.professorOrientador?.nome || projeto.professorOrientador?.username || "Não informado"
+    },
+    {
+      header: "Alunos (Componentes)",
+      render: (projeto) => projeto.integrantes && projeto.integrantes.length > 0
+        ? projeto.integrantes.map((i) => i.nome || i.username).join(", ")
+        : "Nenhum aluno"
+    },
+    {
+      header: "Ações",
+      render: (projeto) => (
+        <Button variant="danger" onClick={() => handleDelete(projeto.id)}>
+          Excluir
+        </Button>
+      )
+    }
+  ];
 
-      <form
-        onSubmit={handleSearch}
-        className="bg-gray-100 p-4 rounded-lg space-y-4"
-      >
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          <FormInput
-            label="Componente"
-            type="text"
-            name="componente"
-            value={filtros.componente}
-            onChange={handleFiltroChange}
-          />
-          <FormInput
-            label="Professor"
-            type="text"
-            name="professor"
-            value={filtros.professor}
-            onChange={handleFiltroChange}
-          />
-          <FormInput
-            label="Turma"
-            type="text"
-            name="turma"
-            value={filtros.turma}
-            onChange={handleFiltroChange}
-          />
-          <FormInput
-            label="Curso"
-            type="text"
-            name="curso"
-            value={filtros.curso}
-            onChange={handleFiltroChange}
-          />
-          <FormInput
-            label="Semestre"
-            type="text"
-            name="semestre"
-            value={filtros.semestre}
-            onChange={handleFiltroChange}
-          />
+  return (
+    <div className="container" style={{ alignItems: "stretch", justifyContent: "flex-start" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h1 className="title">Grupos de Projeto</h1>
+      </div>
+
+      <form onSubmit={handleSearch} className="card" style={{ marginBottom: "20px", display: "flex", flexDirection: "column", gap: "15px" }}>
+        <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: "150px" }}>
+            <FormInput label="Componente" type="text" name="componente" value={filtros.componente} onChange={handleFiltroChange} />
+          </div>
+          <div style={{ flex: 1, minWidth: "150px" }}>
+            <FormInput label="Professor" type="text" name="professor" value={filtros.professor} onChange={handleFiltroChange} />
+          </div>
+          <div style={{ flex: 1, minWidth: "150px" }}>
+            <FormInput label="Turma" type="text" name="turma" value={filtros.turma} onChange={handleFiltroChange} />
+          </div>
+          <div style={{ flex: 1, minWidth: "150px" }}>
+            <FormInput label="Curso" type="text" name="curso" value={filtros.curso} onChange={handleFiltroChange} />
+          </div>
+          <div style={{ flex: 1, minWidth: "150px" }}>
+            <FormInput label="Semestre" type="text" name="semestre" value={filtros.semestre} onChange={handleFiltroChange} />
+          </div>
         </div>
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
-          >
-            Pesquisar
-          </button>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button type="submit">Pesquisar</Button>
         </div>
       </form>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse bg-white shadow-sm rounded-lg overflow-hidden">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="p-4 border-b">Turma</th>
-              <th className="p-4 border-b">Semestre</th>
-              <th className="p-4 border-b">Professor Orientador</th>
-              <th className="p-4 border-b">Alunos (Componentes)</th>
-              <th className="p-4 border-b">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projetos.length > 0 ? (
-              projetos.map((projeto) => (
-                <tr
-                  key={projeto.id}
-                  className="border-b hover:bg-gray-50 transition"
-                >
-                  <td className="p-4">{projeto.turma.nome}</td>
-                  <td className="p-4">{projeto.semestre.nome}</td>
-                  <td className="p-4">
-                    {projeto.professorOrientador.username}
-                  </td>
-                  <td className="p-4">
-                    {projeto.integrantes.map((i) => i.username).join(", ")}
-                  </td>
-                  <td className="p-4">
-                    <button
-                      onClick={() => handleDelete(projeto.id)}
-                      className="text-red-600 hover:text-red-800 font-medium"
-                    >
-                      Excluir
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="p-6 text-center text-gray-500">
-                  Nenhum projeto encontrado.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {loading ? <p>A carregar projetos...</p> : <Table columns={columns} data={projetos} />}
     </div>
   );
 }
