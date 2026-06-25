@@ -29,7 +29,7 @@ public class TurmaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('PROFESSOR')")
+    @PreAuthorize("hasAnyRole('PROFESSOR','ADMIN')")
     public ApiResponse<TurmaResponse> create(@Valid @RequestBody TurmaCreateRequest request,
                                              Authentication authentication) {
         String actor = authentication != null ? authentication.getName() : "system";
@@ -47,7 +47,7 @@ public class TurmaController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('PROFESSOR')")
+    @PreAuthorize("hasAnyRole('PROFESSOR','ADMIN')")
     public ApiResponse<TurmaResponse> update(@PathVariable Long id,
                                              @Valid @RequestBody TurmaUpdateRequest request,
                                              Authentication authentication) {

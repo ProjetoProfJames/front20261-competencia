@@ -29,7 +29,7 @@ public class AvaliacaoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('PROFESSOR','AVALIADOR_EXTERNO','COORDENADOR','ADMIN')")
+    @PreAuthorize("hasAnyRole('PROFESSOR','AVALIADOR_EXTERNO','COORDENADOR')")
     public ApiResponse<AvaliacaoResponse> create(@Valid @RequestBody AvaliacaoCreateRequest request,
                                                  Authentication authentication) {
         String actor = authentication != null ? authentication.getName() : "system";

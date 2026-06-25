@@ -1,8 +1,26 @@
-export default function FormInput({ label, type, name, value, onChange }) {
+'use client';
+
+import { useEffect, useState } from 'react';
+
+export default function FormInput({ label, type = 'text', name, value, onChange, ...props }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
-    <div>
+    <div className="input-group">
       <label>{label}</label>
-      <input type={type} name={name} value={value} onChange={onChange} />
+      {isMounted && (
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          {...props}
+        />
+      )}
     </div>
   );
 }

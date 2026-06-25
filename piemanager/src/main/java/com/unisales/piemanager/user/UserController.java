@@ -36,13 +36,13 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','PROFESSOR')")
+    @PreAuthorize("hasAnyRole('ADMIN','PROFESSOR','COORDENADOR')")
     public ApiResponse<List<UserResponse>> findAll() {
         return ApiResponse.success("Users fetched", userService.findAll());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','PROFESSOR') or @userService.isOwner(#id, authentication.name)")
+    @PreAuthorize("hasAnyRole('ADMIN','PROFESSOR','COORDENADOR') or @userService.isOwner(#id, authentication.name)")
     public ApiResponse<UserResponse> findById(@PathVariable Long id) {
         return ApiResponse.success("User fetched", userService.findById(id));
     }
