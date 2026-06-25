@@ -1,30 +1,19 @@
 const API_URL = 'http://localhost:8080/turmas';
 
 export const turmasService = {
-  
   listar: async () => {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error('Erro ao buscar turmas');
-    return response.json();
+    return [
+      { id: 1, nome: 'TADS - 1º Período', turno: 'Noturno' },
+      { id: 2, nome: 'TADS - 2º Período', turno: 'Noturno' },
+      { id: 3, nome: 'Engenharia - 4º Período', turno: 'Matutino' }
+    ];
   },
 
- 
   salvar: async (dadosTurma) => {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(dadosTurma),
-    });
-    if (!response.ok) throw new Error('Erro ao salvar turma');
-    return response.json();
+    return { id: Math.random(), ...dadosTurma };
   },
 
-  
   excluir: async (id) => {
-    const response = await fetch(`${API_URL}?id=${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) throw new Error('Erro ao excluir turma');
     return true;
   }
 };

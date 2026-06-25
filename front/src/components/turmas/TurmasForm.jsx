@@ -16,7 +16,6 @@ export default function TurmasForm() {
   useEffect(() => {
     const buscarDadosFiltros = async () => {
       try {
-        // Buscando os dados de forma segura individualmente para não quebrar o Promise.all
         const listaCursos = await cursosService.listar().catch(() => []);
         const listaPeriodos = await periodosService.listar().catch(() => []);
         

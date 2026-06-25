@@ -7,16 +7,17 @@ export default function PeriodosList() {
   const [periodos, setPeriodos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const carregarPeriodos = async () => {
-    try {
-      const dados = await periodosService.listar();
-      setPeriodos(dados);
-    } catch (error) {
-      console.error('Erro ao carregar períodos:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const carregarPeriodos = async () => {
+  try {
+    const dados = await periodosService.listar();
+    setPeriodos(dados || []);
+  } catch (error) {
+    console.log('Backend offline, exibindo interface de períodos estática:', error);
+    setPeriodos([]); 
+  } finally {
+    setLoading(false); 
+  }
+};
 
   useEffect(() => {
     carregarPeriodos();
