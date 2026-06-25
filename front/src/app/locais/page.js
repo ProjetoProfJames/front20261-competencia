@@ -70,8 +70,8 @@ export default function LocaisPage() {
     setError("");
     setSuccessMessage("");
 
-    if (userRole === "ALUNO") {
-      setError("Permissão negada: Alunos não podem inserir ou modificar locais.");
+    if (userRole === "ALUNO" || userRole === "PROFESSOR") {
+      setError("Permissão negada: Professores e Alunos não têm permissão para cadastrar ou modificar locais de apresentação.");
       return;
     }
 
@@ -115,8 +115,8 @@ export default function LocaisPage() {
   const handleEditar = (local) => {
     setError("");
     
-    if (userRole === "ALUNO") {
-      setError("Permissão negada: Alunos não possuem permissão de edição.");
+    if (userRole === "ALUNO" || userRole === "PROFESSOR") {
+      setError("Permissão negada: Você não possui permissão de edição nesta tela.");
       return;
     }
 
@@ -135,8 +135,8 @@ export default function LocaisPage() {
     setError("");
     setSuccessMessage("");
 
-    if (userRole === "ALUNO") {
-      setError("Permissão negada: Alunos não possuem permissão de exclusão.");
+    if (userRole === "ALUNO" || userRole === "PROFESSOR") {
+      setError("Permissão negada: Você não possui permissão de exclusão nesta tela.");
       return;
     }
 
@@ -173,7 +173,7 @@ export default function LocaisPage() {
     <div className="container container-flex-layout" style={{ maxWidth: "1000px", width: "100%" }}>
       <h1>Gerenciamento de Locais de Apresentação</h1>
       
-      {userRole !== "ALUNO" && (
+      {userRole !== "ALUNO" && userRole !== "PROFESSOR" && (
         <form onSubmit={handleSalvar} className="card form-full-width" style={{ minHeight: "365px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <h2>{form.id ? "Editar Local" : "Novo Local"}</h2>
           {error && <div className="alert-message error-box">{error}</div>}
@@ -185,7 +185,11 @@ export default function LocaisPage() {
         </form>
       )}
 
-      {userRole === "ALUNO" && error && <div className="alert-message error-box" style={{ marginBottom: "1rem" }}>{error}</div>}
+      {(userRole === "ALUNO" || userRole === "PROFESSOR") && (
+        <div className="alert-message error-box" style={{ marginBottom: "1rem", width: "100%", maxWidth: "1000px" }}>
+          Permissão negada: Professores e Alunos não têm permissão para cadastrar, editar ou excluir locais de apresentação.
+        </div>
+      )}
 
       <div className="table-scroll-container" style={{ maxHeight: "315px", overflowY: "auto", width: "100%" }}>
         <table className="data-table" style={{ width: "100%" }}>
@@ -193,7 +197,7 @@ export default function LocaisPage() {
             <tr>
               <th style={{ width: "80px" }}>ID</th>
               <th>Local / Número</th>
-              {userRole !== "ALUNO" && <th style={{ width: "200px" }}>Ações</th>}
+              {userRole !== "ALUNO" && userRole !== "PROFESSOR" && <th style={{ width: "200px" }}>Ações</th>}
             </tr>
           </thead>
           <tbody>
@@ -205,7 +209,7 @@ export default function LocaisPage() {
                 <tr key={l.id}>
                   <td>{l.id}</td>
                   <td>{nomeTabela}</td>
-                  {userRole !== "ALUNO" && (
+                  {userRole !== "ALUNO" && userRole !== "PROFESSOR" && (
                     <td>
                       <div className="actions-cell">
                         {podeModificar && (
