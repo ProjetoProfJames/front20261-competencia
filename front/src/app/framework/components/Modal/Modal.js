@@ -20,7 +20,7 @@ export default function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         {(title || onClose) && (
-          <div>
+          <div className={styles.modalHeader}>
             {title ? <h2>{title}</h2> : null}
             {onClose ? (
               <button

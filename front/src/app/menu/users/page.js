@@ -142,8 +142,8 @@ export default function Users() {
     ...u,
     acoes: (
       <Row align="center" justify="evenly">
-        <Button type="laranja" onClick={() => abrirModalEditar(u)}>Editar</Button>
-        <Button type="vermelho" onClick={() => abrirModalExcluir(u)}>Excluir</Button>
+        <Button variant="secondary" onClick={() => abrirModalEditar(u)}>Editar</Button>
+        <Button variant="danger" onClick={() => abrirModalExcluir(u)}>Excluir</Button>
       </Row>
     ),
   }));
@@ -157,7 +157,7 @@ export default function Users() {
           </Col>
           <Col>
             <Row align="center" justify="end">
-              <Button type="azul" onClick={abrirModalCriar}>+ Novo Usuário</Button>
+              <Button onClick={abrirModalCriar}>+ Novo Usuário</Button>
             </Row>
           </Col>
         </Row>
@@ -227,8 +227,8 @@ export default function Users() {
             )}
 
             <Row align="center" justify="evenly">
-              <Button type="azul" onClick={salvarUsuario}>Salvar</Button>
-              <Button type="vermelho" onClick={fecharModal}>Cancelar</Button>
+              <Button onClick={salvarUsuario}>Salvar</Button>
+              <Button variant="danger" onClick={fecharModal}>Cancelar</Button>
             </Row>
           </Modal>
         )}
@@ -240,8 +240,8 @@ export default function Users() {
               Tem certeza que deseja excluir o usuário <strong>{excluindo.username}</strong>?
             </p>
             <Row align="center" justify="evenly">
-              <Button type="vermelho" onClick={confirmarExclusao}>Confirmar</Button>
-              <Button type="azul" onClick={fecharModalExcluir}>Cancelar</Button>
+              <Button variant="danger" onClick={confirmarExclusao}>Confirmar</Button>
+              <Button onClick={fecharModalExcluir}>Cancelar</Button>
             </Row>
           </Modal>
         )}
