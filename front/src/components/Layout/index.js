@@ -7,15 +7,6 @@ export default function LayoutComponent({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const [permissions, setPermissions] = useState({
-    showUsers: false,
-    showLocals: false,
-    showProjects: true,
-    showTurmas: false,
-    showCursos: false,
-    showPeriodos: false,
-  })
-
   useEffect(() => {
     const userData = authService.getUser()
     if (!userData) {
@@ -23,16 +14,6 @@ export default function LayoutComponent({ children }) {
       return
     }
     setUser(userData)
-    
-    setPermissions({
-      showUsers: authService.hasPermission(['ADMIN', 'PROFESSOR']),
-      showLocals: authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR']),
-      showProjects: authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO', 'AVALIADOR_EXTERNO']),
-      showTurmas: authService.hasPermission(['ADMIN']),
-      showCursos: authService.hasPermission(['ADMIN']),
-      showPeriodos: authService.hasPermission(['ADMIN']),
-    })
-    
     setLoading(false)
   }, [])
 
@@ -46,7 +27,12 @@ export default function LayoutComponent({ children }) {
     return <div style={{ padding: '40px', textAlign: 'center' }}>Carregando...</div>
   }
 
-  const { showUsers, showLocals, showProjects, showTurmas, showCursos, showPeriodos } = permissions
+  const showUsers = authService.hasPermission(['ADMIN', 'PROFESSOR'])
+  const showLocals = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
+  const showCourses = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const showPeriods = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const showClasses = authService.hasPermission(['PROFESSOR'])
+  const showProjects = true
 
   return (
     <>
@@ -57,9 +43,9 @@ export default function LayoutComponent({ children }) {
             {showProjects && <Link href="/projetos">Projetos</Link>}
             {showLocals && <Link href="/locais">Locais</Link>}
             {showUsers && <Link href="/usuarios">Usuários</Link>}
-            {showTurmas && <Link href="/turmas">Turmas</Link>}
-            {showCursos && <Link href="/cursos">Cursos</Link>}
-            {showPeriodos && <Link href="/periodos">Periodos</Link>}
+            {showCourses && <Link href="/cursos">Cursos</Link>}
+            {showPeriods && <Link href="/periodos">Periodos</Link>}
+            {showClasses && <Link href="/turmas">Turmas</Link>}
           </nav>
           <div className="user-info">
             <span className="user-name">{user?.username}</span>
