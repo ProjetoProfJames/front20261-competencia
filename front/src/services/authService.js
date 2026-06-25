@@ -10,6 +10,13 @@ export const authService = {
     return localStorage.getItem('token')
   },
 
+  getProfile: () => {
+    const user = authService.getUser()
+    if (!user || !user.profile) return null
+
+    return typeof user.profile === 'string' ? user.profile : (user.profile.name || user.profile)
+  },
+
   logout: () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -17,33 +24,28 @@ export const authService = {
   },
 
   hasPermission: (requiredProfiles) => {
-    const user = authService.getUser()
-    if (!user || !user.profile) return false
-    return requiredProfiles.includes(user.profile)
+    const profile = authService.getProfile()
+    if (!profile) return false
+    return requiredProfiles.includes(profile)
   },
 
   isAdmin: () => {
-    const user = authService.getUser()
-    return user?.profile === 'ADMIN'
+    return authService.getProfile() === 'ADMIN'
   },
 
   isCoordenador: () => {
-    const user = authService.getUser()
-    return user?.profile === 'COORDENADOR'
+    return authService.getProfile() === 'COORDENADOR'
   },
 
   isProfessor: () => {
-    const user = authService.getUser()
-    return user?.profile === 'PROFESSOR'
+    return authService.getProfile() === 'PROFESSOR'
   },
 
   isAluno: () => {
-    const user = authService.getUser()
-    return user?.profile === 'ALUNO'
+    return authService.getProfile() === 'ALUNO'
   },
 
   isAvaliadorExterno: () => {
-    const user = authService.getUser()
-    return user?.profile === 'AVALIADOR_EXTERNO'
+    return authService.getProfile() === 'AVALIADOR_EXTERNO'
   },
 }

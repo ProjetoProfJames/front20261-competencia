@@ -1,4 +1,5 @@
 'use client'
+
 import LayoutComponent from '@/components/Layout'
 import { api } from '@/services/api'
 import { authService } from '@/services/authService'
@@ -27,6 +28,13 @@ export default function TurmasPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    const user = authService.getUser()
+
+    if (!user || user.profile !== 'PROFESSOR') {
+      window.location.href = '/'
+      return
+    }
+
     loadTurmas()
   }, [])
 

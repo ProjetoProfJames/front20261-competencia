@@ -35,6 +35,7 @@ export default function HomePage() {
   const showUsers = authService.hasPermission(['ADMIN', 'PROFESSOR'])
   const showLocals = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
   const showCourses = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const showTurmas = authService.hasPermission(['PROFESSOR'])
   const showPeriods = authService.hasPermission(['ADMIN', 'COORDENADOR'])
   const showClasses = authService.hasPermission(['PROFESSOR'])
 
@@ -74,7 +75,7 @@ export default function HomePage() {
 
           {showPeriods && (
             <ShortcutCard
-              href="/periodos"
+              href="/periodos-letivos-letivos-letivos"
               title="Periodos Letivos"
               description="Gerenciar periodos letivos"
             />

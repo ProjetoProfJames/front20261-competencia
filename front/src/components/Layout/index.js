@@ -30,6 +30,7 @@ export default function LayoutComponent({ children }) {
   const showUsers = authService.hasPermission(['ADMIN', 'PROFESSOR'])
   const showLocals = authService.hasPermission(['ADMIN', 'COORDENADOR', 'PROFESSOR'])
   const showCourses = authService.hasPermission(['ADMIN', 'COORDENADOR'])
+  const showTurmas = authService.hasPermission(['PROFESSOR'])
   const showPeriods = authService.hasPermission(['ADMIN', 'COORDENADOR'])
   const showClasses = authService.hasPermission(['PROFESSOR'])
   const showProjects = true
