@@ -23,12 +23,13 @@ export default function MenuPrincipal() {
     { nome: 'Coordenadores', path: '/users/coordenador', roles: ['ADMIN'] },
     { nome: 'Avaliadores Externos', path: '/users/av_externo', roles: ['ADMIN', 'COORDENADOR'] },
     { nome: 'Locais', path: '/locais', roles: ['ADMIN', 'COORDENADOR',] },
+    { nome: 'Disciplinas', path: '/disciplina/', roles: ['ADMIN', 'COORDENADOR'] },
     { nome: 'Cursos', path: '/cursos', roles: ['ADMIN', 'COORDENADOR'] },
-    { nome: 'Períodos Letivos', path: '/periodos-letivos', roles: ['ADMIN'] },
+    { nome: 'Períodos Letivos', path: '/periodos-letivos', roles: ['ADMIN', 'COORDENADOR'] },
     { nome: 'Turmas', path: '/turmas', roles: ['ADMIN', 'COORDENADOR'] },
     { nome: 'Grupos', path: '/grupos', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR'] },
     { nome: 'Projetos', path: '/projetos', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'ALUNO'] },
-    { nome: 'Avaliação de Projetos', path: '/avaliacao-projetos', roles: ['ADMIN', 'COORDENADOR', 'PROFESSOR', 'AVALIADOR_EXTERNO'] },
+    { nome: 'Avaliação de Projetos', path: '/avaliacao-projetos', roles: ['ADMIN', 'AVALIADOR_EXTERNO'] },
   ];
 
   const menuPermitido = opcoesMenu.filter(opcao => opcao.roles.includes(userProfile));
@@ -36,6 +37,7 @@ export default function MenuPrincipal() {
   const handleLogout = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("token");
+      localStorage.removeItem("userProfile");
     }
   };
 

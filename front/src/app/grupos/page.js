@@ -4,12 +4,17 @@ import { useState, useEffect } from 'react';
 import PageLayout from '@/components/PageLayout';
 import Table from '@/components/Table';
 import Button from '@/components/Button';
+import FormInput from '@/components/FormInput';
 import { api } from '@/services/api';
 
 export default function GruposPage() {
   const [grupos, setGrupos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [editingGrupo, setEditingGrupo] = useState(null);
+  const [formData, setFormData] = useState({ nome: "" });
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const columns = [
     { label: 'ID', key: 'id' },
@@ -44,7 +49,7 @@ export default function GruposPage() {
         professor: p.professorOrientador?.username || "",
         alunos: p.integrantes?.map((a) => a.username).join(", ") || "",
         local: p.local?.nome || p.local?.numero || "",
-        horario: `${formatarData(p.horarioInicio)} até ${formatarData(p.horarioFim)}`,
+        horario: p.horarioInicio && p.horarioFim ? `${formatarData(p.horarioInicio)} até ${formatarData(p.horarioFim)}` : "Não definido",
       }));
 
       setGrupos(rows);
@@ -57,12 +62,36 @@ export default function GruposPage() {
   };
 
   const handleEdit = (grupo) => {
-    alert(`Editar grupo de projeto: ${grupo.nome}`);
+    setEditingGrupo(grupo);
+    setFormData({ nome: grupo.nome });
+  };
+
+  const handleUpdate = async () => {
+    if (!formData.nome.trim()) {
+      alert("O nome do projeto não pode ficar vazio.");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      await api.put(`/projetos/${editingGrupo.id}`, { nome: formData.nome });
+      
+      setGrupos((prev) => 
+        prev.map(g => g.id === editingGrupo.id ? { ...g, nome: formData.nome } : g)
+      );
+      
+      alert("Grupo atualizado com sucesso!");
+      setEditingGrupo(null);
+    } catch (err) {
+      console.error("Erro ao atualizar:", err);
+      alert("Erro ao tentar atualizar grupo.");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleDelete = async (grupo) => {
     const confirmacao = window.confirm(`Deseja excluir o grupo de projeto "${grupo.nome}"?`);
-
     if (confirmacao) {
       try {
         await api.delete(`/projetos/${grupo.id}`);
@@ -85,9 +114,7 @@ export default function GruposPage() {
       {error && <p className="error-message">{error}</p>}
 
       {isLoading ? (
-        <div style={{ textAlign: 'center', marginTop: '20px' }}>
-          Carregando grupos de projeto...
-        </div>
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>Carregando grupos de projeto...</div>
       ) : (
         <Table
           data={grupos}
@@ -95,6 +122,32 @@ export default function GruposPage() {
           onEdit={handleEdit}
           onDelete={handleDelete}
         />
+      )}
+
+      {editingGrupo && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="modal-header">Editar Grupo</h2>
+            
+            <div className="form-group">
+              <FormInput 
+                label="Nome do Projeto" 
+                type="text" 
+                value={formData.nome} 
+                onChange={(e) => setFormData({ ...formData, nome: e.target.value })} 
+              />
+            </div>
+
+            <div className="actions" style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+              <Button onClick={handleUpdate}>
+                {isUpdating ? "Salvando..." : "Salvar"}
+              </Button>
+              <Button onClick={() => setEditingGrupo(null)} className="btn-danger">
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </PageLayout>
   );
