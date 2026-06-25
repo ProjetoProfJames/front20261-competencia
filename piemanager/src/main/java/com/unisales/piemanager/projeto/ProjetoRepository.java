@@ -1,12 +1,14 @@
 package com.unisales.piemanager.projeto;
 
-import com.unisales.piemanager.projeto.model.Projeto;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import com.unisales.piemanager.projeto.model.Projeto;
 
 public interface ProjetoRepository extends JpaRepository<Projeto, Long> {
 
@@ -75,4 +77,21 @@ public interface ProjetoRepository extends JpaRepository<Projeto, Long> {
     boolean existsByIdAndIntegrantesEmailIgnoreCase(Long projetoId, String email);
 
     boolean existsByIdAndProfessorOrientadorEmailIgnoreCase(Long projetoId, String email);
+@Query("""
+        SELECT DISTINCT p
+        FROM Projeto p
+        LEFT JOIN p.integrantes i
+        WHERE
+        (:professor IS NULL OR LOWER(p.professorOrientador.nome) LIKE LOWER(CONCAT('%', :professor, '%')))
+        AND
+        (:integrante IS NULL OR LOWER(i.nome) LIKE LOWER(CONCAT('%', :integrante, '%')))
+        AND
+        (:turma IS NULL OR LOWER(p.turma.nome) LIKE LOWER(CONCAT('%', :turma, '%')))
+        """)
+    List<Projeto> pesquisar(
+            @Param("professor") String professor,
+            @Param("integrante") String integrante,
+            @Param("turma") String turma
+    );
+
 }

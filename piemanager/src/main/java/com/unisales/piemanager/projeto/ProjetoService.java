@@ -1,5 +1,13 @@
 package com.unisales.piemanager.projeto;
 
+import java.time.Instant;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.unisales.piemanager.common.exception.BusinessException;
 import com.unisales.piemanager.common.exception.ResourceNotFoundException;
 import com.unisales.piemanager.local.LocalService;
@@ -16,12 +24,6 @@ import com.unisales.piemanager.turma.model.Turma;
 import com.unisales.piemanager.user.UserRepository;
 import com.unisales.piemanager.user.model.Profile;
 import com.unisales.piemanager.user.model.User;
-import java.time.Instant;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ProjetoService {
@@ -446,4 +448,20 @@ public class ProjetoService {
     private String defaultActor(String actor) {
         return (actor == null || actor.isBlank()) ? "system" : actor;
     }
+    @Transactional(readOnly = true)
+public List<ProjetoResponse> pesquisar(
+        String professor,
+        String integrante,
+        String turma
+) {
+    return projetoRepository
+            .pesquisar(
+                    professor,
+                    integrante,
+                    turma
+            )
+            .stream()
+            .map(this::toResponse)
+            .toList();
+}
 }
