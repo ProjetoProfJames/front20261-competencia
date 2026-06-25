@@ -75,7 +75,7 @@ export default function HomePage() {
 
           {showPeriods && (
             <ShortcutCard
-              href="/periodos-letivos-letivos-letivos"
+              href="/periodos-letivos"
               title="Periodos Letivos"
               description="Gerenciar periodos letivos"
             />
