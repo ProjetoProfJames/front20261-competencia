@@ -4,6 +4,14 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import API from "@/utils/api";
 
+
+async function listarAvaliacoesPorProjeto(projetoId) {
+  const resposta = await API.get(`/avaliacoes`);
+  const todas = resposta.data ?? resposta;
+  const lista = Array.isArray(todas) ? todas : [];
+  return lista.filter((av) => av.projeto?.id === Number(projetoId));
+}
+
 function TelaAvaliacaoConteudo() {
   const navegador = useRouter();
   const params = useSearchParams();
@@ -15,20 +23,23 @@ function TelaAvaliacaoConteudo() {
   const [nota, setNota] = useState("");
   const [comentario, setComentario] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [editandoId, setEditandoId] = useState(null);
 
   const carregarDados = async () => {
-  if (!projetoId) return;
-  try {
-    const dadosProjeto = await API.get(`/projetos/${projetoId}`);
-    const projeto = dadosProjeto.data ?? dadosProjeto;
-    setProjeto(projeto);
-    setListaAvaliacoes(Array.isArray(projeto.avaliacoes) ? projeto.avaliacoes : []);
-  } catch (erro) {
-    console.error("Erro ao carregar projeto:", erro.message);
-  } finally {
-    setCarregando(false);
-  }
-};
+    if (!projetoId) return;
+    try {
+      const dadosProjeto = await API.get(`/projetos/${projetoId}`);
+      const projeto = dadosProjeto.data ?? dadosProjeto;
+      setProjeto(projeto);
+
+      const lista = await listarAvaliacoesPorProjeto(projetoId);
+      setListaAvaliacoes(lista);
+    } catch (erro) {
+      console.error("Erro ao carregar projeto:", erro.message);
+    } finally {
+      setCarregando(false);
+    }
+  };
 
   useEffect(() => {
     carregarDados();
@@ -45,11 +56,21 @@ function TelaAvaliacaoConteudo() {
 
     setEnviando(true);
     try {
-      await API.post(`/projetos/${projetoId}/avaliacoes`, {
-        nota: notaNum,
-        comentario: comentario.trim(),
-      });
-      alert("Avaliação registrada com sucesso!");
+      if (editandoId) {
+        await API.put(`/projetos/${projetoId}/avaliacoes/${editandoId}`, {
+          nota: notaNum,
+          comentario: comentario.trim(),
+        });
+        alert("Avaliação atualizada com sucesso!");
+      } else {
+        await API.post(`/projetos/${projetoId}/avaliacoes`, {
+          nota: notaNum,
+          comentario: comentario.trim(),
+        });
+        alert("Avaliação registrada com sucesso!");
+      }
+
+      setEditandoId(null);
       setNota("");
       setComentario("");
       carregarDados();
@@ -60,10 +81,23 @@ function TelaAvaliacaoConteudo() {
     }
   };
 
+  const iniciarEdicao = (avaliacao) => {
+    setEditandoId(avaliacao.id);
+    setNota(String(avaliacao.nota));
+    setComentario(avaliacao.comentario ?? "");
+  };
+
+  const cancelarEdicao = () => {
+    setEditandoId(null);
+    setNota("");
+    setComentario("");
+  };
+
   const excluirAvaliacao = async (avaliacaoId) => {
     if (!confirm("Confirma a exclusão desta avaliação?")) return;
     try {
       await API.del(`/projetos/${projetoId}/avaliacoes/${avaliacaoId}`);
+      if (editandoId === avaliacaoId) cancelarEdicao();
       carregarDados();
     } catch (erro) {
       alert(erro.message || "Não foi possível excluir a avaliação.");
@@ -77,7 +111,6 @@ function TelaAvaliacaoConteudo() {
     <div style={{ padding: "30px", maxWidth: "600px", margin: "0 auto", fontFamily: "sans-serif" }}>
       <h2>Avaliar Grupo de Trabalho</h2>
 
-    
       <div style={{ marginBottom: "20px", marginTop: "10px" }}>
         <p style={{ margin: "4px 0" }}><strong>Projeto:</strong> {projeto.nome}</p>
         <p style={{ margin: "4px 0" }}><strong>Turma:</strong> {projeto.turma?.nome}</p>
@@ -85,8 +118,12 @@ function TelaAvaliacaoConteudo() {
         <p style={{ margin: "4px 0" }}><strong>Integrantes:</strong> {projeto.integrantes?.map((i) => i.username).join(", ")}</p>
       </div>
 
-     
       <form onSubmit={enviarAvaliacao} style={{ display: "flex", flexDirection: "column", gap: "15px", marginTop: "20px" }}>
+        {editandoId && (
+          <p style={{ margin: 0, color: "#b8860b", fontWeight: "bold" }}>
+            Editando avaliação #{editandoId}
+          </p>
+        )}
 
         <div style={{ display: "flex", flexDirection: "column" }}>
           <label style={{ marginBottom: "5px", fontWeight: "bold" }}>Nota (0 a 10):</label>
@@ -122,19 +159,28 @@ function TelaAvaliacaoConteudo() {
             disabled={enviando}
             style={{ padding: "12px 20px", backgroundColor: "#0070f3", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
           >
-            {enviando ? "Salvando..." : "Confirmar Avaliação"}
+            {enviando ? "Salvando..." : editandoId ? "Salvar Alterações" : "Confirmar Avaliação"}
           </button>
-          <button
-            type="button"
-            onClick={() => navegador.push("/grupos")}
-            style={{ padding: "12px 20px", backgroundColor: "#ccc", color: "#333", border: "none", borderRadius: "4px", cursor: "pointer" }}
-          >
-            Cancelar
-          </button>
+          {editandoId ? (
+            <button
+              type="button"
+              onClick={cancelarEdicao}
+              style={{ padding: "12px 20px", backgroundColor: "#ccc", color: "#333", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Cancelar Edição
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navegador.push("/grupos")}
+              style={{ padding: "12px 20px", backgroundColor: "#ccc", color: "#333", border: "none", borderRadius: "4px", cursor: "pointer" }}
+            >
+              Cancelar
+            </button>
+          )}
         </div>
       </form>
 
-     
       <h3 style={{ marginTop: "35px" }}>Avaliações Registradas</h3>
       {listaAvaliacoes.length === 0 ? (
         <p style={{ color: "#777" }}>Nenhuma avaliação registrada ainda.</p>
@@ -151,16 +197,24 @@ function TelaAvaliacaoConteudo() {
           <tbody>
             {listaAvaliacoes.map((av) => (
               <tr key={av.id}>
-                <td>{av.avaliador?.username}</td>
+                <td>{av.avaliador?.username ?? "Você"}</td>
                 <td style={{ textAlign: "center" }}>{av.nota}</td>
                 <td>{av.comentario}</td>
                 <td>
-                  <button
-                    onClick={() => excluirAvaliacao(av.id)}
-                    style={{ color: "red", cursor: "pointer", background: "none", border: "none", textDecoration: "underline" }}
-                  >
-                    Remover
-                  </button>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <button
+                      onClick={() => iniciarEdicao(av)}
+                      style={{ color: "#0070f3", cursor: "pointer", background: "none", border: "none", textDecoration: "underline" }}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => excluirAvaliacao(av.id)}
+                      style={{ color: "red", cursor: "pointer", background: "none", border: "none", textDecoration: "underline" }}
+                    >
+                      Remover
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
