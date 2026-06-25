@@ -112,7 +112,7 @@ export default function EditarPeriodoLetivoPage() {
 
       savePeriodoStatus(periodoId, form.ativo)
       alert('Periodo letivo atualizado com sucesso!')
-      router.push('/periodos')
+      router.push('/periodos-letivos')
     } catch (err) {
       console.error('Erro ao atualizar periodo letivo:', err)
       setError(err.message || 'Erro ao atualizar periodo letivo')
@@ -132,7 +132,7 @@ export default function EditarPeriodoLetivoPage() {
   return (
     <LayoutComponent>
       <div style={{ maxWidth: '500px', margin: '32px auto' }}>
-        <Link href="/periodos" style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '16px', display: 'inline-block' }}>
+        <Link href="/periodos-letivos" style={{ color: 'var(--primary)', textDecoration: 'none', marginBottom: '16px', display: 'inline-block' }}>
           Voltar para Periodos Letivos
         </Link>
 
@@ -183,7 +183,7 @@ export default function EditarPeriodoLetivoPage() {
               <button type="submit" disabled={loading}>
                 {loading ? 'Salvando...' : 'Atualizar Periodo Letivo'}
               </button>
-              <Link href="/periodos" style={{ flex: 1 }}>
+              <Link href="/periodos-letivos" style={{ flex: 1 }}>
                 <button type="button" className="btn btn-secondary" style={{ width: '100%' }}>
                   Cancelar
                 </button>
