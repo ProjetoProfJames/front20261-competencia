@@ -24,7 +24,6 @@ export default function GrupoList({ onNovo, onEditar }) {
     } catch (error) {
       console.error(error);
 
-      // Permite continuar desenvolvendo sem login
       setProjetos([]);
     } finally {
       setCarregando(false);

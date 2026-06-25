@@ -12,7 +12,6 @@ export default function LoginPage() {
   };
 
   const authenticate = () => {
-    // Lógica de autenticação aqui
     console.log("Autenticando usuário:", user);
   };
 
