@@ -44,7 +44,7 @@ export default function LayoutComponent({ children }) {
             {showLocals && <Link href="/locais">Locais</Link>}
             {showUsers && <Link href="/usuarios">Usuários</Link>}
             {showCourses && <Link href="/cursos">Cursos</Link>}
-            {showPeriods && <Link href="/periodos-letivos">Periodos</Link>}
+            {showPeriods && <Link href="/periodos">Periodos</Link>}
             {showClasses && <Link href="/turmas">Turmas</Link>}
           </nav>
           <div className="user-info">

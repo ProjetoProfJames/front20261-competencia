@@ -92,7 +92,7 @@ export default function PeriodosLetivosPage() {
       <div className="pagina-cabecalho">
         <h1>Periodos Letivos</h1>
         {canEdit && (
-          <Link href="/periodos-letivos/novo">
+          <Link href="/periodos/novo">
             <button className="btn btn-primary">+ Novo Periodo Letivo</button>
           </Link>
         )}
@@ -155,7 +155,7 @@ export default function PeriodosLetivosPage() {
                         </button>
                       )}
                       {canEdit && (
-                        <Link href={`/periodos-letivos/${periodo.id}`}>
+                        <Link href={`/periodos/${periodo.id}`}>
                           <button className="btn btn-secondary" style={{ padding: '6px 12px', fontSize: '0.85rem' }}>
                             Editar
                           </button>
