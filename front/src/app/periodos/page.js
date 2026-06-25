@@ -11,13 +11,13 @@ export default function PeriodosPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    nome: "" // Ex: "2026/1"
+    nome: ""
   });
 
   const fetchPeriodos = () => {
     setLoading(true);
     const token = localStorage.getItem("token");
-    
+
     fetch("http://localhost:8080/api/periodos", {
       method: "GET",
       headers: {
@@ -25,15 +25,16 @@ export default function PeriodosPage() {
         "Authorization": `Bearer ${token}`
       }
     })
-      .then((res) => res.json())
-      .then((data) => {
-        setPeriodos(data || []);
-        setLoading(false);
+      .then((response) => response.json())
+      .then((apiResponse) => {
+        if (apiResponse && apiResponse.data) {
+          setPeriodos(apiResponse.data);
+        } else {
+          setPeriodos(apiResponse || []);
+        }
       })
-      .catch((err) => {
-        console.error("Erro ao buscar períodos:", err);
-        setLoading(false);
-      });
+      .catch((error) => console.error(error))
+      .finally(() => setLoading(false));
   };
 
   useEffect(() => {
@@ -45,35 +46,32 @@ export default function PeriodosPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleEdit = (periodo) => {
+  const handleEditClick = (periodo) => {
     setEditingId(periodo.id);
-    setFormData({ nome: periodo.nome });
+    setFormData({
+      nome: periodo.nome || ""
+    });
     setIsFormOpen(true);
   };
 
-  const handleDelete = (id) => {
-    if (!confirm("Deseja realmente excluir este período letivo?")) return;
-    const token = localStorage.getItem("token");
-
-    fetch(`http://localhost:8080/api/periodos/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    })
-      .then(() => fetchPeriodos())
-      .catch((err) => console.error("Erro ao deletar período:", err));
+  const handleToggleForm = () => {
+    if (isFormOpen) {
+      setIsFormOpen(false);
+      setEditingId(null);
+      setFormData({ nome: "" });
+    } else {
+      setIsFormOpen(true);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
-    
-    const url = editingId 
-      ? `http://localhost:8080/api/periodos/${editingId}`
-      : "http://localhost:8080/api/periodos";
-      
+
     const method = editingId ? "PUT" : "POST";
+    const url = editingId 
+      ? `http://localhost:8080/api/periodos/${editingId}` 
+      : "http://localhost:8080/api/periodos";
 
     fetch(url, {
       method: method,
@@ -83,57 +81,90 @@ export default function PeriodosPage() {
       },
       body: JSON.stringify(formData)
     })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro na requisição.");
+        }
+        return response.json();
+      })
       .then(() => {
+        alert(editingId ? "Período atualizado com sucesso!" : "Período criado com sucesso!");
         setIsFormOpen(false);
         setEditingId(null);
         setFormData({ nome: "" });
         fetchPeriodos();
       })
-      .catch((err) => console.error("Erro ao salvar período:", err));
+      .catch((error) => {
+        console.error("Erro no submit:", error);
+        alert("Erro ao processar a requisição.");
+      });
   };
 
-  const headers = ["ID", "Período Letivo", "Ações"];
+  const handleDelete = (id) => {
+    if (!window.confirm("Tem certeza que deseja excluir este período?")) return;
+    const token = localStorage.getItem("token");
 
-  const rows = periodos.map((p) => [
-    p.id,
-    p.nome,
-    <div key={p.id} className="flex gap-2">
-      <Button onClick={() => handleEdit(p)}>Editar</Button>
-      <Button variant="danger" onClick={() => handleDelete(p.id)}>Excluir</Button>
-    </div>
-  ]);
+    fetch(`http://localhost:8080/api/periodos/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Erro ao excluir período.");
+        }
+        alert("Período excluído com sucesso!");
+        fetchPeriodos();
+      })
+      .catch((error) => {
+        console.error("Erro na exclusão:", error);
+        alert("Erro ao excluir período.");
+      });
+  };
+
+  const columns = [
+    { header: "Nome (Ex: 2026/1)", accessor: "nome" },
+    { 
+      header: "Ações", 
+      render: (row) => (
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Button type="button" onClick={() => handleEditClick(row)}>Editar</Button>
+          <Button type="button" onClick={() => handleDelete(row.id)}>Excluir</Button>
+        </div>
+      )
+    }
+  ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Cadastro de Períodos Letivos</h1>
-        {!isFormOpen && (
-          <Button onClick={() => { setIsFormOpen(true); setEditingId(null); setFormData({ nome: "" }); }}>
-            Novo Período
-          </Button>
-        )}
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: '2px solid #ccc', paddingBottom: '10px' }}>
+        <h1 style={{ color: '#333', margin: 0 }}>Gestão de Períodos Letivos</h1>
+        
+        <Button type="button" onClick={handleToggleForm}>
+          {isFormOpen ? "Voltar para Lista" : "+ Novo Período"}
+        </Button>
       </div>
+      
+      {isFormOpen ? (
+        <div style={{ backgroundColor: "#f9f9f9", padding: "20px", marginTop: "20px", border: "1px solid #ddd", borderRadius: "5px" }}>
+          <h3 style={{ marginTop: 0, color: "#333" }}>
+            {editingId ? "Editar Período" : "Cadastrar Novo Período"}
+          </h3>
+          
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "15px", maxWidth: "400px" }}>
+            <FormInput label="Período Letivo (Ex: 2026/1)" type="text" name="nome" value={formData.nome} onChange={handleInputChange} />
 
-      {isFormOpen && (
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow mb-6 max-w-md">
-          <h2 className="text-xl mb-4 font-semibold">{editingId ? "Editar Período" : "Novo Período"}</h2>
-          <div className="flex flex-col gap-4">
-            <FormInput
-              label="Nome do Período (Ex: 2026/1)"
-              name="nome"
-              value={formData.nome}
-              onChange={handleInputChange}
-              required
-            />
-            <div className="flex gap-2 mt-2">
-              <Button type="submit">Salvar</Button>
-              <Button type="button" variant="secondary" onClick={() => setIsFormOpen(false)}>Cancelar</Button>
-            </div>
-          </div>
-        </form>
+            <Button type="submit">{editingId ? "Atualizar Período" : "Salvar Período"}</Button>
+          </form>
+        </div>
+      ) : (
+        loading ? (
+          <p>Carregando períodos...</p>
+        ) : (
+          <Table columns={columns} data={periodos} />
+        )
       )}
-
-      {loading ? <p>Carregando...</p> : <Table headers={headers} rows={rows} />}
     </div>
   );
 }
