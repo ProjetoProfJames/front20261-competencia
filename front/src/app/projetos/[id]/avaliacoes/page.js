@@ -3,6 +3,7 @@
 import { buscarProjeto, criarAvaliacao, editarAvaliacao, deletarAvaliacao, listarAvaliacoesPorProjeto } from '@/services/projetoService'
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import LayoutComponent from '@/components/Layout'
 import Button from '@/components/Button'
 import FormInput from '@/components/FormInput'
 
@@ -88,11 +89,11 @@ export default function AvaliacoesPage() {
     }
   }
 
-  if (carregando) return <p>Carregando...</p>
-  if (erro) return <p>Erro: {erro}</p>
+  if (carregando) return <LayoutComponent><p>Carregando...</p></LayoutComponent>
+  if (erro) return <LayoutComponent><p className="mensagem-erro">Erro: {erro}</p></LayoutComponent>
 
   return (
-    <main>
+    <LayoutComponent>
       <div className="pagina-cabecalho">
         <h1>Avaliações — {projeto.nome}</h1>
         <button className="botao-secundario" onClick={() => router.push('/projetos')}>Voltar</button>
@@ -147,6 +148,6 @@ export default function AvaliacoesPage() {
           </button>
         </div>
       </div>
-    </main>
+    </LayoutComponent>
   )
 }
