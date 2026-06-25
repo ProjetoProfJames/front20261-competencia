@@ -48,8 +48,12 @@ const availableSections = [
   { id: "locais", label: "Locais", roles: ["ADMIN", "COORDENADOR", "PROFESSOR"] },
   { id: "cursos", label: "Cursos", roles: ["ADMIN", "COORDENADOR", "PROFESSOR"] },
   { id: "semestres", label: "Períodos Letivos", roles: ["ADMIN", "COORDENADOR", "PROFESSOR"] },
+<<<<<<< HEAD
   { id: "turmas", label: "Turmas", roles: ["ADMIN", "COORDENADOR", "PROFESSOR"] },
   { id: "projetos", label: "Projetos", roles: ["ADMIN", "COORDENADOR", "PROFESSOR", "ALUNO"] },
+=======
+  { id: "turmas", label: "Turmas", roles: ["COORDENADOR", "PROFESSOR"] },
+>>>>>>> origin/squad-5
 ];
 
 const profileOptions = ["ADMIN", "COORDENADOR", "PROFESSOR", "ALUNO", "AVALIADOR_EXTERNO"];
