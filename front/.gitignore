@@ -13,6 +13,14 @@
 # testing
 /coverage
 
+#guides
+DESIGN_GUIDE.md
+CREDENCIAIS_GUIDE.md
+TASK1_README.md
+TECHNICAL_SUMMARY.md
+TESTE_GUIDE.md
+TROUBLESHOOTING.md
+
 # next.js
 /.next/
 /out/

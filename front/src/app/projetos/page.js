@@ -44,9 +44,6 @@ export default function ProjetosPage() {
     <LayoutComponent>
       <div className="pagina-cabecalho">
         <h1>Projetos</h1>
-        <button onClick={() => router.push('/projetos/novo')}>
-          Novo Projeto
-        </button>
       </div>
       <table>
         <thead>
