@@ -29,12 +29,14 @@ function getToken() {
 }
 
 async function request(url, options = {}) {
+  const token = getToken(); // corrigido: chama uma vez só
+
   const response = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(getToken() && {
-        Authorization: `Bearer ${getToken()}`,
+      ...(token && {
+        Authorization: `Bearer ${token}`,
       }),
       ...options.headers,
     },
@@ -46,7 +48,8 @@ async function request(url, options = {}) {
 
   try {
     data = text ? JSON.parse(text) : null;
-  } catch {
+  } catch (e) {
+    console.warn("Resposta não é JSON válido:", e); // corrigido: loga o erro
     data = null;
   }
 

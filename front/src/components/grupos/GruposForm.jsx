@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { listarTurmas, listarLocais, listarSemestres, buscarTurma } from "@/app/services/gruposService";
+import {
+  listarTurmas,
+  listarLocais,
+  listarSemestres,
+  buscarTurma,
+} from "@/app/services/gruposService";
 
 export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
   const [turmas, setTurmas] = useState([]);
@@ -22,9 +27,7 @@ export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
     horarioInicio: grupo?.horarioInicio
       ? toDatetimeLocal(grupo.horarioInicio)
       : "",
-    horarioFim: grupo?.horarioFim
-      ? toDatetimeLocal(grupo.horarioFim)
-      : "",
+    horarioFim: grupo?.horarioFim ? toDatetimeLocal(grupo.horarioFim) : "",
     integranteIds: grupo?.integrantes?.map((i) => i.id) || [],
   });
 
@@ -111,7 +114,7 @@ export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
 
   function handleIntegrantesChange(e) {
     const selecionados = Array.from(e.target.selectedOptions).map((o) =>
-      Number(o.value)
+      Number(o.value),
     );
     setFormData((prev) => ({ ...prev, integranteIds: selecionados }));
   }
@@ -119,7 +122,10 @@ export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
   function handleSubmit(e) {
     e.preventDefault();
 
-    if (formData.integranteIds.length < 3 || formData.integranteIds.length > 7) {
+    if (
+      formData.integranteIds.length < 3 ||
+      formData.integranteIds.length > 7
+    ) {
       alert("Selecione entre 3 e 7 integrantes.");
       return;
     }
@@ -131,14 +137,18 @@ export default function GrupoForm({ grupo, onSalvar, onVoltar }) {
       semestreId: Number(formData.semestreId),
       professorOrientadorId: Number(formData.professorOrientadorId),
       localId: Number(formData.localId),
-      horarioInicio: new Date(formData.horarioInicio).toISOString(),
-      horarioFim: new Date(formData.horarioFim).toISOString(),
+      horarioInicio: new Date(formData.horarioInicio + ":00Z").toISOString(),
+      horarioFim: new Date(formData.horarioFim + ":00Z").toISOString(),
       integranteIds: formData.integranteIds,
     });
   }
 
   if (carregando) {
-    return <div className="grupo-form-container"><p>Carregando...</p></div>;
+    return (
+      <div className="grupo-form-container">
+        <p>Carregando...</p>
+      </div>
+    );
   }
 
   return (

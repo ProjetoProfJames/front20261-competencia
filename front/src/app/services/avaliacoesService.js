@@ -63,7 +63,7 @@ export async function criarAvaliacao(data) {
 export async function atualizarAvaliacao(id, data) {
   const body = {};
   if (data.avaliadorId) body.avaliadorId = Number(data.avaliadorId);
-  if (data.nota !== undefined) body.nota = Number(data.nota);
+  if (data.nota !== undefined && data.nota !== "") body.nota = Number(data.nota);
   if (data.comentario) body.comentario = data.comentario;
 
   return request(`${BASE_URL}/${id}`, {
