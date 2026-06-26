@@ -5,13 +5,16 @@ import Link from "next/link";
 export default function Menu() {
   const [displayName, setDisplayName] = useState("");
   const [hasToken, setHasToken] = useState(false);
+  const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const savedName = localStorage.getItem("user_display_name");
+    const savedRole = localStorage.getItem("user_profile");
     
     if (token) {
       setHasToken(true);
+      setUserRole(savedRole || "");
       if (savedName) {
         const cleanName = savedName.includes("@") ? savedName.split("@")[0] : savedName;
         setDisplayName(cleanName);
@@ -24,6 +27,7 @@ export default function Menu() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user_display_name");
+    localStorage.removeItem("user_profile");
     window.location.href = "/login";
   };
 
@@ -39,13 +43,34 @@ export default function Menu() {
       </div>
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
         <Link href="/">Início</Link>
-        <Link href="/usuarios">Usuários</Link>
-        <Link href="/locais">Locais</Link>
-        <Link href="/semestres">Semestres</Link>
-        <Link href="/cursos">Cursos</Link>
-        <Link href="/turmas">Turmas</Link>
-        <Link href="/projetos">Projetos</Link>
-        <Link href="/avaliacoes">Avaliações</Link>
+        
+        {(userRole === "ADMIN" || userRole === "COORDENADOR" || userRole === "PROFESSOR") && (
+          <Link href="/usuarios">Usuários</Link>
+        )}
+        
+        {(userRole === "ADMIN" || userRole === "COORDENADOR") && (
+          <Link href="/locais">Locais</Link>
+        )}
+        
+        {userRole === "ADMIN" && (
+          <Link href="/semestres">Semestres</Link>
+        )}
+        
+        {userRole === "ADMIN" && (
+          <Link href="/cursos">Cursos</Link>
+        )}
+        
+        {(userRole === "ADMIN" || userRole === "PROFESSOR") && (
+          <Link href="/turmas">Turmas</Link>
+        )}
+        
+        {userRole !== "AVALIADOR_EXTERNO" && (
+          <Link href="/projetos">Projetos</Link>
+        )}
+        
+        {(userRole === "ADMIN" || userRole === "PROFESSOR" || userRole === "AVALIADOR_EXTERNO") && (
+          <Link href="/avaliacoes">Avaliações</Link>
+        )}
       </div>
     </nav>
   );

@@ -3,7 +3,6 @@ package com.unisales.piemanager.auth.controller;
 import com.unisales.piemanager.auth.dto.LoginRequest;
 import com.unisales.piemanager.auth.dto.LoginResponse;
 import com.unisales.piemanager.common.api.ApiResponse;
-import com.unisales.piemanager.common.exception.BusinessException;
 import com.unisales.piemanager.user.UserService;
 import com.unisales.piemanager.user.model.User;
 import com.unisales.piemanager.security.JwtService;
@@ -33,21 +32,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
-        User user = userService.findEntityByEmail(request.getEmail());
-        
-        String reqEmail = request.getEmail() != null ? request.getEmail().trim() : "";
-        String reqName = request.getName() != null ? request.getName().trim() : "";
-        String dbUsername = user.getUsername() != null ? user.getUsername().trim() : "";
-
-        if (!reqEmail.equalsIgnoreCase("admin@unisales.br") && !reqEmail.equalsIgnoreCase("23@gada")) {
-            if (!dbUsername.equalsIgnoreCase(reqName)) {
-                throw new BusinessException("Name does not match our records");
-            }
-        }
-
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(reqEmail.toLowerCase(), request.getPassword()));
+                new UsernamePasswordAuthenticationToken(request.getEmail().trim().toLowerCase(), request.getPassword()));
 
+        User user = userService.findEntityByEmail(request.getEmail());
         String token = jwtService.generateToken(user.getEmail());
 
         LoginResponse response = new LoginResponse();

@@ -8,9 +8,6 @@ public class UserUpdateRequest {
     @Size(max = 120, message = "username must have up to 120 chars")
     private String username;
 
-    @Size(max = 180, message = "email must have up to 180 chars")
-    private String email;
-
     @Size(min = 6, max = 120, message = "password must be between 6 and 120 chars")
     private String password;
 
@@ -22,14 +19,6 @@ public class UserUpdateRequest {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getPassword() {
