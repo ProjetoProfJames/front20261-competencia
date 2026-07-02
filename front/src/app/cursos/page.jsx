@@ -9,7 +9,6 @@ export default function CursosPage() {
     <div className="cursos-container">
       <h1>Gestão de Cursos</h1>
       
-      
       <div className="cursos-content">
         <CursosForm />
         <CursosList />

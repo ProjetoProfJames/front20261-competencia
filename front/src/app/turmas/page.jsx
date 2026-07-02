@@ -1,19 +1,24 @@
 'use client';
 
-import React from 'react';
-import TurmasForm from '../../components/turmas/TurmasForm'; // ajuste o caminho se necessário
-import TurmasList from '../../components/turmas/TurmasList'; // ajuste o caminho se necessário
+import React, { useState } from 'react';
+import TurmasForm from '../../components/turmas/TurmasForm';
+import TurmasList from '../../components/turmas/TurmasList';
 
 export default function TurmasPage() {
+  const [turmaParaEditar, setTurmaParaEditar] = useState(null);
+
   return (
-    <div className="cursos-container">
-      <h1>Gestão de Turmas</h1>
-     
-      
-      <div className="cursos-content">
-        <TurmasForm />
-        <TurmasList />
-      </div>
+    <div className="container-crud">
+      <TurmasForm 
+        turmaEditando={turmaParaEditar} 
+        limparEdicao={() => setTurmaParaEditar(null)} 
+      />
+      <TurmasList 
+        aoClicarEmEditar={(turma) => {
+          setTurmaParaEditar(turma);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }} 
+      />
     </div>
   );
 }

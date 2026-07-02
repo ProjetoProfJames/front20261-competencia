@@ -1,23 +1,23 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { periodosService } from '../../services/periodosService';
+import periodosService from '../../services/periodosService';
 
-export default function PeriodosList() {
+export default function PeriodosList({ aoClicarEmEditar }) {
   const [periodos, setPeriodos] = useState([]);
   const [loading, setLoading] = useState(true);
 
- const carregarPeriodos = async () => {
-  try {
-    const dados = await periodosService.listar();
-    setPeriodos(dados || []);
-  } catch (error) {
-    console.log('Backend offline, exibindo interface de períodos estática:', error);
-    setPeriodos([]); 
-  } finally {
-    setLoading(false); 
-  }
-};
+  const carregarPeriodos = async () => {
+    try {
+      const dados = await periodosService.listar();
+      setPeriodos(dados || []);
+    } catch (error) {
+      console.log('Backend offline, exibindo interface de períodos estática:', error);
+      setPeriodos([]); 
+    } finally {
+      setLoading(false); 
+    }
+  };
 
   useEffect(() => {
     carregarPeriodos();
@@ -53,9 +53,9 @@ export default function PeriodosList() {
           <tbody>
             {periodos.map((p) => (
               <tr key={p.id}>
-                <td>{p.ano}/{p.semestre}</td>
+                <td>{p.nome}</td>
                 <td>
-                  <button className="btn-edit">Editar</button>
+                  <button className="btn-edit" onClick={() => aoClicarEmEditar(p)}>Editar</button>
                   <button className="btn-del" onClick={() => handleExcluir(p.id)}>Excluir</button>
                 </td>
               </tr>
