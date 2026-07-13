@@ -14,7 +14,7 @@ export default function LocaisPage() {
   const fetchLocais = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/locais", {
+      const response = await fetch("http://localhost:8080/api/locais", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -82,7 +82,7 @@ export default function LocaisPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = form.id ? `/api/locais/${form.id}` : "/api/locais";
+      const url = form.id ? `http://localhost:8080/api/locais/${form.id}` : "http://localhost:8080/api/locais";
       const method = form.id ? "PUT" : "POST";
 
       const payload = {
@@ -151,7 +151,7 @@ export default function LocaisPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/locais/${local.id}`, {
+      const response = await fetch(`http://localhost:8080/api/locais/${local.id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });

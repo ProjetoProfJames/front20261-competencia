@@ -14,7 +14,7 @@ export default function UsuariosPage() {
   const fetchUsuarios = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/users", {
+      const response = await fetch("http://localhost:8080/api/users", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -120,7 +120,7 @@ export default function UsuariosPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const url = form.id ? `/api/users/${form.id}` : "/api/users";
+      const url = form.id ? `http://localhost:8080/api/users/${form.id}` : "http://localhost:8080/api/users";
       const method = form.id ? "PUT" : "POST";
 
       const payload = {
@@ -213,7 +213,7 @@ export default function UsuariosPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/users/${usuario.id}`, {
+      const response = await fetch(`http://localhost:8080/api/users/${usuario.id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });

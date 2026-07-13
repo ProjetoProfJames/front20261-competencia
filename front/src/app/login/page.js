@@ -1,11 +1,15 @@
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", senha: "" });
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/public/bootstrap", { method: "POST" }).catch(() => {});
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,9 +26,11 @@ export default function LoginPage() {
     }
 
     try {
+      await fetch("http://localhost:8080/api/public/bootstrap", { method: "POST" }).catch(() => {});
+
       const extractedName = form.email.split('@')[0];
 
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
