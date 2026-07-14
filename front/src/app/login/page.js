@@ -1,15 +1,11 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: "", senha: "" });
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    fetch("http://localhost:8080/api/public/bootstrap", { method: "POST" }).catch(() => {});
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,8 +22,6 @@ export default function LoginPage() {
     }
 
     try {
-      await fetch("http://localhost:8080/api/public/bootstrap", { method: "POST" }).catch(() => {});
-
       const extractedName = form.email.split('@')[0];
 
       const response = await fetch("http://localhost:8080/api/auth/login", {
@@ -60,16 +54,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="container" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-      <form onSubmit={handleLogin} className="card" style={{ margin: "0", width: "100%" }}>
-        <h1 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Login</h1>
-        
+    <div className="login-page">
+      <form onSubmit={handleLogin} className="login-card">
+        <div className="login-eyebrow">Acesso ao sistema</div>
+        <h1 className="login-title">Bem-vindo</h1>
+        <p className="login-subtitle">Preencha as informações de login para acessar o PIE Manager.</p>
+
         {error && <div className="error-message">{error}</div>}
-        
+
         <FormInput label="Email" type="email" name="email" value={form.email} onChange={handleChange} />
         <FormInput label="Senha" type="password" name="senha" value={form.senha} onChange={handleChange} />
 
-        <Button type="submit">Login</Button>
+        <Button type="submit">Entrar</Button>
       </form>
     </div>
   );

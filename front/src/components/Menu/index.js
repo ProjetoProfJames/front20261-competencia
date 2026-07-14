@@ -36,40 +36,42 @@ export default function Menu() {
   }
 
   return (
-    <nav style={{ display: "flex", justifyContent: "space-between", padding: "1rem", borderBottom: "1px solid #ccc", flexWrap: "wrap", gap: "1rem" }}>
-      <div>
-        <span>Olá, {displayName}</span>
-        <button onClick={handleLogout} style={{ marginLeft: "1rem", color: "red", border: "1px solid red", background: "none", padding: "2px 8px", cursor: "pointer", borderRadius: "4px" }}>Logout</button>
+    <nav className="app-menu">
+      <div className="app-menu-left">
+        <span className="app-menu-brand">PIE Manager</span>
+        <div className="app-menu-user">
+          <button onClick={handleLogout} className="btn-logout">Logout</button>
+        </div>
       </div>
-      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
-        <Link href="/">Início</Link>
+      <div className="app-menu-links">
+        <Link href="/" className="menu-link">Início</Link>
         
         {(userRole === "ADMIN" || userRole === "COORDENADOR" || userRole === "PROFESSOR") && (
-          <Link href="/usuarios">Usuários</Link>
+          <Link href="/usuarios" className="menu-link">Usuários</Link>
         )}
         
         {(userRole === "ADMIN" || userRole === "COORDENADOR") && (
-          <Link href="/locais">Locais</Link>
+          <Link href="/locais" className="menu-link">Locais</Link>
         )}
         
         {userRole === "ADMIN" && (
-          <Link href="/semestres">Semestres</Link>
+          <Link href="/semestres" className="menu-link">Semestres</Link>
         )}
         
         {userRole === "ADMIN" && (
-          <Link href="/cursos">Cursos</Link>
+          <Link href="/cursos" className="menu-link">Cursos</Link>
         )}
         
         {(userRole === "ADMIN" || userRole === "PROFESSOR") && (
-          <Link href="/turmas">Turmas</Link>
+          <Link href="/turmas" className="menu-link">Turmas</Link>
         )}
         
         {userRole !== "AVALIADOR_EXTERNO" && (
-          <Link href="/projetos">Projetos</Link>
+          <Link href="/projetos" className="menu-link">Projetos</Link>
         )}
         
         {(userRole === "ADMIN" || userRole === "PROFESSOR" || userRole === "AVALIADOR_EXTERNO") && (
-          <Link href="/avaliacoes">Avaliações</Link>
+          <Link href="/avaliacoes" className="menu-link">Avaliações</Link>
         )}
       </div>
     </nav>

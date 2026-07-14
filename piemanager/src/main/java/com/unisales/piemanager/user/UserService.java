@@ -57,12 +57,19 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
-    @Transactional
+@Transactional
     public UserResponse update(Long id, UserUpdateRequest request, String actor) {
         User user = getEntityById(id);
 
         if (request.getUsername() != null && !request.getUsername().isBlank()) {
             user.setUsername(request.getUsername().trim());
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            String normalizedEmail = request.getEmail().trim().toLowerCase();
+            if (!user.getEmail().equalsIgnoreCase(normalizedEmail) && userRepository.existsByEmail(normalizedEmail)) {
+                throw new BusinessException("Email already exists");
+            }
+            user.setEmail(normalizedEmail);
         }
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
