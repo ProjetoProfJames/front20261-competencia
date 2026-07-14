@@ -1,11 +1,12 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import "./global.css";
 
-const geistSans = Geist({
+const sansFont = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
+const monoFont = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
@@ -15,12 +16,10 @@ export const metadata = {
   description: "Controle de Projeto Integrador de Extensão",
 };
 
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
-      </body>
-    </html>
-  );
-}
+const RootLayout = ({ children }) => (
+  <html lang="en">
+    <body className={`${sansFont.variable} ${monoFont.variable}`}>{children}</body>
+  </html>
+);
+
+export default RootLayout;
