@@ -8,7 +8,6 @@ export default function UsuariosPage() {
   const [form, setForm] = useState({ id: null, nome: "", email: "", senha: "", confirmarSenha: "", tipo: "ALUNO" });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [userRole, setUserRole] = useState("ALUNO");
 
   const fetchUsuarios = async () => {
@@ -41,7 +40,7 @@ export default function UsuariosPage() {
       return;
     }
 
-    if (savedRole === "ALUNO" || savedRole === "AVALIADOR_EXTERNO") {
+    if (savedRole === "ALUNO" || savedRole === "AVALIADOR_EXTERNO" || savedRole === "COORDENADOR") {
       window.location.href = "/";
       return;
     }
@@ -57,21 +56,12 @@ export default function UsuariosPage() {
       }).join(''));
       
       const payload = JSON.parse(jsonPayload);
-      if (payload && payload.sub) {
-        setCurrentUserEmail(payload.sub);
-      }
       if (payload) {
         const roleExtraida = payload.profile || payload.role || payload.roles || savedRole || "ALUNO";
         const finalRole = Array.isArray(roleExtraida) ? roleExtraida[0] : roleExtraida;
         setUserRole(finalRole);
-        if (finalRole === "PROFESSOR") {
-          setForm((prev) => ({ ...prev, tipo: "ALUNO" }));
-        } else if (finalRole === "COORDENADOR") {
-          setForm((prev) => ({ ...prev, tipo: "PROFESSOR" }));
-        }
       }
     } catch (e) {
-      setCurrentUserEmail("");
       setUserRole("ALUNO");
     }
 
@@ -103,18 +93,8 @@ export default function UsuariosPage() {
       return;
     }
 
-    if (userRole === "ALUNO" || userRole === "AVALIADOR_EXTERNO") {
+    if (userRole !== "ADMIN") {
       setError("Permissão negada: Seu perfil não pode inserir ou modificar registros.");
-      return;
-    }
-
-    if (userRole === "COORDENADOR" && form.tipo !== "PROFESSOR" && form.tipo !== "ALUNO" && form.tipo !== "AVALIADOR_EXTERNO") {
-      setError("Permissão negada: Coordenadores só podem gerenciar Professores, Alunos ou Avaliadores Externos.");
-      return;
-    }
-    
-    if (userRole === "PROFESSOR" && form.tipo !== "ALUNO") {
-      setError("Permissão negada: Professores só podem gerenciar Alunos.");
       return;
     }
 
@@ -123,12 +103,9 @@ export default function UsuariosPage() {
       const url = form.id ? `http://localhost:8080/api/users/${form.id}` : "http://localhost:8080/api/users";
       const method = form.id ? "PUT" : "POST";
 
-      const payload = {
-        username: form.nome,
-        email: form.email,
-        profile: form.tipo,
-        ...(form.id ? {} : { password: form.senha })
-      };
+      const payload = form.id
+        ? { username: form.nome, profile: form.tipo }
+        : { username: form.nome, email: form.email, profile: form.tipo, password: form.senha };
 
       const response = await fetch(url, {
         method: method,
@@ -141,7 +118,7 @@ export default function UsuariosPage() {
 
       if (response.ok) {
         setSuccessMessage("Registro salvo com sucesso!");
-        setForm({ id: null, nome: "", email: "", senha: "", confirmarSenha: "", tipo: userRole === "PROFESSOR" ? "ALUNO" : userRole === "COORDENADOR" ? "PROFESSOR" : "ALUNO" });
+        setForm({ id: null, nome: "", email: "", senha: "", confirmarSenha: "", tipo: "ALUNO" });
         fetchUsuarios();
         setTimeout(() => setSuccessMessage(""), 4000);
       } else {
@@ -155,19 +132,9 @@ export default function UsuariosPage() {
 
   const handleEditar = (usuario) => {
     setError("");
-    
-    if (userRole === "ALUNO" || userRole === "AVALIADOR_EXTERNO") {
+
+    if (userRole !== "ADMIN") {
       setError("Permissão negada: Seu perfil não possui permissão de edição.");
-      return;
-    }
-
-    if (userRole === "PROFESSOR" && usuario.profile !== "ALUNO") {
-      setError("Permissão negada: Professores só podem editar Alunos.");
-      return;
-    }
-
-    if (userRole === "COORDENADOR" && (usuario.profile === "ADMIN" || usuario.profile === "COORDENADOR")) {
-      setError("Permissão negada: Coordenadores não podem editar Administradores ou Coordenadores.");
       return;
     }
 
@@ -192,18 +159,8 @@ export default function UsuariosPage() {
       return;
     }
 
-    if (userRole === "ALUNO" || userRole === "AVALIADOR_EXTERNO") {
+    if (userRole !== "ADMIN") {
       setError("Permissão negada: Seu perfil não possui permissão de exclusão.");
-      return;
-    }
-
-    if (userRole === "PROFESSOR" && usuario.profile !== "ALUNO") {
-      setError("Permissão negada: Professores só podem excluir Alunos.");
-      return;
-    }
-
-    if (userRole === "COORDENADOR" && (usuario.profile === "ADMIN" || usuario.profile === "COORDENADOR")) {
-      setError("Permissão negada: Coordenadores não podem excluir Administradores ou Coordenadores.");
       return;
     }
 
@@ -233,13 +190,13 @@ export default function UsuariosPage() {
     <div className="container container-flex-layout">
       <h1>Gerenciamento de Usuários</h1>
       
-      {(userRole === "ADMIN" || userRole === "COORDENADOR" || userRole === "PROFESSOR") && (
+      {userRole === "ADMIN" && (
         <form onSubmit={handleSalvar} className="card form-full-width">
           <h2>{form.id ? "Editar Usuário" : "Novo Usuário"}</h2>
           {error && <div className="alert-message error-box">{error}</div>}
           {successMessage && <div className="alert-message success-box">{successMessage}</div>}
           <FormInput label="Nome" type="text" name="nome" value={form.nome} onChange={handleChange} />
-          <FormInput label="Email" type="email" name="email" value={form.email} onChange={handleChange} />
+          <FormInput label="Email" type="email" name="email" value={form.email} onChange={handleChange} disabled={!!form.id} />
           {!form.id && (
             <>
               <FormInput label="Senha" type="password" name="senha" value={form.senha} onChange={handleChange} />
@@ -248,36 +205,22 @@ export default function UsuariosPage() {
           )}
           <div className="form-group">
             <label>Tipo de Usuário</label>
-            <select 
-              className="input-field" 
-              name="tipo" 
-              value={form.tipo} 
-              onChange={handleChange}
-              disabled={userRole === "PROFESSOR"}
-            >
-              {userRole === "ADMIN" && (
-                <>
-                  <option value="ALUNO">Aluno</option>
-                  <option value="PROFESSOR">Professor</option>
-                  <option value="COORDENADOR">Coordenador</option>
-                  <option value="AVALIADOR_EXTERNO">Avaliador Externo</option>
-                  <option value="ADMIN">Administrador</option>
-                </>
-              )}
-              {userRole === "COORDENADOR" && (
-                <>
-                  <option value="PROFESSOR">Professor</option>
-                  <option value="ALUNO">Aluno</option>
-                  <option value="AVALIADOR_EXTERNO">Avaliador Externo</option>
-                </>
-              )}
-              {userRole === "PROFESSOR" && (
-                <option value="ALUNO">Aluno</option>
-              )}
+            <select className="input-field" name="tipo" value={form.tipo} onChange={handleChange}>
+              <option value="ALUNO">Aluno</option>
+              <option value="PROFESSOR">Professor</option>
+              <option value="COORDENADOR">Coordenador</option>
+              <option value="AVALIADOR_EXTERNO">Avaliador Externo</option>
+              <option value="ADMIN">Administrador</option>
             </select>
           </div>
           <Button type="submit">{form.id ? "Atualizar" : "Salvar"}</Button>
         </form>
+      )}
+
+      {userRole !== "ADMIN" && (
+        <div className="alert-message error-box">
+          Você pode visualizar os usuários cadastrados, mas apenas o Administrador pode cadastrar, editar ou excluir registros.
+        </div>
       )}
 
       <div className="table-scroll-container">
@@ -288,7 +231,7 @@ export default function UsuariosPage() {
               <th>Nome</th>
               <th>Email</th>
               <th>Tipo</th>
-              <th>Ações</th>
+              {userRole === "ADMIN" && <th>Ações</th>}
             </tr>
           </thead>
           <tbody>
@@ -302,12 +245,14 @@ export default function UsuariosPage() {
                   <td>{nomeTabela}</td>
                   <td>{emailTabela}</td>
                   <td>{u.profile}</td>
-                  <td>
-                    <div className="actions-cell">
-                      <button onClick={() => handleEditar(u)} className="btn-action edit">Editar</button>
-                      <button onClick={() => handleExcluir(u)} className="btn-action delete">Excluir</button>
-                    </div>
-                  </td>
+                  {userRole === "ADMIN" && (
+                    <td>
+                      <div className="actions-cell">
+                        <button onClick={() => handleEditar(u)} className="btn-action edit">Editar</button>
+                        <button onClick={() => handleExcluir(u)} className="btn-action delete">Excluir</button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}

@@ -120,7 +120,7 @@ export default function LocaisPage() {
       return;
     }
 
-    if (userRole !== "ADMIN" && local.createdBy && local.createdBy !== currentUserEmail) {
+    if (userRole !== "ADMIN" && userRole !== "COORDENADOR" && local.createdBy && local.createdBy !== currentUserEmail) {
       setError("Permissão negada: Você só pode editar registros que você mesmo inseriu.");
       return;
     }
@@ -140,7 +140,7 @@ export default function LocaisPage() {
       return;
     }
 
-    if (userRole !== "ADMIN" && local.createdBy && local.createdBy !== currentUserEmail) {
+    if (userRole !== "ADMIN" && userRole !== "COORDENADOR" && local.createdBy && local.createdBy !== currentUserEmail) {
       setError("Permissão negada: Você só pode excluir registros que você mesmo inseriu.");
       return;
     }
@@ -203,7 +203,7 @@ export default function LocaisPage() {
           <tbody>
             {locais.map((l) => {
               const nomeTabela = l.numero || "Não informado";
-              const podeModificar = userRole === "ADMIN" || !l.createdBy || l.createdBy === currentUserEmail;
+              const podeModificar = userRole === "ADMIN" || userRole === "COORDENADOR" || !l.createdBy || l.createdBy === currentUserEmail;
 
               return (
                 <tr key={l.id}>

@@ -29,26 +29,26 @@ public class UserController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','COORDENADOR','PROFESSOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<UserResponse> create(@Valid @RequestBody UserCreateRequest request, Authentication authentication) {
         String actor = authentication != null ? authentication.getName() : "system";
         return ApiResponse.success("User created", userService.create(request, actor));
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','COORDENADOR','PROFESSOR','ALUNO')")
+    @PreAuthorize("hasAnyRole('ADMIN','PROFESSOR')")
     public ApiResponse<List<UserResponse>> findAll() {
         return ApiResponse.success("Users fetched", userService.findAll());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','COORDENADOR','PROFESSOR') or @userService.isOwner(#id, authentication.name)")
+    @PreAuthorize("hasAnyRole('ADMIN','PROFESSOR') or @userService.isOwner(#id, authentication.name)")
     public ApiResponse<UserResponse> findById(@PathVariable Long id) {
         return ApiResponse.success("User fetched", userService.findById(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','COORDENADOR','PROFESSOR') or @userService.isOwner(#id, authentication.name)")
+    @PreAuthorize("hasRole('ADMIN') or @userService.isOwner(#id, authentication.name)")
     public ApiResponse<UserResponse> update(@PathVariable Long id,
                                             @Valid @RequestBody UserUpdateRequest request,
                                             Authentication authentication) {
@@ -57,7 +57,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','COORDENADOR','PROFESSOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         userService.delete(id);
         return ApiResponse.success("User deleted", null);

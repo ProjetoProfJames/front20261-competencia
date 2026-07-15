@@ -405,3 +405,31 @@ h1, h2, h3 {
 .menu-link:active {
   transform: translateY(1px);
 }
+
+.login-footer {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.login-footer-link {
+  color: var(--color-gold-dark);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.login-footer-link:hover {
+  text-decoration: underline;
+}
+
+.info-message {
+  background-color: var(--color-blue-light);
+  color: var(--color-blue-main);
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(38, 50, 92, 0.15);
+}

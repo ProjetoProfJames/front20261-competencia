@@ -40,13 +40,14 @@ export default function Menu() {
       <div className="app-menu-left">
         <span className="app-menu-brand">PIE Manager</span>
         <div className="app-menu-user">
+          <span className="app-menu-greeting">Olá, <strong>{displayName}</strong></span>
           <button onClick={handleLogout} className="btn-logout">Logout</button>
         </div>
       </div>
       <div className="app-menu-links">
         <Link href="/" className="menu-link">Início</Link>
         
-        {(userRole === "ADMIN" || userRole === "COORDENADOR" || userRole === "PROFESSOR") && (
+        {(userRole === "ADMIN" || userRole === "PROFESSOR") && (
           <Link href="/usuarios" className="menu-link">Usuários</Link>
         )}
         
