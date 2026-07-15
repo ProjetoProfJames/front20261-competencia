@@ -57,6 +57,35 @@ const Menu = () => {
             </Link>
           </li>
         )}
+        <li>
+          <Link href="/semestre" className={linkIsActive("/semestre") ? "active" : ""}>
+            Semestres
+          </Link>
+        </li>
+
+        <li>
+          <Link href="/cursos" className={linkIsActive("/cursos") ? "active" : ""}>
+            Cursos
+          </Link>
+        </li>
+
+        <li>
+          <Link href="/turmas" className={linkIsActive("/turmas") ? "active" : ""}>
+            Turmas
+          </Link>
+        </li>
+
+        <li>
+          <Link href="/projetos" className={linkIsActive("/projetos") ? "active" : ""}>
+            Projetos
+          </Link>
+        </li>
+
+        <li>
+          <Link href="/avaliacoes" className={linkIsActive("/avaliacoes") ? "active" : ""}>
+            Avaliações
+          </Link>
+        </li>
       </ul>
 
       <div className="sidebar-footer">
