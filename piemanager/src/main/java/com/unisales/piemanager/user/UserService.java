@@ -64,13 +64,6 @@ public class UserService {
         if (request.getUsername() != null && !request.getUsername().isBlank()) {
             user.setUsername(request.getUsername().trim());
         }
-        if (request.getEmail() != null && !request.getEmail().isBlank()) {
-            String normalizedEmail = request.getEmail().trim().toLowerCase();
-            if (!user.getEmail().equalsIgnoreCase(normalizedEmail) && userRepository.existsByEmail(normalizedEmail)) {
-                throw new BusinessException("Email already exists");
-            }
-            user.setEmail(normalizedEmail);
-        }
         if (request.getPassword() != null && !request.getPassword().isBlank()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
@@ -91,7 +84,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public boolean isOwner(Long id, String email) {
         return userRepository.findById(id)
-                .map(u -> u.getEmail().equalsIgnoreCase(email))
+                .map(user -> user.getEmail().equalsIgnoreCase(email))
                 .orElse(false);
     }
 

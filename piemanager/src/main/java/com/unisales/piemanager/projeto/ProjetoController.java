@@ -110,7 +110,7 @@ public class ProjetoController {
     }
 
     @PostMapping("/{id}/avaliacoes")
-    @PreAuthorize("hasAnyRole('PROFESSOR','AVALIADOR_EXTERNO', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('PROFESSOR','AVALIADOR_EXTERNO')")
     public ApiResponse<AvaliacaoResponse> createAvaliacao(@PathVariable Long id,
                                                           @Valid @RequestBody ProjetoAvaliacaoCreateRequest request,
                                                           Authentication authentication) {

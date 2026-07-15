@@ -8,13 +8,12 @@ export default function UsuariosPage() {
   const [form, setForm] = useState({ id: null, nome: "", email: "", senha: "", confirmarSenha: "", tipo: "ALUNO" });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [userRole, setUserRole] = useState("ALUNO");
 
   const fetchUsuarios = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("/api/users", {
+      const response = await fetch("http://localhost:8080/api/users", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -34,9 +33,15 @@ export default function UsuariosPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const savedRole = localStorage.getItem("user_profile");
     
     if (!token) {
       window.location.href = "/login";
+      return;
+    }
+
+    if (savedRole === "ALUNO" || savedRole === "AVALIADOR_EXTERNO" || savedRole === "COORDENADOR") {
+      window.location.href = "/";
       return;
     }
 
@@ -51,15 +56,12 @@ export default function UsuariosPage() {
       }).join(''));
       
       const payload = JSON.parse(jsonPayload);
-      if (payload && payload.sub) {
-        setCurrentUserEmail(payload.sub);
-      }
       if (payload) {
-        const roleExtraida = payload.profile || payload.role || payload.roles || localStorage.getItem("user_profile") || "ALUNO";
-        setUserRole(Array.isArray(roleExtraida) ? roleExtraida[0] : roleExtraida);
+        const roleExtraida = payload.profile || payload.role || payload.roles || savedRole || "ALUNO";
+        const finalRole = Array.isArray(roleExtraida) ? roleExtraida[0] : roleExtraida;
+        setUserRole(finalRole);
       }
     } catch (e) {
-      setCurrentUserEmail("");
       setUserRole("ALUNO");
     }
 
@@ -91,32 +93,19 @@ export default function UsuariosPage() {
       return;
     }
 
-    if (userRole === "ALUNO") {
-      setError("Permissão negada: Alunos não podem inserir ou modificar registros.");
-      return;
-    }
-
-    if (userRole === "COORDENADOR" && form.tipo !== "PROFESSOR" && form.tipo !== "ALUNO" && form.tipo !== "AVALIADOR_EXTERNO") {
-      setError("Permissão negada: Coordenadores só podem gerenciar Professores, Alunos ou Avaliadores Externos.");
-      return;
-    }
-    
-    if (userRole === "PROFESSOR" && form.tipo !== "ALUNO") {
-      setError("Permissão negada: Professores só podem gerenciar Alunos.");
+    if (userRole !== "ADMIN") {
+      setError("Permissão negada: Seu perfil não pode inserir ou modificar registros.");
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
-      const url = form.id ? `/api/users/${form.id}` : "/api/users";
+      const url = form.id ? `http://localhost:8080/api/users/${form.id}` : "http://localhost:8080/api/users";
       const method = form.id ? "PUT" : "POST";
 
-      const payload = {
-        username: form.nome,
-        email: form.email,
-        profile: form.tipo,
-        ...(form.id ? {} : { password: form.senha })
-      };
+      const payload = form.id
+        ? { username: form.nome, profile: form.tipo }
+        : { username: form.nome, email: form.email, profile: form.tipo, password: form.senha };
 
       const response = await fetch(url, {
         method: method,
@@ -143,9 +132,9 @@ export default function UsuariosPage() {
 
   const handleEditar = (usuario) => {
     setError("");
-    
-    if (userRole === "ALUNO") {
-      setError("Permissão negada: Alunos não possuem permissão de edição.");
+
+    if (userRole !== "ADMIN") {
+      setError("Permissão negada: Seu perfil não possui permissão de edição.");
       return;
     }
 
@@ -170,8 +159,8 @@ export default function UsuariosPage() {
       return;
     }
 
-    if (userRole === "ALUNO") {
-      setError("Permissão negada: Alunos não possuem permissão de exclusão.");
+    if (userRole !== "ADMIN") {
+      setError("Permissão negada: Seu perfil não possui permissão de exclusão.");
       return;
     }
 
@@ -181,7 +170,7 @@ export default function UsuariosPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`/api/users/${usuario.id}`, {
+      const response = await fetch(`http://localhost:8080/api/users/${usuario.id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -201,13 +190,13 @@ export default function UsuariosPage() {
     <div className="container container-flex-layout">
       <h1>Gerenciamento de Usuários</h1>
       
-      {userRole !== "ALUNO" && (
+      {userRole === "ADMIN" && (
         <form onSubmit={handleSalvar} className="card form-full-width">
           <h2>{form.id ? "Editar Usuário" : "Novo Usuário"}</h2>
           {error && <div className="alert-message error-box">{error}</div>}
           {successMessage && <div className="alert-message success-box">{successMessage}</div>}
           <FormInput label="Nome" type="text" name="nome" value={form.nome} onChange={handleChange} />
-          <FormInput label="Email" type="email" name="email" value={form.email} onChange={handleChange} />
+          <FormInput label="Email" type="email" name="email" value={form.email} onChange={handleChange} disabled={!!form.id} />
           {!form.id && (
             <>
               <FormInput label="Senha" type="password" name="senha" value={form.senha} onChange={handleChange} />
@@ -228,7 +217,11 @@ export default function UsuariosPage() {
         </form>
       )}
 
-      {userRole === "ALUNO" && error && <div className="alert-message error-box" style={{ marginBottom: "1rem" }}>{error}</div>}
+      {userRole !== "ADMIN" && (
+        <div className="alert-message error-box">
+          Você pode visualizar os usuários cadastrados, mas apenas o Administrador pode cadastrar, editar ou excluir registros.
+        </div>
+      )}
 
       <div className="table-scroll-container">
         <table className="data-table">
@@ -238,7 +231,7 @@ export default function UsuariosPage() {
               <th>Nome</th>
               <th>Email</th>
               <th>Tipo</th>
-              {userRole !== "ALUNO" && <th>Ações</th>}
+              {userRole === "ADMIN" && <th>Ações</th>}
             </tr>
           </thead>
           <tbody>
@@ -252,7 +245,7 @@ export default function UsuariosPage() {
                   <td>{nomeTabela}</td>
                   <td>{emailTabela}</td>
                   <td>{u.profile}</td>
-                  {userRole !== "ALUNO" && (
+                  {userRole === "ADMIN" && (
                     <td>
                       <div className="actions-cell">
                         <button onClick={() => handleEditar(u)} className="btn-action edit">Editar</button>
