@@ -73,8 +73,9 @@ export default function LocalEditPage() {
             {mensagem && <p>{mensagem}</p>}
             {carregando && <p>Carregando...</p>}
             {!carregando && <div>
-                <FormInput label="Numero" type="text" name="numero" value={local.numero} onChange={handleChange}></FormInput>
+                <FormInput label="Numero" type="text" name="numero" value={local.numero} onChange={handleChange} required></FormInput>
                 <Button type="button" onClick={handleSubmit} disabled={loading}>{loading ? 'Salvando...' : 'Salvar Local'}</Button>
+                <Button type="button" onClick={() => location.href = '/locais'}>Voltar</Button>
             </div>}
         </>
     );

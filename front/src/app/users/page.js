@@ -49,6 +49,10 @@ export default function UserPage() {
         }
     }
 
+    const podeEditar = (user) => {
+        return userLogado?.profile === 'ADMIN' || userLogado?.id === user.id;
+    }
+
     return (
         <>
             <h1>Usuarios</h1>
@@ -75,13 +79,14 @@ export default function UserPage() {
                                     <td>{user.email}</td>
                                     <td>{user.profile}</td>
                                     <td>
-                                        <Button onClick={() => location.href = `/users/${user.id}`}>Editar</Button>
+                                        {podeEditar(user) && <Button onClick={() => location.href = `/users/${user.id}`}>Editar</Button>}
                                         {userLogado?.profile === 'ADMIN' && <Button onClick={() => excluirUsuario(user.id)} disabled={excluindo === user.id}>{excluindo === user.id ? 'Excluindo...' : 'Excluir'}</Button>}
                                     </td>
                                 </tr>
                             )
                         })
                     }
+                    {lista.length === 0 && <tr><td colSpan="4">Nenhum usuario cadastrado</td></tr>}
                 </tbody>
             </table>}
         </>

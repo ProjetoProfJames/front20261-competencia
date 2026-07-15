@@ -76,6 +76,7 @@ export default function LocalPage() {
                             )
                         })
                     }
+                    {lista.length === 0 && <tr><td colSpan="2">Nenhum local cadastrado</td></tr>}
                 </tbody>
             </table>}
         </>

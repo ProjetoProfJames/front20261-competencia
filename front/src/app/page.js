@@ -1,18 +1,5 @@
-'use client'
-import { useEffect } from "react";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  useEffect(() => {
-    if (localStorage.getItem('API-KEY')) {
-      location.href = '/home';
-    } else {
-      location.href = '/login';
-    }
-  }, []);
-
-  return (
-    <>
-      <div>Home</div>
-    </>
-  );
+  redirect("/login");
 }

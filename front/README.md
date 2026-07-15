@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend - Task 1
 
-## Getting Started
+Este frontend faz a Task 1 da competencia:
 
-First, run the development server:
+- Login com email e senha.
+- Menu com nome do usuario, perfil, links por permissao e logout.
+- CRUD de usuarios.
+- CRUD de locais de apresentacao.
+- Integracao com o backend usando JWT.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## O que precisa estar funcionando
+
+Antes de abrir o frontend, o backend precisa estar rodando em `http://localhost:8080`.
+
+O frontend usa estas rotas da API:
+
+- `POST /api/auth/login`
+- `GET /api/users`
+- `POST /api/users`
+- `GET /api/users/{id}`
+- `PUT /api/users/{id}`
+- `DELETE /api/users/{id}`
+- `GET /api/locais`
+- `POST /api/locais`
+- `GET /api/locais/{id}`
+- `PUT /api/locais/{id}`
+- `DELETE /api/locais/{id}`
+
+## Como rodar o backend
+
+Entre na pasta do backend:
+
+```powershell
+cd ..\piemanager
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Suba a API:
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+```powershell
+.\mvnw.cmd spring-boot:run
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Com a API ligada, crie os dados iniciais:
 
-## Learn More
+```powershell
+Invoke-WebRequest -Method POST http://localhost:8080/api/public/bootstrap
+```
 
-To learn more about Next.js, take a look at the following resources:
+Usuario admin inicial:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Email: `admin@unisales.br`
+- Senha: `12345`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Outros usuarios criados pelo bootstrap usam senha `12345`.
 
-## Deploy on Vercel
+## Como rodar o frontend
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Entre na pasta do frontend:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```powershell
+cd ..\front
+```
+
+Instale as dependencias, se ainda nao tiver instalado:
+
+```powershell
+npm.cmd install
+```
+
+Rode o projeto:
+
+```powershell
+npm.cmd run dev
+```
+
+Abra:
+
+```text
+http://localhost:3000
+```
+
+No Windows, use `npm.cmd` se o PowerShell bloquear o comando `npm`.
+
+## Permissoes usadas
+
+- `ADMIN`: acessa usuarios e locais, cria, edita e exclui.
+- `PROFESSOR`: acessa a listagem de usuarios.
+- `COORDENADOR`: acessa locais.
+- `ALUNO` e `AVALIADOR_EXTERNO`: acessam a home.
+
+## Comparacao com as aulas do professor
+
+O projeto segue o mesmo estilo das aulas do repositorio `Jamesasj/unisales.front.20261`:
+
+- Next.js com pasta `src/app`.
+- Componentes simples em `src/components`.
+- `useState` e `useEffect` nas telas com interacao.
+- `fetch` para comunicacao com backend.
+- CSS global simples.
+- Sem bibliotecas novas alem das que ja estavam no `package.json`.
+
+## Comandos de verificacao
+
+Para verificar se o frontend compila:
+
+```powershell
+npm.cmd run build
+```
+
+Para testar no navegador, rode:
+
+```powershell
+npm.cmd run dev
+```
+
+Depois faca login, entre em Usuarios e Locais, e teste criar, editar e excluir registros.

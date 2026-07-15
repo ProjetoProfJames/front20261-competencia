@@ -67,11 +67,12 @@ export default function UserNewPage() {
       {mensagem && <p>{mensagem}</p>}
       <div>
         <FormInput
-          label="Username"
+          label="Nome"
           type="text"
           name="username"
           value={user.username}
           onChange={handleChange}
+          required
         ></FormInput>
         <FormInput
           label="Email"
@@ -79,15 +80,17 @@ export default function UserNewPage() {
           name="email"
           value={user.email}
           onChange={handleChange}
+          required
         ></FormInput>
         <FormInput
-          label="Password"
+          label="Senha"
           type="password"
           name="password"
           value={user.password}
           onChange={handleChange}
+          required
         ></FormInput>
-        <select name="profile" value={user.profile} onChange={handleChange}>
+        <select name="profile" value={user.profile} onChange={handleChange} required>
           <option value="">Selecione o perfil</option>
           <option value="ADMIN">ADMIN</option>
           <option value="COORDENADOR">COORDENADOR</option>
@@ -98,6 +101,7 @@ export default function UserNewPage() {
         <Button type="button" onClick={handleSubmit} disabled={loading}>
           {loading ? "Salvando..." : "Criar Usuario"}
         </Button>
+        <Button type="button" onClick={() => location.href = "/users"}>Voltar</Button>
       </div>
     </>
   );

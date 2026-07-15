@@ -32,17 +32,19 @@ export default function Menu() {
     }
 
     return (
-        <div>
-            <p>Usuario: {user.username}</p>
-            {
-                links.map((link) => {
-                    if (link.profiles.includes(user.profile)) {
-                        return <a key={link.href} href={link.href}>{link.label} </a>
-                    }
-                    return null;
-                })
-            }
-            <Button type="button" onClick={auth.logout}>Logout</Button>
+        <div className="menu">
+            <p>Usuario: {user.username} ({user.profile})</p>
+            <nav className="nav-links">
+                {
+                    links.map((link) => {
+                        if (link.profiles.includes(user.profile)) {
+                            return <a key={link.href} href={link.href}>{link.label}</a>
+                        }
+                        return null;
+                    })
+                }
+                <Button type="button" onClick={auth.logout}>Logout</Button>
+            </nav>
         </div>
     )
 }

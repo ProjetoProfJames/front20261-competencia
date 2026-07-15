@@ -51,8 +51,9 @@ export default function LocalNewPage() {
             <h1>Novo Local</h1>
             {mensagem && <p>{mensagem}</p>}
             <div>
-                <FormInput label="Numero" type="text" name="numero" value={local.numero} onChange={handleChange}></FormInput>
+                <FormInput label="Numero" type="text" name="numero" value={local.numero} onChange={handleChange} required></FormInput>
                 <Button type="button" onClick={handleSubmit} disabled={loading}>{loading ? 'Salvando...' : 'Criar Local'}</Button>
+                <Button type="button" onClick={() => location.href = '/locais'}>Voltar</Button>
             </div>
         </>
     )

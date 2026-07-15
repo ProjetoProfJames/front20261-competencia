@@ -28,6 +28,10 @@ export default function UserEditPage() {
             try {
                 setCarregando(true);
                 const tempUser = await api.get(`/users/${params.id}`);
+                if (loggedUser.profile !== 'ADMIN' && loggedUser.id !== tempUser.id) {
+                    location.href = '/nao-autorizado';
+                    return;
+                }
                 setUser({ ...tempUser, password: '' })
             } catch (error) {
                 setMensagem(error.message);
@@ -63,8 +67,11 @@ export default function UserEditPage() {
         }
 
         const userUpdate = {
-            username: user.username,
-            profile: user.profile
+            username: user.username
+        }
+
+        if (userLogado?.profile === 'ADMIN') {
+            userUpdate.profile = user.profile;
         }
 
         if (user.password) {
@@ -96,9 +103,9 @@ export default function UserEditPage() {
             {carregando && <p>Carregando...</p>}
             {!carregando && <div>
                 <p>Email: {user.email}</p>
-                <FormInput label="Username" type="text" name="username" value={user.username} onChange={handleChange}></FormInput>
-                <FormInput label="Password" type="password" name="password" value={user.password} onChange={handleChange}></FormInput>
-                <select name="profile" value={user.profile} onChange={handleChange}>
+                <FormInput label="Nome" type="text" name="username" value={user.username} onChange={handleChange} required></FormInput>
+                <FormInput label="Senha" type="password" name="password" value={user.password} onChange={handleChange}></FormInput>
+                <select name="profile" value={user.profile} onChange={handleChange} disabled={userLogado?.profile !== 'ADMIN'}>
                     <option value="">Selecione o perfil</option>
                     <option value="ADMIN">ADMIN</option>
                     <option value="COORDENADOR">COORDENADOR</option>
@@ -107,6 +114,7 @@ export default function UserEditPage() {
                     <option value="AVALIADOR_EXTERNO">AVALIADOR_EXTERNO</option>
                 </select>
                 <Button type="button" onClick={handleSubmit} disabled={loading}>{loading ? 'Salvando...' : 'Salvar Usuario'}</Button>
+                <Button type="button" onClick={() => location.href = '/users'}>Voltar</Button>
             </div>}
         </>
     );
