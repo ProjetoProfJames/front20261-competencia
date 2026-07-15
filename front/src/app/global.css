@@ -1,49 +1,99 @@
 body {
-  font-family: "Times New Roman", Times, serif; 
-  margin: 30px;
-  background-color: white;
-  color: black;
+  font-family: "Times New Roman", Times, serif;
+  margin: 0;
+  background-color: #f7f7f7;
+  color: #1d1d1d;
+  padding: 30px;
 }
 
+h1 {
+  font-size: 28px;
+  margin: 0 0 15px;
+  font-weight: 700;
+  color: #111111;
+}
+
+p {
+  margin: 8px 0;
+}
+
+.menu {
+  margin-bottom: 25px;
+  padding: 12px;
+  border: 1px solid #cfcfcf;
+  background-color: white;
+}
 
 .nav-links {
-  margin-bottom: 30px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
 .nav-links a {
-  color: blue;
+  color: #0645ad;
   text-decoration: underline;
   font-size: 16px;
 }
 
+.form-field {
+  margin-bottom: 10px;
+}
+
+label {
+  display: block;
+  margin-bottom: 3px;
+}
+
+input,
+select {
+  width: 260px;
+  max-width: 100%;
+  padding: 6px;
+  border: 1px solid #777777;
+  background-color: white;
+  color: #1d1d1d;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 16px;
+}
 
 table {
   border-collapse: collapse;
-  border: 3px solid black; 
+  border: 2px solid #333333;
   margin-top: 10px;
+  background-color: white;
 }
 
-th, td {
-  border: 1px solid black; 
-  padding: 4px 8px;
+th,
+td {
+  border: 1px solid #555555;
+  padding: 6px 10px;
   text-align: left;
 }
 
 th {
   font-weight: bold;
+  background-color: #eeeeee;
 }
 
 button {
-  padding: 2px 6px;
-  border: 1px solid gray;
-  background-color: #f0f0f0;
+  padding: 4px 10px;
+  border: 1px solid #777777;
+  background-color: #eeeeee;
   cursor: pointer;
-  color: black;
+  color: #111111;
+  margin: 3px;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 16px;
 }
 
-.btn-novo {
-  margin-bottom: 5px;
+button:hover {
+  background-color: #dddddd;
+}
+
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
 }

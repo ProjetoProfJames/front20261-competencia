@@ -19,6 +19,7 @@ import com.unisales.piemanager.user.UserRepository;
 import com.unisales.piemanager.user.UserService;
 import com.unisales.piemanager.user.dto.UserCreateRequest;
 import com.unisales.piemanager.user.dto.UserResponse;
+import com.unisales.piemanager.user.dto.UserUpdateRequest;
 import com.unisales.piemanager.user.model.Profile;
 import com.unisales.piemanager.user.model.User;
 
@@ -35,7 +36,7 @@ public class BootstrapService {
 
     private static final String ADMIN_USERNAME = "admin";
     private static final String ADMIN_EMAIL = "admin@unisales.br";
-    private static final String ADMIN_PASSWORD = "admin@123";
+    private static final String ADMIN_PASSWORD = "12345";
     private static final String DEFAULT_PASSWORD = "12345";
 
     private final UserRepository userRepository;
@@ -91,6 +92,11 @@ public class BootstrapService {
             admin = userRepository.findById(created.getId()).orElseThrow();
             adminCreated = true;
             usersSeeded++;
+        } else {
+            UserUpdateRequest request = new UserUpdateRequest();
+            request.setPassword(ADMIN_PASSWORD);
+            userService.update(admin.getId(), request, "bootstrap");
+            admin = userRepository.findById(admin.getId()).orElseThrow();
         }
 
         boolean missingCoordenador = userRepository.findByEmail("coordenador@unisales.br").isEmpty();

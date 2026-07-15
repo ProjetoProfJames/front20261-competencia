@@ -49,16 +49,19 @@ export default function UserPage() {
         }
     }
 
+    const podeEditar = (user) => {
+        return userLogado?.profile === 'ADMIN' || userLogado?.id === user.id;
+    }
+
     return (
-        <div className="page-content">
-            <section className="content-panel">
+        <>
             <h1>Usuarios</h1>
-            {mensagem && <p className="mensagem">{mensagem}</p>}
-            <div className="page-actions">
-                {userLogado?.profile === 'ADMIN' && <Button onClick={() => { location.href = '/users/new' }}>+ Adicionar</Button>}
+            {mensagem && <p>{mensagem}</p>}
+            <div>
+                {userLogado?.profile === 'ADMIN' && <Button onClick={() => { location.href = '/users/new' }}>Novo</Button>}
             </div>
-            {loading && <p className="mensagem">Carregando...</p>}
-            {!loading && <table className="tabela-simples">
+            {loading && <p>Carregando...</p>}
+            {!loading && <table>
                 <thead>
                     <tr>
                         <th>username</th>
@@ -75,17 +78,17 @@ export default function UserPage() {
                                     <td>{user.username}</td>
                                     <td>{user.email}</td>
                                     <td>{user.profile}</td>
-                                    <td className="acoes">
-                                        <Button onClick={() => location.href = `/users/${user.id}`}>Editar</Button>
+                                    <td>
+                                        {podeEditar(user) && <Button onClick={() => location.href = `/users/${user.id}`}>Editar</Button>}
                                         {userLogado?.profile === 'ADMIN' && <Button onClick={() => excluirUsuario(user.id)} disabled={excluindo === user.id}>{excluindo === user.id ? 'Excluindo...' : 'Excluir'}</Button>}
                                     </td>
                                 </tr>
                             )
                         })
                     }
+                    {lista.length === 0 && <tr><td colSpan="4">Nenhum usuario cadastrado</td></tr>}
                 </tbody>
             </table>}
-            </section>
-        </div>
+        </>
     )
 }

@@ -47,15 +47,14 @@ export default function LocalNewPage() {
     }
 
     return (
-        <div className="page-content">
-            <section className="content-panel">
+        <>
             <h1>Novo Local</h1>
-            {mensagem && <p className="mensagem">{mensagem}</p>}
-            <div className="form-grid">
-                <FormInput label="Numero" type="text" name="numero" value={local.numero} onChange={handleChange}></FormInput>
+            {mensagem && <p>{mensagem}</p>}
+            <div>
+                <FormInput label="Numero" type="text" name="numero" value={local.numero} onChange={handleChange} required></FormInput>
                 <Button type="button" onClick={handleSubmit} disabled={loading}>{loading ? 'Salvando...' : 'Criar Local'}</Button>
+                <Button type="button" onClick={() => location.href = '/locais'}>Voltar</Button>
             </div>
-            </section>
-        </div>
+        </>
     )
 }
